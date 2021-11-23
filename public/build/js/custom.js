@@ -1,8 +1,8 @@
 /**
  * Resize function without multiple trigger
- * 
+ *
  * Usage:
- * $(window).smartresize(function(){  
+ * $(window).smartresize(function(){
  *     // code here
  * });
  */
@@ -16,8 +16,8 @@
             var obj = this, args = arguments;
             function delayed () {
                 if (!execAsap)
-                    func.apply(obj, args); 
-                timeout = null; 
+                    func.apply(obj, args);
+                timeout = null;
             }
 
             if (timeout)
@@ -25,11 +25,11 @@
             else if (execAsap)
                 func.apply(obj, args);
 
-            timeout = setTimeout(delayed, threshold || 100); 
+            timeout = setTimeout(delayed, threshold || 100);
         };
     };
 
-    // smartresize 
+    // smartresize
     jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
 
 })(jQuery,'smartresize');
@@ -611,7 +611,7 @@ function init_starrr() {
 
 function init_JQVmap() {
 
-    //console.log('check init_JQVmap [' + typeof (VectorCanvas) + '][' + typeof (jQuery.fn.vectorMap) + ']' );	
+    //console.log('check init_JQVmap [' + typeof (VectorCanvas) + '][' + typeof (jQuery.fn.vectorMap) + ']' );
 
     if (typeof (jQuery.fn.vectorMap) === 'undefined') { return; }
 
@@ -1958,7 +1958,7 @@ function init_EasyPieChart() {
 
 function init_charts() {
 
-    console.log('run_charts  typeof [' + typeof (Chart) + ']');
+    ///console.log('run_charts  typeof [' + typeof (Chart) + ']');
 
     if (typeof (Chart) === 'undefined') { return; }
 
@@ -2364,7 +2364,7 @@ function init_charts() {
 function init_compose() {
 
     if (typeof ($.fn.slideToggle) === 'undefined') { return; }
-    console.log('init_compose');
+    //console.log('init_compose');
 
     $('#compose, .compose-close').click(function () {
         $('.compose').slideToggle();
@@ -2479,10 +2479,10 @@ function init_calendar() {
 
 function init_DataTables() {
 
-    console.log('run_datatables');
+  //  console.log('run_datatables');
 
     if (typeof ($.fn.DataTable) === 'undefined') { return; }
-    console.log('init_DataTables');
+  ///  console.log('init_DataTables');
 
     var handleDataTableButtons = function () {
         if ($("#datatable-buttons").length) {
@@ -5001,9 +5001,10 @@ function init_echarts() {
 
 $(document).ready(function () {
 
-    init_sparklines();
-    init_flot_chart();
     init_sidebar();
+   /* init_sparklines();
+    init_flot_chart();
+init_DataTables();
     init_wysiwyg();
     init_InputMask();
     init_JQVmap();
@@ -5034,6 +5035,6 @@ $(document).ready(function () {
     init_compose();
     init_CustomNotification();
     init_autosize();
-    init_autocomplete();
+    init_autocomplete(); */
 
-});	
+});

@@ -30,21 +30,30 @@
     <div class="login_wrapper">
         <div class="animate form login_form">
             <section class="login_content">
-                <form>
-                    <h1>Login Form</h1>
+                <form id="login-form" action="{{route('admin.login')}}" method="post" enctype="multipart/form-data">
+                    {{csrf_field()}}
+
+                    <h1>BUYBACK ADMIN</h1>
                     <div>
-                        <input type="text" class="form-control" placeholder="Username" required="" />
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Kullanıcı Email" />
+                        <span id="email_error"></span>
                     </div>
                     <div>
-                        <input type="password" class="form-control" placeholder="Password" required="" />
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Şifre"  />
+                        <span id="password_error"></span>
+                    </div>
+                    <div style="font-size: 20px">
+                        <label for="">Beni Hatırla</label>
+                        <input type="checkbox" id="remember_me" name="remember_me"  value="546546"  />
+
                     </div>
                     <div>
-                        <a class="btn btn-default submit" href="#">Log in</a>
-                        <a class="reset_pass" href="#">Lost your password?</a>
+                        <button class="btn btn-primary" onclick="$('#login-form').submit()">GİRİŞ</button>
+
                     </div>
 
                     <div class="clearfix"></div>
-
+                        @if(false)
                     <div class="separator">
                         <p class="change_link">New to site?
                             <a href="#signup" class="to_register"> Create Account </a>
@@ -58,6 +67,7 @@
                             <p>©2016 All Rights Reserved. Gentelella Alela! is a Bootstrap 3 template. Privacy and Terms</p>
                         </div>
                     </div>
+                            @endif
                 </form>
             </section>
         </div>
@@ -99,5 +109,36 @@
         </div>
     </div>
 </div>
+<script src="{{url('js/jquery-3.5.1.min.js')}}"></script>
+<script src="{{url('js/sweetalert.min.js')}}"></script>
+<script src="{{url('js/save.js')}}"></script>
+<script>
+
+    $('#login-form').submit(function (e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+        var error = false;
+        if ($('#email').val() == '') {
+            $('#email_error').html('<span style="color: red">Lütfen giriniz</span>');
+            error = true;
+        } else {
+            $('#email_error').html('');
+        }
+        if ($('#password').val() == '') {
+            $('#password_error').html('<span style="color: red">Lütfen giriniz</span>');
+            error = true;
+        } else {
+            $('#password_error').html('');
+        }
+
+        if(error){
+            return false;
+        }
+
+        //   swal("ok");
+        save(formData, '{{route('admin.login')}}', '', 'btn-1','');
+    });
+</script>
 </body>
 </html>

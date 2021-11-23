@@ -6,7 +6,7 @@
 * */
 
 function save(formData,route,formID,btn,modal_btn) {
-swal("okk");
+///swal("okk");
     if(btn!=''){
         $('#'+btn).css('display', 'none');
         $('#'+btn+'-hourglass').css('display','');

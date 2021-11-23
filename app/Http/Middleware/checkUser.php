@@ -18,7 +18,7 @@ class checkUser
     {
         //  dd($request);
         if($request->session()->get('admin_id') == null){
-            return redirect('/admin/login');
+            return redirect('/login');
             //   }elseif($request->session()->get('user_id') != null){
             //   echo $request->session()->get('user_id');
             //return redirect('/');
