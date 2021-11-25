@@ -15,12 +15,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="text-center">
-                        <a href="{{route("model.model-add")}}">
-                            <button type="button"
-                                    class="btn bg-teal-800 btn-labeled btn-labeled-left rounded-round font-weight-bold">
-                                <b><i class="icon-plus-circle2"></i></b> Yeni Model Ekle
-                            </button>
-                        </a>
+                        <a href="{{route("model.model-add")}}"  class="btn btn-primary">Yeni Model Ekle</a>
                     </div>
                 </div>
                 <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -57,8 +52,10 @@
                                 @endif</td>
                             <td class="text-center">
                                 <div class="list-icons">
+
+
                                     <a href="{{route("model.model-update",["id"=>$model['id']])}}"
-                                       class="list-icons-item text-primary-600"><i class="icon-pencil7"></i></a>
+                                       class="btn btn-primary"><i class="fa fa-pencil"></i> Güncelle</a>
                                     <!--
                                     <a href="" class="list-icons-item text-violet-800"><i class="icon-eye"></i></a>
                                     -->
@@ -67,9 +64,8 @@
                             <td class="text-center">
                                 <div class="list-icons ">
                                     <div class="dropdown">
-                                        <a href="{{route("model.questions-answers",["model_id"=>$model['id']])}}"
-                                           class="dropdown-item font-weight-bold text-indigo-800"><i
-                                                class="icon-stack-plus"></i>SORULAR ve YANITLARI</a>
+                                        <a href="{{route("model.model-questions",["model_id"=>$model['id']])}}"
+                                           class="btn btn-secondary"> SORULAR ve YANITLARI <i class="fa fa-question-circle"></i></a>
 
                                     </div>
                                 </div>

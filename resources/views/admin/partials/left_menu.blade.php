@@ -25,17 +25,27 @@
                                 <li style="display: none"><a href="{{route('brand.brandupdate',$brand_id)}}"></a></li>
                                 @endif
                             <li><a href="{{route('model.model-list')}}">Modeller</a></li>
-                            <li style="display: none"><a href="{{route('brand.brandadd')}}">Markalar</a></li>
+                            <li style="display: none"><a href="{{route('model.model-add')}}"></a></li>
                             @if(!empty($model_id))
-                                <li style="display: none"><a href="{{route('brand.brandupdate',$model_id)}}"></a></li>
+                                <li style="display: none"><a href="{{route('model.model-update',$model_id)}}"></a></li>
+                                <li style="display: none"><a href="{{route('model.model-questions',$model_id)}}"></a></li>
                             @endif
-                            <li><a href="#">Renkler</a></li>
-                            <li style="display: none"><a href="{{route('brand.brandadd')}}"></a></li>
+                            <li><a href="{{route('color.color-list')}}">Renkler</a></li>
+                            <li style="display: none"><a href="{{route('color.color-add')}}"></a></li>
                             @if(!empty($color_id))
-                                <li style="display: none"><a href="{{route('brand.brandupdate',$color_id)}}"></a></li>
+                                <li style="display: none"><a href="{{route('color.colorUpdate',$color_id)}}"></a></li>
                             @endif
-                            <li><a href="#">Hafıza Listesi</a></li>
-                            <li><a href="#">Sorular</a></li>
+                            <li><a href="{{route('memory.memorylist')}}">Hafıza Listesi</a></li>
+                            <li style="display: none"><a href="{{route('memory.memoryadd')}}"></a></li>
+                            @if(!empty($memory_id))
+                                <li style="display: none"><a href="{{route('memory.memoryupdate',$memory_id)}}"></a></li>
+                            @endif
+
+                            <li><a href="{{route('question.question-list')}}">Sorular</a></li>
+                            <li style="display: none"><a href="{{route('question.questionadd')}}"></a></li>
+                            @if(!empty($question_id))
+                                <li style="display: none"><a href="{{route('question.questionupdate',$question_id)}}"></a></li>
+                            @endif
                         </ul>
                     </li>
                     <li><a><i class="fa fa-desktop"></i> UI Elements <span class="fa fa-chevron-down"></span></a>

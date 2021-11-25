@@ -33,17 +33,6 @@ function save(formData,route,formID,btn,modal_btn) {
             if (arr[1] =='success') {
 
                 swal("Tebrikler", arr[0], "success");
-                /*  swal("Tebrikler", arr[0], "success").then((value) => {
-                      if (value) {
-
-                          //  $('#modal-13').hide();
-                          if(modal_btn!=''){
-                             // alert("'"+modal_btn+"'");
-                          $('#'+modal_btn).click();
-                          }
-                          // $('#logout-form').submit();
-                      }
-                  });*/
 
 
             } else {

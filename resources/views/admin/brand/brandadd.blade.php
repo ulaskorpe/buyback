@@ -26,7 +26,7 @@
 
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Marka Adı</label>
-                                <div class="col-lg-10">
+                                <div class="col-lg-8">
                                     <input type="text" class="form-control" name="brandname" id="brandname"
                                            value="" data-popup="tooltip" data-trigger="focus"
                                            title="Marka tam Adı" placeholder="Marka Adı">
@@ -35,7 +35,7 @@
                             </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Resim</label>
-                                <div class="col-lg-10">
+                                <div class="col-lg-8">
                                     <input type="file" name="brand_img" id="brand_img" class="form-control h-auto"
                                            data-popup="tooltip"
                                            title=""
@@ -47,7 +47,7 @@
 
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold"></label>
-                                <div class="col-lg-10">
+                                <div class="col-lg-8">
 
                                     <img id="target" style="display: none;">
                                     <img id="avatar_img" style="display: none;">
@@ -56,7 +56,7 @@
                             </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">İcon Path</label>
-                                <div class="col-lg-10">
+                                <div class="col-lg-8">
                                     <input type="text" name="iconpath" id="iconpath" class="form-control h-auto">
                                     <span class="form-text text-muted" id="iconpath_error"></span>
                                 </div>
@@ -86,21 +86,16 @@
 
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">DURUM</label>
-                                <div class="col-lg-10">
+                                <div class="col-lg-8">
                                     <label>
                                         <input type="checkbox" class="js-switch" checked="true" name="status" id="status" value="13" data-switchery="true"
                                                style="display: none;">
-
-
-
                                     </label>
-
-
                                 </div>
                             </div>
                             <br>
                             <!-- /touchspin spinners -->
-                            <div class="text-right">
+                            <div class="text-center">
                                 <button type="submit" class="btn btn-primary font-weight-bold rounded-round">MARKA EKLE
                                     <i class="icon-paperplane ml-2"></i></button>
                             </div>
