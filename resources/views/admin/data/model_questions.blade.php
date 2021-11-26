@@ -73,6 +73,7 @@
                 <div class="row" style="margin-top: 15px">
                     <div class="col-md-12 text-center">
                         <button class="btn btn-primary" id="calculate_btn" disabled >TEKLİF AL </button>
+
                         <button type="button"  style="display: none" id="show-lg-modal" data-toggle="modal" data-target="#lg-modal">Large modal</button>
 
                     </div>
@@ -103,7 +104,7 @@
             btn++;
         }
         @endfor
-console.log(btn);
+//console.log(btn);
             var total = (max_price-total_minus >= min_price)? (max_price-total_minus) : min_price;
             $('#total_price').html("<h3>"+total+" TL</h3>");
             if(btn=={{$count}}){
@@ -118,7 +119,7 @@ console.log(btn);
         $('#show-lg-modal').click();
 
         $.get( "{{url('admin/data/get-offer')}}/"+$('#model_id').val()+"/"+$('#calculate_result').val(), function( data ) {
-            $( "#lg-modal-title" ).html('Teklif Sonucu'+$('#model_id').val());
+            $( "#lg-modal-title" ).html('Teklif Sonucu');
             $( "#lg-modal-body" ).html( data );
 
         });

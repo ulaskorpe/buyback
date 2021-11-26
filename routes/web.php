@@ -19,13 +19,21 @@ Route::get('/', function () {
 
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'index'])->name('index');
+//Route::get('/parsecities',[\App\Http\Controllers\HomeController::class,'parsecities'])->name('parsecities');
 Route::get('/login',[\App\Http\Controllers\HomeController::class,'login'])->name('login');
 Route::post('/login',[\App\Http\Controllers\HomeController::class,'loginPost'])->name('admin.login');
+
 Route::get('/check_image/{image}',[\App\Http\Controllers\HomeController::class,'checkImage'])->name('answers-order');
 
 Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
     Route::get('/',[\App\Http\Controllers\AdminController::class,'index'])->name('admin.index');
-
+    Route::get('/profile',[\App\Http\Controllers\AdminController::class,'profile'])->name('admin.profile');
+    Route::get('/password',[\App\Http\Controllers\AdminController::class,'password'])->name('admin.password');
+    Route::get('/settings',[\App\Http\Controllers\AdminController::class,'index'])->name('admin.settings');
+    Route::post('/profile-update',[\App\Http\Controllers\AdminController::class,'profilePost'])->name('profile-update');
+    Route::post('/password-update',[\App\Http\Controllers\AdminController::class,'passwordPost'])->name('password-update');
+    Route::post('/settings-update',[\App\Http\Controllers\AdminController::class,'settingsPost'])->name('settings-update');
+    Route::post('/logout',[\App\Http\Controllers\AdminController::class,'logout'])->name('logout');
     Route::group(['prefix'=>'data','as'=>'data.'],function (){
         Route::get('/get-models/{brand_id}',[\App\Http\Controllers\DataController::class,'getModels'])->name('get-models');
         Route::get('/get-questions/{brand_id}',[\App\Http\Controllers\DataController::class,'getQuestions'])->name('get-questions');

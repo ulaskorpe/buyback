@@ -487,16 +487,38 @@ class DataController extends Controller
     public function getOffer($model_id,$answers){
         $array = explode("@",$answers);
             $model = ProductModel::with('brand','category')->find($model_id);
-            echo $model['max_price'];
-        //$txt =
+
+            $total_minus =0;
+        $txt ="<table style='width: 100%'>";
         foreach ($array as $answer_id){
             if(!empty($answer_id)){
+                $a = Answer::with('question')->find($answer_id);
+                $ma = ModelAnswer::where('answer_id','=',$answer_id)->where('model_id','=',$model_id)->first();
+                $txt.="<tr><td colspan='2' style='height: 35px'><b>".$a->question()->first()->question."</b></td></tr>";
+               if(!empty($ma['id'])){
+                    $total_minus+=$ma['value'];
+                    if($ma['value']>0){
+                        $txt.= "<tr><td width='50%' style='height: 35px'>".$a['answer']."</td><td>"." -".$ma['value']." TL</td></tr>";
+                    }else{
+                        $txt.="<tr><td style='height: 35px'>". $a['answer']."</td><td></td></tr>";
+                    }
+
+                }else{
+                    $txt.= "<tr><td style='height: 35px'>".$a['answer']."</td><td></td></tr>";
+                }
+
+                $total = ( ($model['max_price']-$total_minus) >=$model['min_price']) ? ($model['max_price']-$total_minus) : $model['min_price'];
+
+
+
 
             }
         }
 
+        $txt.="<tr><td colspan='2'><hr><b>TEKLİF :.".$total." TL</b></td></tr></table>";
 
-            return view('admin.data.get_offer',['answers'=>$array,'model'=>$model]);
+
+            return view('admin.data.get_offer',['txt'=>$txt,'model'=>$model]);
     }
 
 }

@@ -12,11 +12,22 @@
                 <ul class="nav side-menu">
                     <li><a><i class="fa fa-user"></i> Kullanıcı <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="#">Kullanıcı Bilgilerim</a></li>
-                            <li><a href="#">Şifre Güncelle</a></li>
-                            <li><a href="#">Ayarlar</a></li>
+                            <li><a href="{{route('admin.profile')}}">Kullanıcı Bilgilerim</a></li>
+                            <li><a href="{{route('admin.password')}}">Şifre Güncelle</a></li>
+                            <li><a href="{{route('admin.settings')}}">Ayarlar</a></li>
+
+
                         </ul>
                     </li>
+
+                @if(!empty(Session::get('sudo')))
+                    <li><a><i class="fa fa-users"></i> Kullanıcılar <span class="fa fa-chevron-down"></span></a>
+                        <ul class="nav child_menu">
+                            <li><a href="#">Kullanıcı Listesi</a></li>
+                            <li><a href="#">Kullanıcı Grupları</a></li>
+                        </ul>
+                    </li>
+                    @endif
                     <li><a><i class="fa fa-edit"></i> Sistem Verileri <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('brand.brandlist')}}">Markalar</a></li>

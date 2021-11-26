@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Controllers\Helpers\GeneralHelper;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\Town;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -25,14 +28,19 @@ class HomeController extends Controller
             return view('login');
         }
     }
-    public function logout(){
 
-        Session::put('admin_id',null);
+    public function parsecities(){
+//        $cities = City::all();
+//        foreach ($cities as $city){
+//
+//            $city->plate_no = ( intval($city['plate_no']) <10)?"0".$city['plate_no']:$city['plate_no'];
+//                $city->save();
+//        }
 
-        Session::put('sudo',null);
-   //     Session::put('Userget',null);
-        return redirect(route('index'));
+        $country = Town::with('districts','city')->find(12);
+        dd( $country);
     }
+
 
     public function loginPost(Request $request){
 
@@ -50,6 +58,8 @@ class HomeController extends Controller
             //    return  md5($request['password']);
                 if($check['id']){
                     Session::put('admin_id',$check['id']);
+                    Session::put('name_surname',$check['name']." ".$check['surname']);
+                    Session::put('sudo',$check['sudo']);
 
 
                     if(!empty($request['remember_me']))

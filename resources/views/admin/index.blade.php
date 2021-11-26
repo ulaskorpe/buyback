@@ -80,7 +80,7 @@
                     </div>
                     <div class="col-md-6 ">
                         <div class="x_panel">
-                            <textarea name="calculate_result"  id="calculate_result" cols="30" rows="10"></textarea>
+                            <input type="hidden" name="calculate_result"  id="calculate_result"  >
                         </div>
                     </div>
                 </div>

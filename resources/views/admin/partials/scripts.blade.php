@@ -15,6 +15,20 @@
 
 <script src="{{url('build/js/custom.js')}}"></script>
 
+<script>
+    function logout(model_question_id) {
+        swal("Çıkış yapılacak, Emin misiniz?", {
+            buttons: ["İptal", "Evet"],
+            dangerMode: true,
+        }).then((value) => {
+            if (value) {
+
+              //  document.getElementById('logout-form').submit();
+                $('#logout-form').submit();
+            }
+        })
+    }
+</script>
 @if(false)
 
     <script src="../vendors/nprogress/nprogress.js"></script>
