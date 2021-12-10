@@ -13,15 +13,15 @@ class CreateBuybackAnswersTable extends Migration
      */
     public function up()
     {
-        Schema::create('buyback_answers', function (Blueprint $table) {
-            $table->id();
-            $table->integer('buyback_id');
-            $table->integer('question_id');
-            $table->integer('answer_id');
-            $table->float('value')->default(0);
-            $table->softDeletes();
-            $table->timestamps();
-        });
+//        Schema::create('buyback_answers', function (Blueprint $table) {
+//            $table->id();
+//            $table->integer('buyback_id');
+//            $table->integer('question_id');
+//            $table->integer('answer_id');
+//            $table->float('value')->default(0);
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -31,6 +31,6 @@ class CreateBuybackAnswersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('buyback_answers');
+     //   Schema::dropIfExists('buyback_answers');
     }
 }

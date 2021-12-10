@@ -13,7 +13,7 @@ class BuyBack extends Model
     protected $table = 'buybacks';
 
     protected $fillable = [
-        'buyback_user_id','imei','model_id','color_id','offer_price'
+        'buyback_user_id','imei','model_id','color_id','offer_price','status'
     ];
 
     protected $hidden = [

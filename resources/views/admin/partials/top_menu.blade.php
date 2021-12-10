@@ -11,8 +11,8 @@
                         <img src="{{url('images/img.jpg')}}" alt="">{{Session::get('name_surname')}}
                     </a>
                     <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="javascript:;"> Profil</a>
-                        <a class="dropdown-item" href="javascript:;">
+                        <a class="dropdown-item" href="{{route('admin.profile')}}"> Profil</a>
+                        <a class="dropdown-item" href="{{route('admin.settings')}}">
 
                             <span>Ayarlar</span>
                         </a>

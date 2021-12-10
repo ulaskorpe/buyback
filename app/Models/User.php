@@ -19,8 +19,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
+        'email','phone','sudo','user_group',
+        'password','group_id',
         'phone'
     ];
 
@@ -42,4 +42,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function group(){
+        return $this->hasOne(UserGroup::class,'id','group_id');
+    }
 }

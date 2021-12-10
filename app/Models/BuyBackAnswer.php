@@ -11,7 +11,7 @@ class BuyBackAnswer extends Model
     use HasFactory;
 
     use SoftDeletes;
-    protected $table = 'buybacks';
+    protected $table = 'buyback_answers';
 
     protected $fillable = [
         'buyback_id','question_id','answer_id','value'

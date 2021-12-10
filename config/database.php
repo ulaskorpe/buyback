@@ -62,7 +62,12 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-
+        'mongodb' => [
+        'driver' => 'mongodb',
+        //'dsn' => env('DB_URI', 'mongodb+srv://username:password@<atlas-cluster-uri>/myappdb?retryWrites=true&w=majority'),
+        'dsn' => env('DB_URI', 'mongodb+srv://buyback:buyback2021@cluster0.xvfam.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'),
+        'database' => 'buybackDB',
+            ],
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

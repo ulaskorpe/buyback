@@ -20,14 +20,40 @@
                         </ul>
                     </li>
 
-                @if(!empty(Session::get('sudo')))
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('users'))))
                     <li><a><i class="fa fa-users"></i> Kullanıcılar <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="#">Kullanıcı Listesi</a></li>
-                            <li><a href="#">Kullanıcı Grupları</a></li>
+                            <li><a href="{{route('users.user-list')}}">Kullanıcı Listesi</a></li>
+                            <li style="display: none"><a href="{{route('users.user-create')}}"></a></li>
+                            <li style="display: none"><a href="{{route('users.group-create')}}"></a></li>
+                            @if(!empty($user_id))
+                            <li style="display: none"><a href="{{route('users.user-update',$user_id)}}"></a></li>
+                            @endif
+                            @if(!empty($group_id))
+                                <li style="display: none"><a href="{{route('users.group-update',$group_id)}}"></a></li>
+                            @endif
+                            <li><a href="{{route('users.user-groups')}}">Kullanıcı Grupları</a></li>
                         </ul>
                     </li>
                     @endif
+
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('buyback'))))
+                        <li><a><i class="fa fa-money"></i> Geri Alım <span class="fa fa-chevron-down"></span></a>
+                            <ul class="nav child_menu">
+                                <li><a href="{{route('buyback.buyback-list')}}">Geri Alım Listesi</a></li>
+                                <li><a href="{{route('buyback.create-buyBack')}}">Geri Alım Oluştur</a>
+
+                                @if(!empty($u_id))
+                                    <li style="display: none"><a href="{{route('buyback.buyback-list',$u_id)}}"></a></li>
+                                @endif
+
+                                @if(!empty($bb_id))
+                                    <li style="display: none"><a href="{{route('buyback.buyback-update',$bb_id)}}"></a></li>
+                                @endif
+                            </ul>
+                        </li>
+                    @endif
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('system'))))
                     <li><a><i class="fa fa-edit"></i> Sistem Verileri <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('brand.brandlist')}}">Markalar</a></li>
@@ -59,6 +85,25 @@
                             @endif
                         </ul>
                     </li>
+                    @endif
+                      @if(!empty(Session::get('sudo') || !empty(Session::get('site'))))
+                    <li><a><i class="fa fa-desktop"></i> Site İçeriği <span class="fa fa-chevron-down"></span></a>
+                        <ul class="nav child_menu">
+                            <li><a href="{{route('site.slider-list')}}">Slider Listesi</a></li>
+                            <li style="display: none"><a href="{{route('site.create-slider')}}"></a></li>
+                            @if(!empty($slider_id))
+                                <li style="display: none"><a href="{{route('site.update-slider',$slider_id)}}"></a></li>
+                            @endif
+                            <li><a href="{{route('site.article-list')}}">Yazılar Listesi</a></li>
+                            <li style="display: none"><a href="{{route('site.create-article')}}"></a></li>
+                            @if(!empty($article_id))
+                                <li style="display: none"><a href="{{route('site.update-article',$article_id)}}"></a></li>
+                            @endif
+                        </ul>
+                    </li>
+                    @endif
+
+
                     <li><a><i class="fa fa-desktop"></i> UI Elements <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="general_elements.html">General Elements</a></li>

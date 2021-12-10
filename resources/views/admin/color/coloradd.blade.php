@@ -4,14 +4,14 @@
     <link href="{{url('vendors/mjolnic-bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css')}}" rel="stylesheet">
 
 @endsection
+
 @section('main')
-    <div class="content">
+
+     <div class="content">
         <div class="row">
             <div class="col-md-12">
-
-                <div class="card">
+               <div class="card">
                     <div class="card-body">
-
                         <div class="text-center">
                             <a href="{{route("color.color-list")}}">
                                 <button type="button"
@@ -213,3 +213,5 @@
         });
     </script>
 @endsection
+
+

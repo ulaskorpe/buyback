@@ -1,5 +1,6 @@
+
 <div class="table">
-    <table class="table text-center table-lg">
+    <table class="table text-center table-lg" >
         @php
 
             $radio_array=[];
@@ -7,14 +8,18 @@
         @endphp
         <tbody>
         <tr>
-            <td colspan="2">
+            <td >
                 <div class="row">
-                    <div class="col-6 text-left"><h3>{{$model['Modelname']}}</h3></div>
-                    <div class="col-6 text-left" id="total_price"><h3>{{$model['max_price']}}</h3></div>
+                    <div class="col-4 text-left"><h3>{{$model['Modelname']}}</h3></div>
 
+                    <input type="hidden" name="price" id="price" value="{{$model['max_price']}}">
                     <input type="hidden" id="max_price" name="max_price" value="{{$model['max_price']}}">
                     <input type="hidden" id="min_price" name="min_price" value="{{$model['min_price']}}">
                 </div>
+
+            </td>
+            <td>
+                <div class="col-4 text-left" id="total_price"><h3>{{$model['max_price']}} TL</h3></div>
             </td>
         </tr>
         @foreach($array as $item)
@@ -72,7 +77,8 @@
         <tr><td colspan="2">
                 <div class="row" style="margin-top: 15px">
                     <div class="col-md-12 text-center">
-                        <button class="btn btn-primary" id="calculate_btn" disabled >TEKLİF AL </button>
+
+                        <button class="btn btn-primary" id="calculate_btn"  disabled  >TEKLİF AL </button>
 
                         <button type="button"  style="display: none" id="show-lg-modal" data-toggle="modal" data-target="#lg-modal">Large modal</button>
 
@@ -86,7 +92,10 @@
         </tbody>
     </table>
 </div>
+
 <script>
+
+
     function calculateMe(selected,value,answer_id) {
         var total_minus = 0;
         var max_price= parseFloat($('#max_price').val());
@@ -110,19 +119,31 @@
             if(btn=={{$count}}){
 
                 $("#calculate_result").val(result);
+                $("#price").val(total);
                 $("#calculate_btn").prop("disabled", false);
             }
          //   console.log(total_minus+"");
     }
     $('#calculate_btn').click(function (e) {
+
         e.preventDefault();
+
+        if($('#color_id').val()==0){
+           // swal("Lütfen renk seçiniz","","error");
+            $('#color_id_error').html('<span style="color: red">Lütfen renk seçiniz</span>');
+        }else{
+            $('#color_id_error').html('');
         $('#show-lg-modal').click();
 
-        $.get( "{{url('admin/data/get-offer')}}/"+$('#model_id').val()+"/"+$('#calculate_result').val(), function( data ) {
+        $.get( "{{url('data/get-offer')}}/"+$('#model_id').val()+"/"+$('#calculate_result').val(), function( data ) {
             $( "#lg-modal-title" ).html('Teklif Sonucu');
             $( "#lg-modal-body" ).html( data );
 
         });
+        }
+
     });
 
+
 </script>
+

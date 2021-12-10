@@ -35,16 +35,16 @@
 
                     <h1>BUYBACK ADMIN</h1>
                     <div>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="Kullanıcı Email" />
+                        <input type="email" id="email" name="email" class="form-control" value="{{$email}}" placeholder="Kullanıcı Email" />
                         <span id="email_error"></span>
                     </div>
                     <div>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Şifre"  />
+                        <input type="password" id="password" name="password" value="{{$password}}" class="form-control" placeholder="Şifre"  />
                         <span id="password_error"></span>
                     </div>
                     <div style="font-size: 20px">
                         <label for="">Beni Hatırla</label>
-                        <input type="checkbox" id="remember_me" name="remember_me"  value="546546"  />
+                        <input type="checkbox" id="remember_me" name="remember_me"  @if($remember) checked @endif value="546546"  />
 
                     </div>
                     <div>

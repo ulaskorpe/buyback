@@ -16,7 +16,7 @@
 <script src="{{url('build/js/custom.js')}}"></script>
 
 <script>
-    function logout(model_question_id) {
+    function logout() {
         swal("Çıkış yapılacak, Emin misiniz?", {
             buttons: ["İptal", "Evet"],
             dangerMode: true,

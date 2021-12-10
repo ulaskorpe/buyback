@@ -18,11 +18,11 @@ class ModelQuestion extends Model
     ];
 
     public function model(){
-        return $this->hasOne(ProductModel::class,'model_id','id');
+        return $this->hasOne(ProductModel::class,'id','model_id');
     }
 
     public function question(){
-        return $this->hasOne(Question::class,'question_id','id');
+        return $this->hasOne(Question::class,'id','question_id');
     }
 
 

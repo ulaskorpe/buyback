@@ -18,7 +18,14 @@ trait ApiTrait
         return md5('garantili_crm_2021');
     }
 
-
+    /*
+     *   const taken =   0;
+    const control =   1;
+    const preparing = 2;
+    const completed = 3;
+    const rejected = 4;
+     * */
+private $buyback_status_array = [0=>'Alındı',1=>'Kontrol Ediliyor',2=>'Hazırlanıyor',3=>'Tamamlandı',4=>'İptal Edildi'];
 
     private function randomPassword($len = 16,$alphabet=0) {
         if($alphabet==1){
@@ -36,10 +43,19 @@ trait ApiTrait
         return implode($pass); //turn the array into a string
     }
 
-    private function checkUnique($field,$table,$value){
+    private function checkUnique($field,$table,$value,$id=0){
+        if($id==0){
         $ch = DB::table($table)
             ->select('id')
             ->whereRaw($field.'= ?',[$value])->first();
+
+        }else{
+            $ch = DB::table($table)
+                ->select('id')
+                ->where('id','<>',$id)
+                ->whereRaw($field.'= ?',[$value])->first();
+
+        }
         return (!empty($ch->id)) ? true:false;
     }
 
@@ -107,6 +123,10 @@ trait ApiTrait
         $tmp->title = $title;
         $tmp->data = $data;
         $tmp->save();
+    }
+
+    private function validateEmail($email){
+        return (filter_var($email, FILTER_VALIDATE_EMAIL)) ? true : false;
     }
 
 }

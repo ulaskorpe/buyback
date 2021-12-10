@@ -10,7 +10,7 @@ class Neighborhood extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table = 'districts';
+    protected $table = 'neighborhoods';
 
     protected $fillable = [
         'district_id','name'

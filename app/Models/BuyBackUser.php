@@ -10,7 +10,7 @@ class BuyBackUser extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table = 'buybacks';
+    protected $table = 'buyback_users';
 
     protected $fillable = [
         'user_id','name','surname','tckn','phone','email','city_id','town_id','district_id','neighborhood_id','address','iban','terms_of_use','campaigns'
@@ -37,7 +37,7 @@ class BuyBackUser extends Model
     public function district(){
         return $this->hasOne(District::class,'id','district_id');
     }
-    public function neighboorhood(){
+    public function neighborhood(){
         return $this->hasOne(Neighborhood::class,'id','neighborhood_id');
     }
 }
