@@ -2,6 +2,7 @@
 <form id="update-user" action="{{route('buyback.create-buyBack')}}" method="post" enctype="multipart/form-data">
     {{csrf_field()}}
     <input type="hidden" name="id" id="id" value="{{$user['id']}}">
+    <input type="hidden" name="imei_id" id="imei_id" value="{{$imei_id}}">
     <div class="row">
         @if(!empty($user['user_id']))
             <div class="col-md-12 col-sm-12  form-group has-feedback">

@@ -74,6 +74,7 @@
                     </div>
 
                 </div>
+                <input type="hidden" name="imei_id" id="imei_id">
                 <input type="hidden" name="calculate_result" id="calculate_result">
                 <div class="col-md-6 ">
 
@@ -157,31 +158,40 @@
                 swal("Lütfen IMEI Numarası giriniz", "", "error");
                 $('#imei').focus();
             } else {
+//console.log("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei);
+             //   $.get("{{url('data/check-imei')}}/" + $('#model_id').val() + "/" + imei, function (data) {
+                    $.get("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei, function (data) {
+                        console.log("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei);
+                        var parsed = JSON.parse(data);
+                        var arr = [];
+                        for (var x in parsed) {
+                            arr.push(parsed[x]);
+                        }
 
-                $.get("{{url('data/check-imei')}}/" + $('#model_id').val() + "/" + imei, function (data) {
+                        console.log(arr);
 
-                    if (data == "ok") {
-                        $.get("{{url('data/get-questions')}}/" + $('#model_id').val(), function (data) {
-                            $('#questions_div').html(data);
+                        if (arr[0] == "ok") {
+                            $.get("{{url('data/get-questions')}}/" + $('#model_id').val(), function (data) {
+                                $('#questions_div').html(data);
 
-                        });
-                    } else {
-                        swal("Geçersiz IMEI", "", "error");
-                        $('#imei').val('');
-                        $('#imei').focus();
-                    }
-                });
+                                $('#imei_id').val(arr[1]);
+                            });
+                        } else {
+                            swal("Geçersiz IMEI", "", "error");
+                            $('#imei').val('');
+                            $('#imei').focus();
+                        }
+                    });
 
             }
         }
-
+console.log("XX"+$('#imei_id').val());
 
         function get_buyer_info() {
-            $.get("{{url('data/get-buyer-info')}}/" + $('#model_id').val() + "/" + $('#calculate_result').val() + "/" + $('#price').val() + "/" + $('#imei').val() + "/" + $('#color_id').val(), function (data) {
+            $.get("{{url('data/get-buyer-info')}}/" + $('#model_id').val() + "/" + $('#calculate_result').val() + "/" + $('#price').val() + "/" + $('#imei').val() + "/" + $('#color_id').val()+"/"+$('#imei_id').val(), function (data) {
                 $('#buyer_info').html(data);
             });
         }
-
 
 
 

@@ -1,5 +1,5 @@
 function selectTown() {
-    $.get("http://buyback.test/data/get-towns/" + $('#city_id').val() , function (data) {
+    $.get("https://buyback.garantiliteknoloji.com/data/get-towns/" + $('#city_id').val() , function (data) {
         $('#town_id').html(data);
 
     });
@@ -12,7 +12,7 @@ function selectTown() {
 
 function selectDistrict( ) {
 
-    $.get("http://buyback.test/data/get-districts/" + $('#town_id').val()  , function (data) {
+    $.get("https://buyback.garantiliteknoloji.com/data/get-districts/" + $('#town_id').val()  , function (data) {
         $('#district_id').html(data);
 
     });
@@ -22,14 +22,14 @@ function selectDistrict( ) {
 }
 
 function selectNeighborhood() {
-    $.get("http://buyback.test/data/get-neighborhoods/" + $('#district_id').val()  , function (data) {
+    $.get("https://buyback.garantiliteknoloji.com/data/get-neighborhoods/" + $('#district_id').val()  , function (data) {
         $('#neighborhood_id').html(data);
     });
     $('#neighborhood_id').prop('disabled', false);
 }
 
 function getPostalCode() {
-    $.get("http://buyback.test/data/get-postalcode/" + $('#neighborhood_id').val(), function (data) {
+    $.get("https://buyback.garantiliteknoloji.com/data/get-postalcode/" + $('#neighborhood_id').val(), function (data) {
         $('#postalcode').html(data);
     });
 

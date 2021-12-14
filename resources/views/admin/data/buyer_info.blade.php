@@ -8,6 +8,7 @@
     <input type="hidden" name="offered_price" id="offered_price" value="{{$price}}">
     <input type="hidden" name="imei" id="imei" value="{{$imei}}">
     <input type="hidden" name="color_id_" id="color_id_" value="{{$color_id}}">
+    <input type="hidden" name="imei_id" id="imei_id" value="{{$imei_id}}">
     <div class="row">
     <div class="col-md-6 col-sm-6  form-group has-feedback">
         <input type="text" class="form-control has-feedback-left" name="name"  id="name" placeholder="Adınız">

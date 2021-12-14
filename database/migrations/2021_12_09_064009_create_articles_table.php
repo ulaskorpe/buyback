@@ -13,14 +13,14 @@ class CreateArticlesTable extends Migration
      */
     public function up()
     {
-        Schema::create('articles', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->string('prologue')->nullable()->default(null);
-             $table->boolean('status');
-            $table->softDeletes();
-            $table->timestamps();
-        });
+//        Schema::create('articles', function (Blueprint $table) {
+//            $table->id();
+//            $table->string('title');
+//            $table->string('prologue')->nullable()->default(null);
+//             $table->boolean('status');
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -30,6 +30,6 @@ class CreateArticlesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('articles');
+      //  Schema::dropIfExists('articles');
     }
 }

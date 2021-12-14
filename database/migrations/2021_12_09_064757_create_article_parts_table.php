@@ -13,18 +13,18 @@ class CreateArticlePartsTable extends Migration
      */
     public function up()
     {
-        Schema::create('article_parts', function (Blueprint $table) {
-            $table->id();
-            $table->integer('article_id');
-            $table->string('title')->nullable()->default(null);
-            $table->string('image')->nullable()->default(null);
-            $table->string('thumb')->nullable()->default(null);
-            $table->text('paragraph')->nullable()->default(null);
-            $table->integer('count');
-            $table->boolean('status');
-            $table->softDeletes();
-            $table->timestamps();
-        });
+//        Schema::create('article_parts', function (Blueprint $table) {
+//            $table->id();
+//            $table->integer('article_id');
+//            $table->string('title')->nullable()->default(null);
+//            $table->string('image')->nullable()->default(null);
+//            $table->string('thumb')->nullable()->default(null);
+//            $table->text('paragraph')->nullable()->default(null);
+//            $table->integer('count');
+//            $table->boolean('status');
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -34,6 +34,6 @@ class CreateArticlePartsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('article_parts');
+      //  Schema::dropIfExists('article_parts');
     }
 }

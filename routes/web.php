@@ -33,7 +33,7 @@ Route::group(['prefix'=>'data','as'=>'data.'],function (){
         ->name('get-questions');
     Route::get('/get-colors/{model_id}',[\App\Http\Controllers\DataController::class,'getColors'])->name('get-colors');
     Route::get('/get-offer/{model_id}/{answers}',[\App\Http\Controllers\DataController::class,'getOffer'])->name('get-offer');
-    Route::get('/get-buyer-info/{model_id}/{calculate_result}/{price}/{imei}/{color_id}',[\App\Http\Controllers\DataController::class,'getBuyerInfo'])->name('get-buyer-info');
+    Route::get('/get-buyer-info/{model_id}/{calculate_result}/{price}/{imei}/{color_id}/{imei_id}',[\App\Http\Controllers\DataController::class,'getBuyerInfo'])->name('get-buyer-info');
     Route::get('/get-towns/{city_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getTowns'])->name('get-towns');
     Route::get('/get-districts/{town_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getDistricts'])->name('get-districts');
     Route::get('/get-neighborhoods/{district_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getNeigborhoods'])->name('get-neighborhoods');
@@ -43,7 +43,9 @@ Route::group(['prefix'=>'data','as'=>'data.'],function (){
     Route::get('/check-phone/{phone}',[\App\Http\Controllers\DataController::class,'checkPhone'])->name('check-phone');
     Route::get('/check-iban/{iban}',[\App\Http\Controllers\DataController::class,'checkIban'])->name('check-iban');
    // Route::get('/check-imei/{model_id?}/{imei?}',[\App\Http\Controllers\DataController::class,'checkImei'])->name('check-imei');
-    Route::get('/check-imei',[\App\Http\Controllers\DataController::class,'checkImei'])->name('check-imei');
+    Route::get('/check-imei-server',[\App\Http\Controllers\DataController::class,'checkImeiServer'])->name('check-imei-server');
+    Route::get('/imei-query/{model_id}/{imei}',[\App\Http\Controllers\DataController::class,'imeiQuery'])->name('imei-query');
+    Route::get('/check-imei/{model_id}/{imei}',[\App\Http\Controllers\DataController::class,'checkImei'])->name('check-imei');
 });
 
 

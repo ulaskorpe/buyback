@@ -62,11 +62,14 @@ class BuyBackController extends Controller
 
                 $bb = new BuyBack();
                 $bb->buyback_user_id = $bbUser['id'];
+                $bb->imei_id = $request['imei_id'];
                 $bb->imei = $request['imei'];
                 $bb->model_id = $request['model_id'];
                 $bb->color_id = $request['color_id_'];
                 $bb->offer_price = $request['offered_price'];
                 $bb->save();
+
+                $this->makeTmp($request['imei_id'],$bb['id']);
 
                 $answer_array = explode('@', substr($request['answers'], 0, strlen($request['answers']) - 1));
                 $answers = Answer::whereIn('id', $answer_array)->get();

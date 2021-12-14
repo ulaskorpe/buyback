@@ -93,6 +93,7 @@
 
                     </div>
                     <input type="hidden" name="calculate_result" id="calculate_result">
+                    <input type="hidden" name="imei_id" id="imei_id">
                     <div class="col-md-6 ">
 
                         <div class="x_panel">
@@ -179,12 +180,21 @@
                 $('#imei').focus();
             } else {
 
-                $.get("{{url('data/check-imei')}}/" + $('#model_id').val() + "/" + imei, function (data) {
+           //     $.get("{{url('data/check-imei')}}/" + $('#model_id').val() + "/" + imei, function (data) {
+                $.get("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei, function (data) {
 
-                    if (data == "ok") {
+                    var parsed = JSON.parse(data);
+                    var arr = [];
+                    for (var x in parsed) {
+                        arr.push(parsed[x]);
+                    }
+
+                    console.log(arr);
+
+                    if (arr[0] == "ok") {
                         $.get("{{url('data/get-questions')}}/" + $('#model_id').val(), function (data) {
                             $('#questions_div').html(data);
-
+                            $('#imei_id').val(arr[1]);
                         });
                     } else {
                         swal("Geçersiz IMEI", "", "error");
@@ -198,7 +208,7 @@
 
 
         function get_buyer_info() {
-            $.get("{{url('data/get-buyer-info')}}/" + $('#model_id').val() + "/" + $('#calculate_result').val() + "/" + $('#price').val() + "/" + $('#imei').val() + "/" + $('#color_id').val(), function (data) {
+            $.get("{{url('data/get-buyer-info')}}/" + $('#model_id').val() + "/" + $('#calculate_result').val() + "/" + $('#price').val() + "/" + $('#imei').val() + "/" + $('#color_id').val()+"/"+$('#imei_id').val(), function (data) {
                 $('#buyer_info').html(data);
             });
         }

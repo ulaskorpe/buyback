@@ -9,6 +9,7 @@ use App\Models\City;
 use App\Models\Color;
 use App\Models\ColorModel;
 use App\Models\District;
+use App\Models\ImeiQuery;
 use App\Models\Memory;
 use App\Models\ModelAnswer;
 use App\Models\ModelQuestion;
@@ -21,6 +22,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Intervention\Image\Facades\Image;
 
 class DataController extends Controller
@@ -544,9 +546,11 @@ class DataController extends Controller
             return view('admin.data.get_offer',['txt'=>$txt,'model'=>$model]);
     }
 
-    public function getBuyerInfo($model_id,$calculate_result,$price,$imei,$color_id){
+    public function getBuyerInfo($model_id,$calculate_result,$price,$imei,$color_id,$imei_id){
+
+     //   return  $imei_id;
         return view("admin.data.buyer_info",['cities'=>City::select('id','name')->orderBy('name')->get(),
-            'model_id'=>$model_id,'result'=>$calculate_result,'price'=>$price,'imei'=>$imei,'color_id'=>$color_id]);
+            'model_id'=>$model_id,'result'=>$calculate_result,'price'=>$price,'imei'=>$imei,'color_id'=>$color_id,'imei_id'=>$imei_id]);
     }
 
     public function getTowns($city_id,$selected=0){
@@ -674,7 +678,9 @@ class DataController extends Controller
         $content = $response->getBody();
     }
 
-    public function checkImei(){
+
+
+    public function checkImeiServer(){
 //        $imei = intval($imei);
 //        if($imei < 2000000000 || $imei > 5999999999){
 //            return "no";
@@ -682,9 +688,15 @@ class DataController extends Controller
 //            return  "ok";
 //        }
 
+//Your username.
+        $username =  'ede5e6da-fe83-11eb-af7c-3b68da59d087';// 'my-trusted-client';
 
-      // $url ="https://test.mcks.gov.tr/refurbished-devices/oauth/token?grant_type=password&username=test&password=test";
-       $url ="https://test.mcks.gov.tr/refurbished-devices/oauth/token";
+//Your password.
+        $password = 'R3furbi53D12';// 'secret';
+    //   $url ="https://test.mcks.gov.tr/refurbished-devices/oauth/token?grant_type=password&username=test&password=test";
+       $url ="https://kayit.mcks.gov.tr/refurbished-devices/oauth/token?grant_type=password&username=".$username."&password=".$password;
+      // $url ="https://kayit.mcks.gov.tr/refurbished-devices/oauth/token";
+      //  $url='https://test.mcks.gov.tr/refurbished-devices/oauth/token?grant_type=password&'.$username.'=test&password='.$password;
        // $url ="https://test.mcks.gov.tr/refurbished-devices/oauth/token ";
        // $url="https://test.mcks.gov.tr/refurbished-devices/isSuitableForRefurbish/35154004770731";
       //  $url="https://test.mcks.gov.tr/refurbished-devices/oauth/token";
@@ -693,29 +705,26 @@ class DataController extends Controller
         $fields="";
     //    $url = "https://reqbin.com/echo/get/json";
 
+//$url ='https://kayit.mcks.gov.tr/refurbished-devices/oauth';
 
-
-
-
+$url ='https://test.mcks.gov.tr/refurbished-devices/oauth/token';
+$url ='https://kayit.mcks.gov.tr/refurbished-devices/oauth/token';
 
 
         //The URL of the resource that is protected by Basic HTTP Authentication.
      // $url = 'http://site.com/protected.html';
 
-//Your username.
-        $username = 'test';// 'my-trusted-client';
 
-//Your password.
-        $password ='test';// 'secret';
-        $vars = ['username'=>$username,'password'=>$password,'grant_type'=>'password'];
+        //$vars = ['username'=>$username,'password'=>$password,'grant_type'=>'password'];
+        $vars = ['username'=>'test','password'=>'test','grant_type'=>'password'];
 //Initiate cURL.
         //$ch = curl_init($url);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL,$url);
         curl_setopt($ch, CURLOPT_POST, 1);
 //Specify the username and password using the CURLOPT_USERPWD option.
-        curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,$vars);  //Post Fields
+      //  curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
+         curl_setopt($ch, CURLOPT_POSTFIELDS,$vars);  //Post Fields
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'X-Apple-Tz: 0',
@@ -728,7 +737,9 @@ class DataController extends Controller
         }
 
 //Print out the response.
-        echo $response;
+        $result =json_decode($response);
+
+        dd($result);
 
 
 //
@@ -754,4 +765,112 @@ class DataController extends Controller
 // Further processing ...
       //  dd($server_output);
     }
+
+
+
+    public function imeiQuery($model_id=0,$imei_no=0)
+    {
+
+        $url = "https://kayit.mcks.gov.tr/refurbished-devices/oauth/token";
+
+        $username="garantili";
+        $password="4r3e2w1q?";
+        $b_username="ede5e6da-fe83-11eb-af7c-3b68da59d087";
+        $b_password="R3furbi53D12.";
+
+        $payload = [
+            'username'		=> $username,
+            'password' 		=> $password,
+            'grant_type'    => 'password'
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_USERPWD, $b_username . ":" . $b_password);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+
+
+        $token=$arr_1['access_token'];
+
+
+        if ($token && $imei_no>0){
+
+//            /return $arr['access_token'];
+
+         /*   $tarih=gunceltarihsaat();
+
+            $sql="INSERT INTO
+    `btk_token`
+    (`Token`,
+    `Tarih`)
+    VALUES
+    ('$token',
+    '$tarih')";
+
+            $this->query($sql);
+
+            $s_token = "select * from btk_token order by id desc limit 1";
+            $q_token  = $this->query($s_token);
+            $b_token  = $q_token ->fetch();
+
+            $access_token=$b_token->Token;*/
+
+            $imei=$imei_no;
+
+
+            $url = "https://kayit.mcks.gov.tr/refurbished-devices/isSuitableForRefurbish/".$imei;
+
+
+            $payload = [
+                'access_token'		=> $token
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+            $output = curl_exec($ch);
+
+            curl_close($ch);
+
+            $arr = json_decode($output, TRUE);
+            $imei_btk=$arr['imei'];
+            $responseCode=$arr['responseCode'];
+            $responseMessage=$arr['responseMessage'];
+
+            $imei_query= new ImeiQuery();
+            $imei_query->imei = $imei_no;
+            $imei_query->user_id = (!empty(Session::get('admin_id')))?Session::get('admin_id'):0;
+            $imei_query->model_id = $model_id;
+            $imei_query->result =$responseCode;
+            $imei_query->token = $arr_1['access_token'];
+            $imei_query->token_type = $arr_1['token_type'];
+            $imei_query->scope = $arr_1['scope'];
+            $imei_query->ip_address = $_SERVER['REMOTE_ADDR'];
+            $imei_query->save();
+
+
+         //0   return ($responseCode==1)?"ok":"no";
+
+        //    return ['hafıza tipi güncellendi', 'success', route('memory.memorylist'), '', ''];
+if($responseCode==1){
+    $resultArray=['ok', $imei_query['id']];
+}else{
+    $resultArray=['none', $imei_query['id']];
+}
+        return json_encode($resultArray);
+
+        }else{
+            return 0 ;
+        }
+    }
+
 }

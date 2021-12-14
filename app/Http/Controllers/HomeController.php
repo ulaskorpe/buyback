@@ -77,7 +77,7 @@ class HomeController extends Controller
    "body" :"Lorem Ipsum, etc.",
    "slug" :"first-blog-post"
 }';
-            $log->save();
+            //$log->save();
         }
 
          return Log::all();
@@ -184,6 +184,7 @@ class HomeController extends Controller
 
                 $bb = new BuyBack();
                 $bb->buyback_user_id = $bbUser['id'];
+                $bb->imei_id =(!empty($request['imei_id']))? $request['imei_id']:0;
                 $bb->imei = $request['imei'];
                 $bb->model_id = $request['model_id'];
                 $bb->color_id = $request['color_id_'];

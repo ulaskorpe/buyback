@@ -13,7 +13,7 @@ class BuyBack extends Model
     protected $table = 'buybacks';
 
     protected $fillable = [
-        'buyback_user_id','imei','model_id','color_id','offer_price','status'
+        'buyback_user_id','imei_id','imei','model_id','color_id','offer_price','status'
     ];
 
     protected $hidden = [
@@ -31,5 +31,8 @@ class BuyBack extends Model
         return $this->hasOne(Color::class,'id','color_id');
     }
 
+    public function imei_query(){
+        return $this->hasOne(ImeiQuery::class,'id','imei_id');
+    }
 
 }
