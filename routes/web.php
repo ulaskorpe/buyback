@@ -86,7 +86,34 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::post('/create-post',[\App\Http\Controllers\SiteController::class,'createSliderPost'])->name('create-slider-post');
             Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateSlider'])->name('update-slider');
             Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateSliderPost'])->name('update-slider-post');
+
+
         });
+
+        Route::group(['prefix'=>'settings'],function (){
+        Route::get('/site-settings',[\App\Http\Controllers\SiteController::class,'siteSettings'])->name('site-settings');
+        Route::get('/create-setting',[\App\Http\Controllers\SiteController::class,'createSetting'])->name('create-setting');
+        Route::post('/create-setting-post',[\App\Http\Controllers\SiteController::class,'createSettingPost'])->name('create-setting-post');
+            Route::get('/update-setting/{id}',[\App\Http\Controllers\SiteController::class,'updateSetting'])->name('update-setting');
+            Route::post('/update-setting-post',[\App\Http\Controllers\SiteController::class,'updateSettingPost'])->name('update-setting-post');
+        });
+
+        Route::group(['prefix'=>'menu'],function (){
+            Route::get('/menu-list',[\App\Http\Controllers\SiteController::class,'menuList'])->name('menu-list');
+            Route::get('/create-menu-item',[\App\Http\Controllers\SiteController::class,'createMenu'])->name('create-menu');
+            Route::post('/create-menu-item-post',[\App\Http\Controllers\SiteController::class,'createMenuPost'])->name('create-menu-post');
+            Route::get('/update-menu-item/{id}',[\App\Http\Controllers\SiteController::class,'updateMenu'])->name('update-menu');
+            Route::post('/update-menu-item-post',[\App\Http\Controllers\SiteController::class,'updateMenuPost'])->name('update-menu-post');
+            Route::get('/get-menu-count/{location}/{add?}/{selected?}',[\App\Http\Controllers\SiteController::class,'getMenuCount'])->name('get-menu-count');
+
+            Route::get('/create-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'createSubMenu'])->name('create-sub-menu');
+            Route::post('/create-sub-menu-item-post',[\App\Http\Controllers\SiteController::class,'createSubMenuPost'])->name('create-sub-menu-post');
+
+            Route::get('/update-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'updateSubMenu'])->name('update-sub-menu');
+            Route::post('/update-sub-menu-item-post',[\App\Http\Controllers\SiteController::class,'updateSubMenuPost'])->name('update-sub-menu-post');
+            Route::get('/delete-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'deleteSubMenu'])->name('delete-sub-menu');
+        });
+
 
         Route::group(['prefix'=>'articles'],function (){
             Route::get('/list',[\App\Http\Controllers\ArticleController::class,'articleList'])->name('article-list');

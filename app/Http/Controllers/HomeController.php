@@ -208,6 +208,7 @@ class HomeController extends Controller
                 if(empty(Session::get('admin_id'))){
                     return ['Alım Talebi Eklendi', 'success', route('index'), '', ''];
                 }else{
+
                     return ['Alım Talebi Eklendi', 'success', route('buyback.buyback-list'), '', ''];
                 }
 

@@ -2,7 +2,9 @@
 <form id="update-user" action="{{route('buyback.create-buyBack')}}" method="post" enctype="multipart/form-data">
     {{csrf_field()}}
     <input type="hidden" name="id" id="id" value="{{$user['id']}}">
+    @if(!empty($imei_id))
     <input type="hidden" name="imei_id" id="imei_id" value="{{$imei_id}}">
+    @endif
     <div class="row">
         @if(!empty($user['user_id']))
             <div class="col-md-12 col-sm-12  form-group has-feedback">
@@ -195,6 +197,7 @@
                     $('#email_error').html('<span style="color: red">Geçersiz Eposta</span>');
                     $('#email').val('');
                     error = true;
+                    return false;
                 }else{
                     $('#email_error').html('');
                 }
@@ -213,6 +216,7 @@
                     $('#phone_error').html('<span style="color: red">Geçersiz Telefon numarası</span>');
                     $('#phone').val('');
                     error = true;
+                    return false;
                 }else{
                     $('#phone_error').html('');
                 }
@@ -233,6 +237,7 @@
                     $('#tckn_error').html('<span style="color: red">Geçersiz TCKN numarası</span>');
                     $('#tckn').val('');
                     error = true;
+                    return false;
                 }else{
                     $('#tckn_error').html('');
                 }
@@ -251,6 +256,7 @@
                     $('#iban_error').html('<span style="color: red">Geçersiz IBAN numarası</span>');
                     $('#iban').val('');
                     error = true;
+                    return false;
                 }else{
                     $('#iban_error').html('');
                 }
@@ -297,8 +303,9 @@
         if(error){
             return false;
         }else{
-
-
+            $('#iban_error').html('');
+            $('#tckn_error').html('');
+            $('#phone_error').html('');
                 save(formData, '{{route('buyback.update-user')}}', '', '','');
 
 

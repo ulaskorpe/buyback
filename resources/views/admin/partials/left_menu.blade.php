@@ -89,6 +89,16 @@
                       @if(!empty(Session::get('sudo') || !empty(Session::get('site'))))
                     <li><a><i class="fa fa-desktop"></i> Site İçeriği <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
+                            <li><a href="{{route('site.site-settings')}}">Site Ayarları</a></li>
+                            <li style="display: none"><a href="{{route('site.create-setting')}}"></a></li>
+                            @if(!empty($setting_id))
+                                <li style="display: none"><a href="{{route('site.setting-update',$setting_id)}}"></a></li>
+                            @endif
+                            <li><a href="{{route('site.menu-list')}}">Menu Bağlantıları</a></li>
+                            <li style="display: none"><a href="{{route('site.create-menu')}}"></a></li>
+                            @if(!empty($menu_id))
+                                <li style="display: none"><a href="{{route('site.update-menu',$menu_id)}}"></a></li>
+                            @endif
                             <li><a href="{{route('site.slider-list')}}">Slider Listesi</a></li>
                             <li style="display: none"><a href="{{route('site.create-slider')}}"></a></li>
                             @if(!empty($slider_id))
@@ -99,6 +109,7 @@
                             @if(!empty($article_id))
                                 <li style="display: none"><a href="{{route('site.update-article',$article_id)}}"></a></li>
                             @endif
+
                         </ul>
                     </li>
                     @endif

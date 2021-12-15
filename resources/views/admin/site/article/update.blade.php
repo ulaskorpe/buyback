@@ -68,6 +68,7 @@
                 </div>
             </div>
         </div>
+        <br>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -126,9 +127,26 @@
 
 @endsection
 @section('scripts')
+    <script src="{{url('vendors/datatables.net/js/jquery.dataTables.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-bs/js/dataTables.bootstrap.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-buttons/js/dataTables.buttons.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-buttons/js/buttons.flash.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-buttons/js/buttons.html5.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-buttons/js/buttons.print.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-keytable/js/dataTables.keyTable.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-responsive/js/dataTables.responsive.min.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js')}}"></script>
+    <script src="{{url('vendors/datatables.net-scroller/js/dataTables.scroller.min.js')}}"></script>
     <script src="{{url("js/save.js")}}"></script>
     <script src="{{url('vendors/switchery/dist/switchery.js')}}"></script>
     <script>
+
+        $(document).ready(function () {
+            init_DataTables();
+        });
+
         function createPart(){
             $('#show-lg-modal').click();
             $.get( "{{url('admin/site/articles/create-part/')}}/"+"{{$article['id']}}", function( data ) {

@@ -13,19 +13,19 @@ class CreateImeiQueriesTable extends Migration
      */
     public function up()
     {
-        Schema::create('imei_queries', function (Blueprint $table) {
-            $table->id();
-            $table->string('imei');
-            $table->integer('user_id')->default(0);
-            $table->integer('model_id')->default(0);
-            $table->boolean('result')->default(0);
-            $table->string('token',100);
-            $table->string('token_type',25);
-            $table->string('scope',100);
-            $table->string('ip_address',50);
-            $table->softDeletes();
-            $table->timestamps();
-        });
+//        Schema::create('imei_queries', function (Blueprint $table) {
+//            $table->id();
+//            $table->string('imei');
+//            $table->integer('user_id')->default(0);
+//            $table->integer('model_id')->default(0);
+//            $table->boolean('result')->default(0);
+//            $table->string('token',100);
+//            $table->string('token_type',25);
+//            $table->string('scope',100);
+//            $table->string('ip_address',50);
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -35,6 +35,6 @@ class CreateImeiQueriesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('imei_queries');
+      //  Schema::dropIfExists('imei_queries');
     }
 }
