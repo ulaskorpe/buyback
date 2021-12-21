@@ -436,14 +436,24 @@ class DataController extends Controller
         return (empty($ch['id'])) ? "ok":"";
     }
 
-    public function getModels($brand_id){
+    public function getModels($brand_id,$selected=0){
         $models = ProductModel::where('Brandid','=',$brand_id)->orderBy('Modelname')->get();
         if(count($models)>0){
 
         $txt="<option value='0'>Seçiniz</option>";
-        foreach ($models as $model){
-            $txt.="<option value='".$model['id']."'>".$model['Modelname']."</option>";
+        if($selected==0){
+            foreach ($models as $model){
+                $txt.="<option value='".$model['id']."'>".$model['Modelname']."</option>";
+            }
+        }else{
+            foreach ($models as $model)
+                if($model['id']==$selected){
+                $txt.="<option value='".$model['id']."' selected>".$model['Modelname']."</option>";
+                }else{
+                    $txt.="<option value='".$model['id']."'>".$model['Modelname']."</option>";
+                }
         }
+
         return $txt;
         }else{
             return  "none";

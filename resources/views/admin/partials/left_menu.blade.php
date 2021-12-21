@@ -99,6 +99,13 @@
                             @if(!empty($menu_id))
                                 <li style="display: none"><a href="{{route('site.update-menu',$menu_id)}}"></a></li>
                             @endif
+
+                            <li><a href="{{route('site.area-list')}}">Alan Listesi</a></li>
+                            <li style="display: none"><a href="{{route('site.create-area')}}"></a></li>
+                            @if(!empty($area_id))
+                                <li style="display: none"><a href="{{route('site.update-area',$area_id)}}"></a></li>
+                            @endif
+
                             <li><a href="{{route('site.slider-list')}}">Slider Listesi</a></li>
                             <li style="display: none"><a href="{{route('site.create-slider')}}"></a></li>
                             @if(!empty($slider_id))
@@ -109,7 +116,22 @@
                             @if(!empty($article_id))
                                 <li style="display: none"><a href="{{route('site.update-article',$article_id)}}"></a></li>
                             @endif
+                            <li><a href="{{route('site.product-list')}}">Ürünler</a></li>
 
+                            @if(!empty($model_id))
+                                <li style="display: none"><a href="{{route('site.product-list',[$brand_id,$model_id])}}"></a></li>
+                                @endif
+                            @if(!empty($brand_id))
+                                <li style="display: none"><a href="{{route('site.product-list',[$brand_id,$model_id])}}"></a></li>
+                            @endif
+                            <li style="display: none"><a href="{{route('site.create-product')}}"></a></li>
+                            @if(!empty($product_id))
+                                <li style="display: none"><a href="{{route('site.update-product',$product_id)}}"></a></li>
+                                @if(!empty($selected))
+                                    <li style="display: none"><a href="{{route('site.update-product',[$product_id,$selected])}}"></a></li>
+
+                                @endif
+                            @endif
                         </ul>
                     </li>
                     @endif

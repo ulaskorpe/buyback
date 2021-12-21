@@ -28,7 +28,7 @@ Route::get('/check_image/{image}',[\App\Http\Controllers\HomeController::class,'
 Route::post('/create-buyback-post',[\App\Http\Controllers\HomeController::class,'createBuyBackPost'])->name('create-buyBack-post');
 
 Route::group(['prefix'=>'data','as'=>'data.'],function (){
-    Route::get('/get-models/{brand_id}',[\App\Http\Controllers\DataController::class,'getModels'])->name('get-models');
+    Route::get('/get-models/{brand_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getModels'])->name('get-models');
     Route::get('/get-questions/{model_id}/{model_answer_array?}/{buyback_id?}',[\App\Http\Controllers\DataController::class,'getQuestions'])
         ->name('get-questions');
     Route::get('/get-colors/{model_id}',[\App\Http\Controllers\DataController::class,'getColors'])->name('get-colors');
@@ -86,10 +86,30 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::post('/create-post',[\App\Http\Controllers\SiteController::class,'createSliderPost'])->name('create-slider-post');
             Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateSlider'])->name('update-slider');
             Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateSliderPost'])->name('update-slider-post');
+        });
+        Route::group(['prefix'=>'product'],function (){
+            Route::get('/list/{brand_id?}/{model_id?}',[\App\Http\Controllers\ProductController::class,'productList'])->name('product-list');
+            Route::get('/create',[\App\Http\Controllers\ProductController::class,'createProduct'])->name('create-product');
+            Route::post('/create-post',[\App\Http\Controllers\ProductController::class,'createProductPost'])->name('create-product-post');
+            Route::get('/get-colors/{model_id}',[\App\Http\Controllers\ProductController::class,'getColors'])->name('get-colors');
+            Route::get('/update/{id}/{selected?}',[\App\Http\Controllers\ProductController::class,'updateProduct'])->name('update-product');
+            Route::post('/update-post',[\App\Http\Controllers\ProductController::class,'updateProductPost'])->name('update-product-post');
+            Route::post('/add-product-image-post',[\App\Http\Controllers\ProductController::class,'addImage'])->name('add-product-image-post');
 
+            Route::get('/change-image-order/{order}/{image_id}',[\App\Http\Controllers\ProductController::class,'changeImageOrder'])->name('change-image-order');
+            Route::get('/change-first/{image_id}',[\App\Http\Controllers\ProductController::class,'changeFirst'])->name('change-first');
+            Route::get('/delete-image/{image_id}',[\App\Http\Controllers\ProductController::class,'deleteImage'])->name('delete-image');
+
+            Route::get('/get-location-order/{product_id}/{location_id}',[\App\Http\Controllers\ProductController::class,'getLocationOrder'])->name('get-location-order');
+            Route::get('/get-locations/{product_id}',[\App\Http\Controllers\ProductController::class,'getLocations'])->name('get-locations');
+            Route::get('/location-delete/{location_id}',[\App\Http\Controllers\ProductController::class,'locationOrder'])->name('location-delete');
+            Route::get('/reorder-location/{location_id}/{product_id}/{order}',[\App\Http\Controllers\ProductController::class,'locationOrder'])
+                ->name('reorder-location');
+            Route::post('/add-product-location',[\App\Http\Controllers\ProductController::class,'addLocation'])->name('add-product-location-post');
+            Route::get('/delete-product-location/{location_id}',[\App\Http\Controllers\ProductController::class,'deleteLocation'])->name('delete-product-location');
+            Route::get('/change-product-location-order/{location_id}/{new_order}',[\App\Http\Controllers\ProductController::class,'changeLocationOrder'])->name('change-product-location-order');
 
         });
-
         Route::group(['prefix'=>'settings'],function (){
         Route::get('/site-settings',[\App\Http\Controllers\SiteController::class,'siteSettings'])->name('site-settings');
         Route::get('/create-setting',[\App\Http\Controllers\SiteController::class,'createSetting'])->name('create-setting');
@@ -114,6 +134,15 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::get('/delete-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'deleteSubMenu'])->name('delete-sub-menu');
         });
 
+        Route::group(['prefix'=>'area'],function (){
+            Route::get('/list',[\App\Http\Controllers\SiteController::class,'areaList'])->name('area-list');
+            Route::get('/create',[\App\Http\Controllers\SiteController::class,'createArea'])->name('create-area');
+            Route::post('/create-post',[\App\Http\Controllers\SiteController::class,'createAreaPost'])->name('create-area-post');
+            Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateArea'])->name('update-area');
+            Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateAreaPost'])->name('update-area-post');
+
+
+        });
 
         Route::group(['prefix'=>'articles'],function (){
             Route::get('/list',[\App\Http\Controllers\ArticleController::class,'articleList'])->name('article-list');

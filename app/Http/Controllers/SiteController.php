@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\MenuLocations;
 use App\Http\Controllers\Helpers\GeneralHelper;
+use App\Models\Area;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
 use App\Models\SiteSetting;
@@ -538,6 +539,123 @@ class SiteController extends Controller
             ->decrement('order');
         $sub->delete();
         return "Alt bağlantı silindi";
+    }
+
+
+    public  function areaList(){
+
+        return view('admin.site.area.list',['areas'=>Area::all()]);
+    }
+
+    public function createArea(){
+
+
+        return view('admin.site.area.create');
+    }
+
+    public function createAreaPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $area= new Area();
+                $area->title = $request['title'];
+                $area->txt_1 = (!empty($request['txt_1']))?$request['txt_1']:'';
+                $area->txt_2 = (!empty($request['txt_2']))?$request['txt_2']:'';
+                $area->link = (!empty($request['link']))?$request['link']:'';
+                $area->status = (!empty($request['status']))?1:0;
+                $file = $request->file('area');
+                if (!empty($file)) {
+
+                    $filename = GeneralHelper::fixName($request['title']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    $path = public_path("images/area");
+                    $th = GeneralHelper::fixName($request['title']) . "TH_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+                    $file = $request->file('area');
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $img->resize(150, 150, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $th);
+                    $area->image = "images/area/" . $filename;
+                    $area->thumb = "images/area/" . $th;
+                }
+
+                $area->save();
+
+
+
+
+
+                return ['yeni ALAN eklendi', 'success', route('site.area-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateAreaPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $area= Area::find($request['id']);
+                $area->title = $request['title'];
+                $area->txt_1 = (!empty($request['txt_1']))?$request['txt_1']:'';
+                $area->txt_2 = (!empty($request['txt_2']))?$request['txt_2']:'';
+                $area->link = (!empty($request['link']))?$request['link']:'';
+                $area->status = (!empty($request['status']))?1:0;
+                $file = $request->file('area');
+                if (!empty($file)) {
+
+                    $filename = GeneralHelper::fixName($request['title']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    $path = public_path("images/area");
+                    $th = GeneralHelper::fixName($request['title']) . "TH_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+                    $file = $request->file('area');
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $img->resize(150, 150, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $th);
+                    $area->image = "images/area/" . $filename;
+                    $area->thumb = "images/area/" . $th;
+                }
+
+                $area->save();
+
+
+
+
+
+                return ['ALAN Güncelendi', 'success', route('site.area-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+
+
+    public function updateArea($id){
+
+        return view('admin.site.area.update',['area'=>Area::find($id),'area_id'=>$id]);
     }
 
 }
