@@ -59,7 +59,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
     Route::post('/settings-update',[\App\Http\Controllers\AdminController::class,'settingsPost'])->name('settings-update');
     Route::post('/logout',[\App\Http\Controllers\AdminController::class,'logout'])->name('logout');
 
-    Route::group(['prefix'=>'users','as'=>'users.'],function (){
+
+    Route::group(['middleware'=>\App\Http\Middleware\userAuth::class,'prefix'=>'users','as'=>'users.'],function (){
         Route::get('/user-list',[\App\Http\Controllers\UserController::class,'userList'])->name('user-list');
         Route::get('/create',[\App\Http\Controllers\UserController::class,'create'])->name('user-create');
         Route::post('/create',[\App\Http\Controllers\UserController::class,'createPost'])->name('user-create-post');
@@ -79,7 +80,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
     });
 
-    Route::group(['prefix'=>'site','as'=>'site.'],function (){
+
+    Route::group(['middleware'=>\App\Http\Middleware\siteAuth::class,'prefix'=>'site','as'=>'site.'],function (){
         Route::group(['prefix'=>'slider'],function (){
             Route::get('/list',[\App\Http\Controllers\SiteController::class,'sliderList'])->name('slider-list');
             Route::get('/create',[\App\Http\Controllers\SiteController::class,'createSlider'])->name('create-slider');
@@ -159,7 +161,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         });
 
     });
-    Route::group(['prefix'=>'buyback','as'=>'buyback.'],function (){
+
+    Route::group(['middleware'=>\App\Http\Middleware\buybackAuth::class,'prefix'=>'buyback','as'=>'buyback.'],function (){
         Route::get('/create',[\App\Http\Controllers\BuyBackController::class,'createBuyBack'])->name('create-buyBack');
         Route::post('/create',[\App\Http\Controllers\BuyBackController::class,'createBuyBackPost'])->name('create-buyBack-post');
         Route::get('/list/{user_id?}',[\App\Http\Controllers\BuyBackController::class,'buybackList'])->name('buyback-list');
@@ -170,8 +173,10 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/user-info/{user_id}',[\App\Http\Controllers\BuyBackController::class,'userInfo'])->name('user-info');
     });
 
+    Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class],function (){
+
     Route::group(['prefix'=>'brand','as'=>'brand.'],function (){
-    Route::get('/list',[\App\Http\Controllers\DataController::class,'brandlist'])->name('brandlist');
+        Route::get('/list',[\App\Http\Controllers\DataController::class,'brandlist'])->name('brandlist');
     Route::get('/add',[\App\Http\Controllers\DataController::class,'brandadd'])->name('brandadd');
     Route::post('/add-post',[\App\Http\Controllers\DataController::class,'brandaddPost'])->name('brandadd-post');
     Route::get('/update/{id}',[\App\Http\Controllers\DataController::class,'brandupdate'])->name('brandupdate');
@@ -220,6 +225,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::post('/update-post',[\App\Http\Controllers\DataController::class,'memoryupdatePost'])->name('memoryupdate-post');
         Route::get('/update/{id}',[\App\Http\Controllers\DataController::class,'memoryupdate'])->name('memoryupdate');
         Route::get('/check-memory/{val}/{id?}',[\App\Http\Controllers\DataController::class,'checkMemory'])->name('check-memory');
+
+    });
 
     });
 

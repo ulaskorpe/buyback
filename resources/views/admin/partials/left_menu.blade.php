@@ -20,7 +20,7 @@
                         </ul>
                     </li>
 
-                    @if(!empty(Session::get('sudo') || !empty(Session::get('users'))))
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['users'])))
                     <li><a><i class="fa fa-users"></i> Kullanıcılar <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('users.user-list')}}">Kullanıcı Listesi</a></li>
@@ -37,7 +37,7 @@
                     </li>
                     @endif
 
-                    @if(!empty(Session::get('sudo') || !empty(Session::get('buyback'))))
+                    @if(!empty(Session::get('sudo') || !!empty(Session::get('auth_array')['buybacks'])))
                         <li><a><i class="fa fa-money"></i> Geri Alım <span class="fa fa-chevron-down"></span></a>
                             <ul class="nav child_menu">
                                 <li><a href="{{route('buyback.buyback-list')}}">Geri Alım Listesi</a></li>
@@ -53,7 +53,7 @@
                             </ul>
                         </li>
                     @endif
-                    @if(!empty(Session::get('sudo') || !empty(Session::get('system'))))
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['system'])))
                     <li><a><i class="fa fa-edit"></i> Sistem Verileri <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('brand.brandlist')}}">Markalar</a></li>
@@ -86,7 +86,7 @@
                         </ul>
                     </li>
                     @endif
-                      @if(!empty(Session::get('sudo') || !empty(Session::get('site'))))
+                      @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['site'])))
                     <li><a><i class="fa fa-desktop"></i> Site İçeriği <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('site.site-settings')}}">Site Ayarları</a></li>

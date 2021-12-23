@@ -16,8 +16,13 @@ use Illuminate\Support\Facades\Session;
 class AdminController extends Controller
 {
     use ApiTrait;
-    public function index(){
 
+    public function __construct()
+    {
+
+    }
+    public function index(){
+       // return Session::get('auth_array');
         //return BuyBackTypes::asArray();
         //for($i=0;$i<10;$i++){
         $models = ProductModel::whereIn('id',BuyBack::distinct('model_id')->pluck('model_id')->toArray())->get();
@@ -45,6 +50,7 @@ class AdminController extends Controller
         Session::put('admin_id',null);
         Session::put('name_surname',null);
         Session::put('sudo',null);
+        Session::put('auth_array',null);
         //     Session::put('Userget',null);
         return redirect(route('index'));
     }

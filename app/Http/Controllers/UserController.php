@@ -9,12 +9,24 @@ use App\Models\UserGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
     use ApiTrait;
+
+
+
+    public function __construct()
+    {
+    }
+
+
     public function userList(){
-        return view('admin.users.list',['users'=>User::with('group')->get()]);
+
+        return view('admin.users.list', ['users' => User::with('group')->get()]);
+
+
     }
 
     public function create(){

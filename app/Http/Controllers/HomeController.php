@@ -18,6 +18,7 @@ use App\Models\ProductBrand;
 use App\Models\ProductModel;
 use App\Models\Town;
 use App\Models\User;
+use App\Models\UserGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,7 @@ class HomeController extends Controller
 //            $this->makeTmp($this->randomPassword(16,1),rand(100,85555));
 //        }
 
-
+//return  Session::get('auth_array');
 
          return view('index',['brands'=>ProductBrand::all()]);
       //  return redirect(route('admin.index'));
@@ -103,6 +104,15 @@ class HomeController extends Controller
                     Session::put('admin_id',$check['id']);
                     Session::put('name_surname',$check['name']." ".$check['surname']);
                     Session::put('sudo',$check['sudo']);
+                    if($check['group_id']>0){
+                    $auth = UserGroup::find($check['group_id']);
+
+
+                    Session::put('auth_array',['buyback'=>$auth['buybacks'],'users'=>$auth['users'],'system'=>$auth['system'],'site'=>$auth['site']]);
+
+                  //  return  Session::get('auth_array');
+                    }
+
 
 
                     if(!empty($request['remember_me']))
@@ -113,7 +123,7 @@ class HomeController extends Controller
                         Cookie::queue("remember",true,120);
                     }
 
-                    return ['Giriş Başarılı', 'success', route('admin.index'), '', ''];
+                    return [ 'Giriş Başarılı', 'success', route('admin.index'), '', ''];
                 }else{
                     return ['Kullanıcı bulunamadı', 'error', route('admin.index'), '', ''];
 
