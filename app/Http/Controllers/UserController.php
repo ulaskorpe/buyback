@@ -96,6 +96,8 @@ class UserController extends Controller
                 $g->users = (!empty($request['users'])) ?1:0;
                 $g->buybacks = (!empty($request['buybacks'])) ?1:0;
                 $g->system = (!empty($request['system'])) ?1:0;
+                $g->site = (!empty($request['site'])) ?1:0;
+
                 $g->status = (!empty($request['status'])) ?1:0;
                 $g->save();
 
@@ -118,6 +120,7 @@ class UserController extends Controller
                 $g->users = (!empty($request['users'])) ?1:0;
                 $g->buybacks = (!empty($request['buybacks'])) ?1:0;
                 $g->system = (!empty($request['system'])) ?1:0;
+                $g->site = (!empty($request['site'])) ?1:0;
                 $g->status = (!empty($request['status'])) ?1:0;
                 $g->save();
 

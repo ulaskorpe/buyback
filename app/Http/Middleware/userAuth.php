@@ -16,8 +16,8 @@ class userAuth
      */
     public function handle(Request $request, Closure $next)
     {
-
-        if(empty($request->session()->get('auth_array')['users'] ) ){
+        if(empty($request->session()->get('auth_array')['users'] ) && empty($request->session()->get('sudo'))){
+       
             return redirect('/admin');
 
         }

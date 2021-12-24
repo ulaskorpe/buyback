@@ -18,7 +18,7 @@ class buybackAuth
     {
 
 
-        if(empty($request->session()->get('auth_array')['buyback'] ) ){
+        if(empty($request->session()->get('auth_array')['buyback'] ) && empty($request->session()->get('sudo'))){
             return redirect('/admin');
 
         }

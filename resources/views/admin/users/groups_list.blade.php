@@ -31,6 +31,7 @@
                             <th>Kullanıcılar</th>
                             <th>Geri Alımlar</th>
                             <th>Sistem</th>
+                            <th>Site</th>
                             <th>Durum</th>
 
                             <th class="text-center">İşlemler</th>
@@ -62,7 +63,13 @@
                                         <i class="fa fa-close"></i>
                                     @endif
                                 </td>
-
+                                <td>
+                                    @if($group['site']==1)
+                                        <i class="fa fa-check"></i>
+                                    @else
+                                        <i class="fa fa-close"></i>
+                                    @endif
+                                </td>
                                 <td>
 
 

@@ -21,7 +21,7 @@
                     </li>
 
                     @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['users'])))
-                    <li><a><i class="fa fa-users"></i> Kullanıcılar <span class="fa fa-chevron-down"></span></a>
+                    <li><a><i class="fa fa-users"></i>  Kullanıcılar <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('users.user-list')}}">Kullanıcı Listesi</a></li>
                             <li style="display: none"><a href="{{route('users.user-create')}}"></a></li>

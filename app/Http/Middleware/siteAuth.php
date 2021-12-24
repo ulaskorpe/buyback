@@ -16,7 +16,8 @@ class siteAuth
      */
     public function handle(Request $request, Closure $next)
     {
-        if(empty($request->session()->get('auth_array')['site'] ) ){
+        if(empty($request->session()->get('auth_array')['site'] ) && empty($request->session()->get('sudo'))){
+
             return redirect('/admin');
 
         }
