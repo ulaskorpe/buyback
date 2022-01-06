@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bbafbed50d01fa085804ac171d0406ea",
+    "content-hash": "b301f52159860e0408679984b9125f8a",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -146,6 +146,46 @@
             "time": "2021-11-16T10:29:06+00:00"
         },
         {
+            "name": "bluntk/gittigidiyor",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kivancagaogluu/gittigidiyor.git",
+                "reference": "9a83ca5944b2225a996ced23a6b7deee3b3ac153"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kivancagaogluu/gittigidiyor/zipball/9a83ca5944b2225a996ced23a6b7deee3b3ac153",
+                "reference": "9a83ca5944b2225a996ced23a6b7deee3b3ac153",
+                "shasum": ""
+            },
+            "require": {
+                "digitickets/lalit": "^3.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "bluntk\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kıvanç Ağoağlu",
+                    "email": "kivancagaoglu@outlook.com.tr"
+                }
+            ],
+            "description": "Gittigidiyor PHP API",
+            "support": {
+                "issues": "https://github.com/kivancagaogluu/gittigidiyor/issues",
+                "source": "https://github.com/kivancagaogluu/gittigidiyor/tree/1.1"
+            },
+            "time": "2021-07-28T19:32:32+00:00"
+        },
+        {
             "name": "brick/math",
             "version": "0.9.3",
             "source": {
@@ -279,6 +319,60 @@
                 "source": "https://github.com/dflydev/dflydev-dot-access-data/tree/v3.0.1"
             },
             "time": "2021-08-13T13:06:58+00:00"
+        },
+        {
+            "name": "digitickets/lalit",
+            "version": "3.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/digitickets/lalit.git",
+                "reference": "b8588ce8c1c744929b52f10c8b752fc27952fde8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/digitickets/lalit/zipball/b8588ce8c1c744929b52f10c8b752fc27952fde8",
+                "reference": "b8588ce8c1c744929b52f10c8b752fc27952fde8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "php": ">=7"
+            },
+            "require-dev": {
+                "mockery/mockery": "^0",
+                "phpunit/phpunit": "^6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "LaLit\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache License 2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Lalit Patel",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Richard Quadling",
+                    "role": "Developer"
+                }
+            ],
+            "description": "GitHub copy of LaLit's XML2Array and Array2XML",
+            "homepage": "http://www.lalit.org/lab",
+            "keywords": [
+                "array",
+                "xml"
+            ],
+            "support": {
+                "issues": "https://github.com/digitickets/lalit/issues",
+                "source": "https://github.com/digitickets/lalit/tree/master"
+            },
+            "time": "2019-02-01T14:36:07+00:00"
         },
         {
             "name": "doctrine/inflector",

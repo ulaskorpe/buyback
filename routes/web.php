@@ -26,9 +26,10 @@ Route::post('/login',[\App\Http\Controllers\HomeController::class,'loginPost'])-
 
 Route::get('/check_image/{image}',[\App\Http\Controllers\HomeController::class,'checkImage'])->name('answers-order');
 Route::post('/create-buyback-post',[\App\Http\Controllers\HomeController::class,'createBuyBackPost'])->name('create-buyBack-post');
-
+Route::get('/get-category/{model_id}',[\App\Http\Controllers\ProductController::class,'getCategory'])->name('get-category');
 Route::group(['prefix'=>'data','as'=>'data.'],function (){
     Route::get('/get-models/{brand_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getModels'])->name('get-models');
+    Route::get('/get-brands/{selected?}',[\App\Http\Controllers\DataController::class,'getBrands'])->name('get-brands');
     Route::get('/get-questions/{model_id}/{model_answer_array?}/{buyback_id?}',[\App\Http\Controllers\DataController::class,'getQuestions'])
         ->name('get-questions');
     Route::get('/get-colors/{model_id}',[\App\Http\Controllers\DataController::class,'getColors'])->name('get-colors');
@@ -90,26 +91,17 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateSliderPost'])->name('update-slider-post');
         });
         Route::group(['prefix'=>'product'],function (){
-            Route::get('/list/{brand_id?}/{model_id?}',[\App\Http\Controllers\ProductController::class,'productList'])->name('product-list');
-            Route::get('/create',[\App\Http\Controllers\ProductController::class,'createProduct'])->name('create-product');
-            Route::post('/create-post',[\App\Http\Controllers\ProductController::class,'createProductPost'])->name('create-product-post');
-            Route::get('/get-colors/{model_id}',[\App\Http\Controllers\ProductController::class,'getColors'])->name('get-colors');
-            Route::get('/update/{id}/{selected?}',[\App\Http\Controllers\ProductController::class,'updateProduct'])->name('update-product');
-            Route::post('/update-post',[\App\Http\Controllers\ProductController::class,'updateProductPost'])->name('update-product-post');
-            Route::post('/add-product-image-post',[\App\Http\Controllers\ProductController::class,'addImage'])->name('add-product-image-post');
+            Route::get('/list/{brand_id?}/{model_id?}',[\App\Http\Controllers\SiteController::class,'productLocation'])->name('product-location');
 
-            Route::get('/change-image-order/{order}/{image_id}',[\App\Http\Controllers\ProductController::class,'changeImageOrder'])->name('change-image-order');
-            Route::get('/change-first/{image_id}',[\App\Http\Controllers\ProductController::class,'changeFirst'])->name('change-first');
-            Route::get('/delete-image/{image_id}',[\App\Http\Controllers\ProductController::class,'deleteImage'])->name('delete-image');
+            Route::get('/locate/{id}',[\App\Http\Controllers\SiteController::class,'locateProduct'])->name('locate-product');
+            Route::get('/get-location-order/{product_id}/{location_id}',[\App\Http\Controllers\SiteController::class,'getLocationOrder'])->name('get-location-order');
 
-            Route::get('/get-location-order/{product_id}/{location_id}',[\App\Http\Controllers\ProductController::class,'getLocationOrder'])->name('get-location-order');
-            Route::get('/get-locations/{product_id}',[\App\Http\Controllers\ProductController::class,'getLocations'])->name('get-locations');
-            Route::get('/location-delete/{location_id}',[\App\Http\Controllers\ProductController::class,'locationOrder'])->name('location-delete');
-            Route::get('/reorder-location/{location_id}/{product_id}/{order}',[\App\Http\Controllers\ProductController::class,'locationOrder'])
+            Route::get('/location-delete/{location_id}',[\App\Http\Controllers\SiteController::class,'locationOrder'])->name('location-delete');
+            Route::get('/reorder-location/{location_id}/{product_id}/{order}',[\App\Http\Controllers\SiteController::class,'locationOrder'])
                 ->name('reorder-location');
-            Route::post('/add-product-location',[\App\Http\Controllers\ProductController::class,'addLocation'])->name('add-product-location-post');
-            Route::get('/delete-product-location/{location_id}',[\App\Http\Controllers\ProductController::class,'deleteLocation'])->name('delete-product-location');
-            Route::get('/change-product-location-order/{location_id}/{new_order}',[\App\Http\Controllers\ProductController::class,'changeLocationOrder'])->name('change-product-location-order');
+            Route::post('/add-product-location',[\App\Http\Controllers\SiteController::class,'addLocation'])->name('add-product-location-post');
+            Route::get('/delete-product-location/{location_id}',[\App\Http\Controllers\SiteController::class,'deleteLocation'])->name('delete-product-location');
+            Route::get('/change-product-location-order/{location_id}/{new_order}',[\App\Http\Controllers\SiteController::class,'changeLocationOrder'])->name('change-product-location-order');
 
         });
         Route::group(['prefix'=>'settings'],function (){
@@ -172,6 +164,54 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::post('/update-answers',[\App\Http\Controllers\BuyBackController::class,'buybackUpdateAnswersPost'])->name('buybackupdateanswers-post');
         Route::get('/user-info/{user_id}',[\App\Http\Controllers\BuyBackController::class,'userInfo'])->name('user-info');
     });
+
+    Route::group(['middleware'=>\App\Http\Middleware\productAuth::class,'prefix'=>'products','as'=>'products.'],function (){
+
+        Route::get('/list/{brand_id?}/{model_id?}',[\App\Http\Controllers\ProductController::class,'productList'])->name('product-list');
+        Route::get('/update/{product_id}/{selected?}/{brand_id?}/{model_id?}',[\App\Http\Controllers\ProductController::class,'productUpdate'])
+            ->name('product-update');
+        Route::post('/update',[\App\Http\Controllers\ProductController::class,'productUpdatePost'])->name('product-update-post');
+
+
+        Route::get('/create/{brand_id?}/{model_id?}',[\App\Http\Controllers\ProductController::class,'createProduct'])->name('create-product');
+        Route::post('/create-post',[\App\Http\Controllers\ProductController::class,'createProductPost'])->name('create-product-post');
+        Route::get('/get-colors/{model_id}',[\App\Http\Controllers\ProductController::class,'getColors'])->name('get-colors');
+
+
+        Route::post('/update-post',[\App\Http\Controllers\ProductController::class,'updateProductPost'])->name('update-product-post');
+        Route::post('/add-product-image-post',[\App\Http\Controllers\ProductController::class,'addImage'])->name('add-product-image-post');
+
+        Route::get('/add-brand/{product_id?}',[\App\Http\Controllers\ProductController::class,'addBrand'])->name('add-product-brand');
+        Route::post('/add-brand-post',[\App\Http\Controllers\ProductController::class,'addBrandPost'])->name('add-product-brand-post');
+
+        Route::get('/add-model/{brand_id}/{product_id?}',[\App\Http\Controllers\ProductController::class,'addModel'])->name('add-product-model');
+        Route::post('/add-model-post',[\App\Http\Controllers\ProductController::class,'addModelPost'])->name('add-product-model-post');
+        Route::post('/color-product-post',[\App\Http\Controllers\ProductController::class,'colorProduct'])->name('color-product-post');
+        Route::post('/memory-product-post',[\App\Http\Controllers\ProductController::class,'memoryProduct'])->name('memory-product-post');
+
+        Route::get('/change-image-order/{order}/{image_id}',[\App\Http\Controllers\ProductController::class,'changeImageOrder'])->name('change-image-order');
+        Route::get('/change-first/{image_id}',[\App\Http\Controllers\ProductController::class,'changeFirst'])->name('change-first');
+        Route::get('/delete-image/{image_id}',[\App\Http\Controllers\ProductController::class,'deleteImage'])->name('delete-image');
+
+        Route::get('/add-variant/{group_id}/{product_id}',[\App\Http\Controllers\ProductController::class,'addVariant'])->name('add-variant');
+        Route::post('/add-variant-post',[\App\Http\Controllers\ProductController::class,'addVariantPost'])->name('add-variant-post');
+
+        Route::get('/add-variant-value/{variant_id}/{product_id}',[\App\Http\Controllers\ProductController::class,'addVariantValue'])->name('add-variant-value');
+        Route::post('/add-variant-value-post',[\App\Http\Controllers\ProductController::class,'addVariantValuePost'])->name('add-variant-value-post');
+        Route::post('/product-variant-value-post',[\App\Http\Controllers\ProductController::class,'productVariantValuePost'])->name('product-variant-value-post');
+        Route::post('/product-stock-movement',[\App\Http\Controllers\ProductController::class,'productStockMovement'])->name('product-stock-movement');
+        Route::post('/product-stock-movement-update',[\App\Http\Controllers\ProductController::class,'productStockMovementUpdate'])->name('product-stock-movement-update');
+        Route::get('/check-stock/{product_id}/{color_id}/{memory_id}/{qty}/{stock_id?}',[\App\Http\Controllers\ProductController::class,'productStockCheck'])
+            ->name('product-stock-check');
+        Route::get('/update-stock/{stock_id}',[\App\Http\Controllers\ProductController::class,'updateStock'])->name('stock-update');
+
+    });/////////////////////products
+
+    Route::group(['middleware'=>\App\Http\Middleware\marketAuth::class,'prefix'=>'market-place','as'=>'market.'],function (){
+        Route::get('/gittigidiyor',[\App\Http\Controllers\MarketPlaceController::class,'gittigidiyor'])->name('gittigidiyor');
+
+    });
+
 
     Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class],function (){
 

@@ -14,7 +14,7 @@ class Product extends Model
     protected $table = 'products';
 
     protected $fillable = [
-        'title','brand_id','category_id','model_id','description','quantity','status','price','price_ex'
+        'title','micro_id','brand_id','category_id','model_id','description','status','price','price_ex'
     ];
 
     protected $hidden = [
@@ -36,4 +36,9 @@ class Product extends Model
     public function images(){
         return $this->hasMany(ProductImage::class,'product_id','id')->orderBy('order');
     }
+
+    public function firstImage(){
+        return $this->hasMany(ProductImage::class,'product_id','id')->where('first','=',1);
+    }
+
 }

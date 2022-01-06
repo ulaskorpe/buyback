@@ -20,6 +20,45 @@
                         </ul>
                     </li>
 
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['products'])))
+                        <li><a><i class="fa fa-mobile-phone"></i> Ürünler <span class="fa fa-chevron-down"></span></a>
+                            <ul class="nav child_menu">
+                                <li><a href="{{route('products.product-list')}}">Ürünler </a></li>
+                                <li style="display: none"><a href="{{route('products.create-product')}}" style="display: none">Ürünler  </a></li>
+                                @if(!empty($p_brand_id))
+                                    <li style="display: none "><a href="{{route('products.create-product',[$p_brand_id])}}">{{$p_brand_id}}</a></li>
+                                    @if(!empty($p_model_id))
+                                        <li style="display: none "><a href="{{route('products.create-product',[$p_brand_id,$p_model_id])}}">{{$p_model_id}}</a></li>
+                                    @endif
+                                @endif
+                                @if(!empty($product_id))
+                                    <li style="display: none "><a href="{{route('products.product-update',[$product_id])}}">{{$product_id}} /{{$selected}}</a></li>
+
+                                        <li style="display: none"><a href="{{route('products.product-update',[$product_id,$selected])}}">xx</a></li>
+                                        @if(!empty($p_brand_id))
+                                            <li style="display: none "><a href="{{route('products.product-update',[$product_id,$selected,$p_brand_id])}}">{{$p_brand_id}}</a></li>
+                                        @if(!empty($p_model_id))
+                                            <li style="display: none "><a href="{{route('products.product-update',[$product_id,$selected,$p_brand_id,$p_model_id])}}">{{$p_model_id}}</a></li>
+                                        @endif
+                                        @endif
+                                    @endif
+
+
+                            </ul>
+                        </li>
+                    @endif
+
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['market_place'])))
+                    <li><a><i class="fa fa-map-marker"></i> Market <span class="fa fa-chevron-down"></span></a>
+                        <ul class="nav child_menu">
+                            <li><a href="{{route('market.gittigidiyor')}}">GittiGidiyor</a></li>
+
+
+
+                        </ul>
+                    </li>
+                    @endif
+
                     @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['users'])))
                     <li><a><i class="fa fa-users"></i>  Kullanıcılar <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
@@ -53,6 +92,7 @@
                             </ul>
                         </li>
                     @endif
+
                     @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['system'])))
                     <li><a><i class="fa fa-edit"></i> Sistem Verileri <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
@@ -86,7 +126,8 @@
                         </ul>
                     </li>
                     @endif
-                      @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['site'])))
+
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['site'])))
                     <li><a><i class="fa fa-desktop"></i> Site İçeriği <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('site.site-settings')}}">Site Ayarları</a></li>
@@ -116,21 +157,18 @@
                             @if(!empty($article_id))
                                 <li style="display: none"><a href="{{route('site.update-article',$article_id)}}"></a></li>
                             @endif
-                            <li><a href="{{route('site.product-list')}}">Ürünler</a></li>
+                            <li><a href="{{route('site.product-location')}}">Ürün Konumları</a></li>
 
                             @if(!empty($model_id))
-                                <li style="display: none"><a href="{{route('site.product-list',[$brand_id,$model_id])}}"></a></li>
+                                <li style="display: none"><a href="{{route('site.product-location',[$brand_id,$model_id])}}"></a></li>
                                 @endif
                             @if(!empty($brand_id))
-                                <li style="display: none"><a href="{{route('site.product-list',[$brand_id,$model_id])}}"></a></li>
+                                <li style="display: none"><a href="{{route('site.product-location',[$brand_id,$model_id])}}"></a></li>
                             @endif
-                            <li style="display: none"><a href="{{route('site.create-product')}}"></a></li>
-                            @if(!empty($product_id))
-                                <li style="display: none"><a href="{{route('site.update-product',$product_id)}}"></a></li>
-                                @if(!empty($selected))
-                                    <li style="display: none"><a href="{{route('site.update-product',[$product_id,$selected])}}"></a></li>
 
-                                @endif
+                            @if(!empty($product_id))
+                                <li style="display: none"><a href="{{route('site.locate-product',$product_id)}}"></a></li>
+
                             @endif
                         </ul>
                     </li>

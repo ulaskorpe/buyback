@@ -4,6 +4,7 @@
     <link href="{{url('vendors/iCheck/skins/flat/green.css')}}" rel="stylesheet">
 @endsection
 @section('main')
+    <button type="button" style="display: none"  data-toggle="modal" data-target=".bs-example-modal-lg" id="modal_btn"></button>
     <div class="content">
 
 
@@ -15,7 +16,7 @@
                     <div class="card-body">
 
                         <div class="text-center">
-                            <a href="{{route("site.product-list")}}">
+                            <a href="{{route("products.product-list")}}">
                                 <button type="button"
                                         class="btn btn-primary">
                                     <b><i class="icon-ticket"></i></b> Ürün Listesine Git
@@ -24,7 +25,7 @@
                         </div>
                         <br><br>
 
-                        <form id="create-product" action="{{route('site.create-product-post')}}" method="post" enctype="multipart/form-data">
+                        <form id="create-product" action="{{route('products.create-product-post')}}" method="post" enctype="multipart/form-data">
                             {{csrf_field()}}
 
 
@@ -38,15 +39,12 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-lg-2 col-form-label font-weight-semibold">Kategori :</label>
-                                <div class="col-lg-4">
-                                    <select name="category_id" id="category_id" class="form-control" >
-                                        <option value="0">Seçiniz</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{$category['id']}}">{{$category['category_name']}}</option>
-                                        @endforeach
-                                    </select>
-                                    <span id="category_id_error"></span>
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Micro-ID :</label>
+                                <div class="col-lg-8">
+                                    <input type="text" class="form-control" name="micro_id" id="micro_id"
+                                           value="" data-popup="tooltip" data-trigger="focus"
+                                           placeholder="MICRO-ID">
+                                    <span id="micro_id_error"></span>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -55,45 +53,39 @@
                                     <select name="brand_id" id="brand_id" class="form-control" onchange="brandSelect()">
                                         <option value="0">Seçiniz</option>
                                         @foreach($brands as $brand)
-                                            <option value="{{$brand['id']}}">{{$brand['BrandName']}}</option>
+                                            <option value="{{$brand['id']}}" @if($brand['id']==$p_brand_id) selected @endif>{{$brand['BrandName']}}</option>
                                         @endforeach
                                     </select>
                                     <span id="brand_id_error"></span>
+                                </div>
+                                <div class="col-lg-1">
+
+                                    <a href="#" class="btn btn-success" onclick="addBrand()"><i class="fa fa-plus-circle primary" style="font-size: 20px"></i></a>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Model :</label>
                                 <div class="col-lg-4">
-                                    <select name="model_id" id="model_id" class="form-control" disabled  >
+                                    <select name="model_id" id="model_id" class="form-control" disabled onchange="modelSelect()" >
                                         <option value="0">Seçiniz</option>
                                     </select>
                                     <span id="model_id_error"></span>
                                 </div>
+                                <div class="col-lg-1">
+                                    <a href="#" class="btn btn-success" onclick="addModel()"><i class="fa fa-plus-circle primary" style="font-size: 20px"></i></a>
+
+                                </div>
                             </div>
-
-
                             <div class="form-group row">
-                                <label class="col-lg-2 col-form-label font-weight-semibold">Mevcut Renkler :</label>
-                                <div class="col-lg-8">
-                                    <input type="hidden" name="color_list" id="color_list">
-                                  <table width="100%"><tr>
-
-                                   @foreach($colors as $color)
-                                            <td style="width:100px ">
-                                                {{$color['color_name']}}<br>
-                                        <label class="">
-                                            <div class="icheckbox_flat-green" style="position: relative;">
-                                                <input type="checkbox"  id="c{{$color['id']}}" name="c{{$color['id']}}"  class="flat"  style="position: absolute; opacity: 0;" >
-
-                                                <ins class="iCheck-helper" onclick="eklecikar('c{{$color['id']}}','color_list')" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
-
-                                                </ins>
-                                            </div>
-                                        </label>
-                                                <div style="width: 100%;height: 50px; background: {{$color['color_code']}}"></div>
-                                            </td>
-                                    @endforeach <td>&nbsp;</td>
-                                      </tr></table>
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Kategori :</label>
+                                <div class="col-lg-4">
+                                    <select name="category_id" id="category_id" class="form-control" disabled >
+                                        <option value="0">Seçiniz</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{$category['id']}}">{{$category['category_name']}}</option>
+                                        @endforeach
+                                    </select>
+                                    <span id="category_id_error"></span>
                                 </div>
                             </div>
 
@@ -125,15 +117,7 @@
                                     <span id="price_ex_error"></span>
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label class="col-lg-2 col-form-label font-weight-semibold">Stok Miktarı :</label>
-                                <div class="col-lg-3">
-                                    <input type="number" class="form-control" name="quantity" id="quantity"
-                                           value="0" data-popup="tooltip" data-trigger="focus"
-                                           placeholder="">
-                                    <span id="quantity_error"></span>
-                                </div>
-                            </div>
+
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">DURUM</label>
                                 <div class="col-lg-8">
@@ -182,19 +166,34 @@
             $('#questions_div').html('');
             if (brand_id > 0) {
                 $('#model_id').show();
-                $('#model_result').html('');
-                $.get("{{url('data/get-models')}}/" + brand_id, function (data) {
+
+                @if($p_model_id>0)
+                $.get("{{url('data/get-models')}}/" + brand_id + "/{{$p_model_id}}", function (data) {
 
 
                     if (data == "none") {
                         swal("model bulunamadı");
 //                        $('#model_result').html('<h2>Model Bulunamadı</h2>');
-                      //  $('#model_id').hide();
+                        //  $('#model_id').hide();
                     } else {
                         $('#model_id').prop("disabled", false);
                         $('#model_id').html(data);
                     }
                 });
+                @else
+                $.get("{{url('data/get-models')}}/" + brand_id, function (data) {
+
+
+                    if (data == "none") {
+                        swal("model bulunamadı, lütfen ekleyin");
+                        $('#model_id').html('<option value="0">Seçiniz</option>');
+                        //  $('#model_id').hide();
+                    } else {
+                        $('#model_id').prop("disabled", false);
+                        $('#model_id').html(data);
+                    }
+                });
+                @endif
             } else {
                 $('#model_id').prop("disabled", true);
                 $('#model_id').html('');
@@ -202,23 +201,37 @@
         }
 
         function modelSelect() {
-
+            @if($p_model_id>0)
+            var model_id = {{$p_model_id}};
+            @else
             var model_id = $('#model_id').val();
-            if (model_id > 0) {
-                $('#model_result').html('');
-                $.get("{{url('data/get-colors')}}/" + model_id, function (data) {
+            @endif
 
-                    $('#color_div').html('');
+
+            if (model_id > 0) {
+
+                $.get("{{url('get-category')}}/" + model_id, function (data) {
+                    $('#category_id').prop('disabled',false);
+
+                    $('#category_id').val(data);
+                  //  $('#color_div').html('');
 
                 });
             } else {
-
-                $('#color_div').html('');
+                $('#category_id').prop('disabled',true);
             }
 
         }
 
         $(document).ready(function () {
+
+            @if($p_brand_id>0)
+                brandSelect();
+                        @if($p_model_id>0)
+                        modelSelect();
+                        @endif
+                @endif
+
             if ($("input.flat")[0]) {
                 $(document).ready(function () {
                     $('input.flat').iCheck({
@@ -228,6 +241,7 @@
                 });
             }
         });
+
         $('#create-product').submit(function (e) {
             e.preventDefault();
 
@@ -267,8 +281,34 @@
             if(error){
                 return false;
             }else{
-                save(formData, '{{route('site.create-product-post')}}', '', '','');
+                save(formData, '{{route('products.create-product-post')}}', '', '','');
             }
         });
+
+        function addBrand(){
+            $('#modal_btn').click();
+            $.get("{{url('admin/products/add-brand')}}/0/" , function (data) {
+                $('#lg-modal-title').html('Yeni Marka Ekle');
+                $('#lg-modal-body').html(data);
+
+
+
+            });
+        }
+
+        function addModel(){
+            if($('#brand_id').val()==0){
+                swal('Marka Seçiniz');
+            }else {
+                $('#modal_btn').click();
+                $.get("{{url('admin/products/add-model')}}/"+$('#brand_id').val()  , function (data) {
+                    $('#lg-modal-title').html('Yeni Model Ekle');
+                    $('#lg-modal-body').html(data);
+
+                });
+
+            }
+
+        }
     </script>
 @endsection

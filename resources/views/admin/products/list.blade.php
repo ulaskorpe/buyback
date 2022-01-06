@@ -15,7 +15,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center">
-
+                            <a href="{{route("products.create-product")}}"  class="btn btn-primary">Yeni Ürün Ekle</a>
                         </div>
                     </div>
                     <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -32,15 +32,15 @@
                         <tbody>
                         @foreach($products as $product)
                             <tr>
-                                <td>
+                                <td width="10%">
 
-                                    @if(!empty($product['thumb']))
-                                        <img src="{{url($product['thumb'])}}">
+                                    @if(!empty($product->firstImage()->first()->thumb))
+                                        <img src="{{url($product->firstImage()->first()->thumb)}}">
                                     @endif
                                 </td>
                                 <td width="30%">
-                                    <a href="{{route('site.product-location',[$product['brand_id'],0])}}"><b>{{$product->brand()->first()->BrandName}}</b></a> ->
-                                    <a href="{{route('site.product-location',[$product['brand_id'],$product['model_id']])}}">{{$product->model()->first()->Modelname}}</a>
+                                    <a href="{{route('products.product-list',[$product['brand_id'],0])}}"><b>{{$product->brand()->first()->BrandName}}</b></a> ->
+                                    <a href="{{route('products.product-list',[$product['brand_id'],$product['model_id']])}}">{{$product->model()->first()->Modelname}}</a>
 
                                 </td>
                                 <td>
@@ -50,9 +50,9 @@
 
 
                                 <td>{{$product['price']}} TL
-                                @if($product['price_ex']>0)
-                                    <br>
-                                    ({{$product['price_ex']}}) TL
+                                    @if($product['price_ex']>0)
+                                        <br>
+                                        ({{$product['price_ex']}}) TL
                                     @endif
                                 </td>
                                 <td>
@@ -64,8 +64,8 @@
                                 <td class="text-center">
                                     <div class="list-icons">
 
-                                        <a href="{{route("site.locate-product",$product['id'])}}"
-                                           class="btn btn-primary"><i class="fa fa-pencil"></i> Konumlandır</a>
+                                        <a href="{{route("products.product-update",$product['id'])}}"
+                                           class="btn btn-primary"><i class="fa fa-pencil"></i> Güncelle</a>
                                         <!--
                                         <a href="" class="list-icons-item text-violet-800"><i class="icon-eye"></i></a>
                                         -->

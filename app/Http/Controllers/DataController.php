@@ -437,7 +437,8 @@ class DataController extends Controller
     }
 
     public function getModels($brand_id,$selected=0){
-        $models = ProductModel::where('Brandid','=',$brand_id)->orderBy('Modelname')->get();
+
+        $models = ProductModel::where('Brandid','=',$brand_id)->where('status','=',1)->orderBy('Modelname')->get();
         if(count($models)>0){
 
         $txt="<option value='0'>Seçiniz</option>";
@@ -451,6 +452,29 @@ class DataController extends Controller
                 $txt.="<option value='".$model['id']."' selected>".$model['Modelname']."</option>";
                 }else{
                     $txt.="<option value='".$model['id']."'>".$model['Modelname']."</option>";
+                }
+        }
+
+        return $txt;
+        }else{
+            return  "none";
+        }
+    }
+    public function getBrands($selected=0){
+        $brands = ProductBrand::where('status','=',1)->orderBy('BrandName')->get();
+        if(count($brands)>0){
+
+        $txt="<option value='0'>Seçiniz</option>";
+        if($selected==0){
+            foreach ($brands as $brand){
+                $txt.="<option value='".$brand['id']."'>".$brand['BrandName']."</option>";
+            }
+        }else{
+            foreach ($brands as $brand)
+                if($brand['id']==$selected){
+                $txt.="<option value='".$brand['id']."' selected>".$brand['BrandName']."</option>";
+                }else{
+                    $txt.="<option value='".$brand['id']."'>".$brand['BrandName']."</option>";
                 }
         }
 

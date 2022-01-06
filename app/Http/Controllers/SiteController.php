@@ -5,8 +5,16 @@ namespace App\Http\Controllers;
 use App\Enums\MenuLocations;
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Area;
+use App\Models\Color;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
+use App\Models\Product;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
+use App\Models\ProductColor;
+use App\Models\ProductImage;
+use App\Models\ProductLocation;
+use App\Models\SiteLocation;
 use App\Models\SiteSetting;
 use App\Models\Slider;
 use Illuminate\Http\Request;
@@ -656,6 +664,121 @@ class SiteController extends Controller
     public function updateArea($id){
 
         return view('admin.site.area.update',['area'=>Area::find($id),'area_id'=>$id]);
+    }
+
+    public  function productLocation ($brand_id=0,$model_id=0){
+        if($model_id>0  ){
+            $products=Product::with('images')->where('model_id','=',$model_id)->get();
+        }elseif($brand_id>0 && $model_id==0){
+            $products=Product::with('images')->where('brand_id','=',$brand_id)->get();
+        }else{
+            $products=Product::with('images')->get();
+        }
+
+        return view('admin.site.product.list',['products'=>$products,'model_id'=>$model_id,'brand_id'=>$brand_id]);
+    }
+
+    public function locateProduct($id){
+        $p_locations = ProductLocation::where('product_id','=',$id)->pluck('location_id')->toArray();
+        $site_locations= SiteLocation::whereNotIn('id',$p_locations)->get();
+
+        $count_array = [];
+        foreach (SiteLocation::all() as $location){
+            $count_array[$location['id']] = ProductLocation::where('location_id','=',$location['id'])->count();
+        }
+       $locations = ProductLocation::with('location')->where('product_id','=',$id)->get();
+        return view('admin.site.product.locations',['product'=>Product::with('images')->find($id),
+            'product_id'=>$id,'locations'=>$locations,'count_locations'=>$count_array,'site_locations'=>$site_locations]);
+    }
+
+
+    public function getLocationOrder($product_id,$location_id){
+        //     return $product_id;
+
+        $ch = ProductLocation::where('location_id','=',$location_id)->where('product_id','=',$product_id)->first();
+        if(!empty($ch['id'])){
+            return  "no";
+        }else{
+            $count = ProductLocation::where('location_id','=',$location_id)->count();
+
+            //    return $count;
+
+            //    $add = ($count == 0)?2:1;
+            $txt= "";
+            for($i=1;$i<$count+2;$i++){
+                $txt.="<option value='".$i."'>".$i."</option>";
+            }
+
+            return $txt;
+        }
+    }
+
+
+    public function addLocation(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+
+                $location = new ProductLocation();
+                $location->location_id = $request['location_id'];
+                $location->product_id = $request['product_id'];
+                $location->order = $request['location_order'];
+                $location->save();
+
+                ProductLocation::where('location_id','=',$request['location_id'])
+                    ->where('id','<>',$location['id'])->where('order','>=',$request['location_order'])->increment('order');
+
+                return ['ürün yeni konuma eklendi', 'success', route('site.locate-product',[$request['product_id']]), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+
+
+    public function deleteLocation($location_id){
+        $pl = ProductLocation::find($location_id);
+
+        ProductLocation::where('location_id','=',$pl['location_id'])
+            ->where('id','<>',$pl['id'])->where('order','>=',$pl['order'])->decrement('order');
+        $pl->delete();
+        return "Ürün konumdan silindi";
+
+    }
+
+    public function changeLocationOrder($location_id,$new_order){
+        $location = ProductLocation::find($location_id);
+        $old = $location['order'];
+        $location->order = $new_order;
+        $location->save();
+
+
+        if($new_order>$old){
+            ProductLocation:: where('order','>=',$old)
+                ->where('location_id','=',$location['location_id'])
+                ->where('order','<=',$new_order)
+                ->where('id','<>',$location['id'])
+                ->decrement('order');
+
+        }else{
+            ProductLocation:: where('order','<=',$old)
+                ->where('location_id','=',$location['location_id'])
+                ->where('order','>=',$new_order)
+                ->where('id','<>',$location['id'])
+                ->increment('order');
+        }
+
+        return "Konum sırası güncellendi";
     }
 
 }

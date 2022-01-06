@@ -108,7 +108,8 @@ class HomeController extends Controller
                     $auth = UserGroup::find($check['group_id']);
 
 
-                    Session::put('auth_array',['buyback'=>$auth['buybacks'],'users'=>$auth['users'],'system'=>$auth['system'],'site'=>$auth['site']]);
+                    Session::put('auth_array',['buyback'=>$auth['buybacks'],'users'=>$auth['users'],'system'=>$auth['system']
+                        ,'site'=>$auth['site'],'market_place'=>$auth['market_place'],'products'=>$auth['products']]);
 
                   //  return  Session::get('auth_array');
                     }

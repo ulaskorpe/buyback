@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class userAuth
+class marketAuth
 {
     /**
      * Handle an incoming request.
@@ -16,11 +16,11 @@ class userAuth
      */
     public function handle(Request $request, Closure $next)
     {
-        if(empty($request->session()->get('auth_array')['users'] ) && empty($request->session()->get('sudo'))){
+        if(empty($request->session()->get('auth_array')['market_place'] ) && empty($request->session()->get('sudo'))){
 
             return redirect('/admin');
 
         }
-         return $next($request);
+        return $next($request);
     }
 }

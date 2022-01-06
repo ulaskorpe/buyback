@@ -28,7 +28,7 @@ function save(formData,route,formID,btn,modal_btn) {
                 arr.push(parsed[x]);
             }
 
-            console.log("msg:"+arr[0]+" sonuç: "+arr[1]+" route: "+arr[2]+" field: "+arr[3]+" error: "+arr[4]+" * ");
+            console.log("msg:"+arr[0]+" sonuç: "+arr[1]+" route: "+arr[2]+" field: "+arr[3]+" error: "+arr[4]+" * " );
 
             if (arr[1] =='success') {
 
@@ -91,6 +91,8 @@ function save(formData,route,formID,btn,modal_btn) {
                 }, 3000);
 
             }
+
+
         },
         error: function (data) {
             if (data.status === 422) {
@@ -112,7 +114,7 @@ function save(formData,route,formID,btn,modal_btn) {
                 }
 
             }
-            //{"msg":"Yaz\u0131 Eklendi","id":19}
+
             if (data.status === 500) {
                 swal("HATA!", 'Hata oluştu', "error");
                 if(btn!='') {
