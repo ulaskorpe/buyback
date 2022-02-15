@@ -13,7 +13,7 @@ class MenuSubItem extends Model
     protected $table = 'menu_sub_items';
 
     protected $fillable = [
-        'menu_id','title','link','thumb','image','location','order','status'
+        'menu_id','title','link','thumb','image','order','status'
     ];
 
     protected $hidden = [
@@ -22,5 +22,10 @@ class MenuSubItem extends Model
 
     public function menu_item(){
         return $this->hasOne(MenuItem::class,'id','menu_id');
+    }
+    public function menu_groups(){
+        return $this->hasMany(SubLinkGroup::class,'menu_sub_item_id','id')
+            ->where('status','=',1)
+            ->orderBy('order');
     }
 }

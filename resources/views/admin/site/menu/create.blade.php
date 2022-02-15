@@ -44,7 +44,7 @@
                                     <span id="link_error"></span>
                                 </div>
                             </div>
-
+@if(false)
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Resim</label>
                                 <div class="col-lg-8">
@@ -65,7 +65,7 @@
 
                                 </div>
                             </div>
-
+@endif
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Konum :</label>
                                 <div class="col-lg-2">
@@ -121,7 +121,7 @@
     <script>
 
         function getOrder(){
-            $.get( "{{url('admin/site/menu/get-menu-count')}}/"+$('#location').val()+"/2", function( data ) {
+            $.get( "{{url('admin/site/menu/get-menu-count')}}/"+$('#location').val()+"/1", function( data ) {
                 $( "#order" ).prop('disabled',false);
                 $( "#order" ).html( data );
                 //alert( "Load was performed." );
@@ -212,15 +212,17 @@
         }
         $('#create-menu').submit(function (e) {
             e.preventDefault();
-
+        //    swal($('#location').val());
             var formData = new FormData(this);
             var error = false;
 
-            if ($('#title').val() == '') {
-                $('#title_error').html('<span style="color: red">Lütfen giriniz</span>');
-                error = true;
-            } else {
-                $('#title_error').html('');
+            if ($('#location').val() != 5) {
+                if ($('#title').val() == '') {
+                    $('#title_error').html('<span style="color: red">Lütfen giriniz</span>');
+                    error = true;
+                } else {
+                    $('#title_error').html('');
+                }
             }
 
             if ($('#location').val() == 0) {

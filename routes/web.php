@@ -17,8 +17,10 @@ Route::get('/', function () {
 });
 */
 
+Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
+Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('home');
 
-Route::get('/',[\App\Http\Controllers\HomeController::class,'index'])->name('index');
+
 Route::get('/logs',[\App\Http\Controllers\HomeController::class,'logs'])->name('logs');
 //Route::get('/parsecities',[\App\Http\Controllers\HomeController::class,'parsecities'])->name('parsecities');
 Route::get('/login',[\App\Http\Controllers\HomeController::class,'login'])->name('login');
@@ -34,7 +36,8 @@ Route::group(['prefix'=>'data','as'=>'data.'],function (){
         ->name('get-questions');
     Route::get('/get-colors/{model_id}',[\App\Http\Controllers\DataController::class,'getColors'])->name('get-colors');
     Route::get('/get-offer/{model_id}/{answers}',[\App\Http\Controllers\DataController::class,'getOffer'])->name('get-offer');
-    Route::get('/get-buyer-info/{model_id}/{calculate_result}/{price}/{imei}/{color_id}/{imei_id}',[\App\Http\Controllers\DataController::class,'getBuyerInfo'])->name('get-buyer-info');
+    Route::get('/get-buyer-info/{model_id}/{calculate_result}/{price}/{imei}/{color_id}/{imei_id}',[\App\Http\Controllers\DataController::class,'getBuyerInfo'])
+        ->name('get-buyer-info');
     Route::get('/get-towns/{city_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getTowns'])->name('get-towns');
     Route::get('/get-districts/{town_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getDistricts'])->name('get-districts');
     Route::get('/get-neighborhoods/{district_id}/{selected?}',[\App\Http\Controllers\DataController::class,'getNeigborhoods'])->name('get-neighborhoods');
@@ -120,12 +123,23 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::post('/update-menu-item-post',[\App\Http\Controllers\SiteController::class,'updateMenuPost'])->name('update-menu-post');
             Route::get('/get-menu-count/{location}/{add?}/{selected?}',[\App\Http\Controllers\SiteController::class,'getMenuCount'])->name('get-menu-count');
 
+
+
             Route::get('/create-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'createSubMenu'])->name('create-sub-menu');
             Route::post('/create-sub-menu-item-post',[\App\Http\Controllers\SiteController::class,'createSubMenuPost'])->name('create-sub-menu-post');
 
             Route::get('/update-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'updateSubMenu'])->name('update-sub-menu');
             Route::post('/update-sub-menu-item-post',[\App\Http\Controllers\SiteController::class,'updateSubMenuPost'])->name('update-sub-menu-post');
             Route::get('/delete-sub-menu-item/{menu_id}',[\App\Http\Controllers\SiteController::class,'deleteSubMenu'])->name('delete-sub-menu');
+            Route::get('/delete-sub-link-item/{link_id}',[\App\Http\Controllers\SiteController::class,'deleteSubLink'])->name('delete-sub-link');
+
+            Route::get('/create-sub-group/{sub_menu_id}',[\App\Http\Controllers\SiteController::class,'createSubGroup'])->name('create-sub-group');
+            Route::post('/create-sub-group-post',[\App\Http\Controllers\SiteController::class,'createSubGroupPost'])->name('create-sub-group-post');
+            Route::get('/delete-sub-group/{group_id}',[\App\Http\Controllers\SiteController::class,'deleteSubGroup'])->name('delete-sub-group');
+
+            Route::get('/create-sub-menu-link/{group_id}',[\App\Http\Controllers\SiteController::class,'createSubLink'])->name('create-sub-link');
+            Route::post('/create-sub-menu-link-post',[\App\Http\Controllers\SiteController::class,'createSubLinkPost'])->name('create-sub-link-post');
+
         });
 
         Route::group(['prefix'=>'area'],function (){
@@ -137,7 +151,15 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
 
         });
+        Route::group(['prefix'=>'banner'],function (){
+            Route::get('/list',[\App\Http\Controllers\SiteController::class,'bannerList'])->name('banner-list');
+            Route::get('/create',[\App\Http\Controllers\SiteController::class,'createBanner'])->name('create-banner');
+            Route::post('/create-post',[\App\Http\Controllers\SiteController::class,'createBannerPost'])->name('create-banner-post');
+            Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateBanner'])->name('update-banner');
+            Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateBannerPost'])->name('update-banner-post');
 
+
+        });
         Route::group(['prefix'=>'articles'],function (){
             Route::get('/list',[\App\Http\Controllers\ArticleController::class,'articleList'])->name('article-list');
             Route::get('/create',[\App\Http\Controllers\ArticleController::class,'createArticle'])->name('create-article');
@@ -209,6 +231,10 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
     Route::group(['middleware'=>\App\Http\Middleware\marketAuth::class,'prefix'=>'market-place','as'=>'market.'],function (){
         Route::get('/gittigidiyor',[\App\Http\Controllers\MarketPlaceController::class,'gittigidiyor'])->name('gittigidiyor');
+        Route::get('/hepsi-burada',[\App\Http\Controllers\MarketPlaceController::class,'hepsiBurada'])->name('hepsi-burada');
+        Route::get('/hepsi-burada-cats/{count?}',[\App\Http\Controllers\MarketPlaceController::class,'hepsiBuradaCats'])->name('hepsi-burada-cats');
+        Route::get('/hepsi-burada-cat-detail/{cat_id}',[\App\Http\Controllers\MarketPlaceController::class,'hbCatDetail'])->name('hepsi-burada-cat-detail');
+        Route::get('/hb-cat-values/{cat_id}',[\App\Http\Controllers\MarketPlaceController::class,'hbCatValues'])->name('hb-cat-values');
 
     });
 

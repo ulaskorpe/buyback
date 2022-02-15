@@ -22,8 +22,10 @@ use App\Models\ProductVariant;
 use App\Models\ProductVariantValue;
 use App\Models\Question;
 use App\Models\SiteLocation;
+use App\Models\Tmp;
 use App\Models\VariantGroup;
 use App\Models\VariantValue;
+use Faker\Factory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
@@ -785,4 +787,34 @@ class ProductController extends Controller
     }
 
 
+    public function productDetailApi(Request $request,$count=5){
+
+
+        //if ($request->header('x-api-key') == $this->generateKey()) {
+                        $pr = Product::inRandomOrder()->first();
+                        $faker = Factory::create();
+
+                        $data = array();
+                        for($i=0;$i<$count;$i++)  {
+
+                        $data[$i]['id']=rand(1000,10000);
+                        $data[$i]['title']=$faker->sentence(3,12);
+                        $data[$i]['url']=$faker->url();
+                        $data[$i]['imageUrl']=$faker->imageUrl;
+                        $data[$i]['type']=(rand(100,1000)%2==0)?'small':'large';
+                        $data[$i]['textStyle']=(rand(100,1000)%2==0)?'left':'right';
+                        }
+                      //  $data['']
+
+        $resultArray = $data;
+//        }else{
+//            $resultArray['status'] = false;
+//            $resultArray['status_code'] = 406;
+//            $resultArray['msg'] = 'hatalı anahtar';
+//        }
+
+
+        return response()->json($resultArray);
+       // return json_encode($resultArray);
+    }
 }

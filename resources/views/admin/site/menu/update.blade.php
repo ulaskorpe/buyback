@@ -44,7 +44,7 @@
                                     <span id="link_error"></span>
                                 </div>
                             </div>
-
+@if(false)
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Resim</label>
                                 <div class="col-lg-8">
@@ -67,13 +67,13 @@
 
                                 </div>
                             </div>
-
+@endif
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Konum :</label>
                                 <div class="col-lg-2">
                                     <select name="location" id="location" class="form-control" onchange="getOrder(1)">
                                         @foreach($locations as $location)
-                                            <option value="{{$location}}" @if($menu['$location']==$location) selected @endif>{{$menu_locations[$location]}}</option>
+                                            <option value="{{$location}}" @if($menu['location']==$location) selected @endif>{{$menu_locations[$location]}}</option>
                                         @endforeach
                                     </select>
                                     <span id="location_error"></span>
@@ -130,8 +130,9 @@
                                 <thead>
                                 <tr>
 
+                                    <th>Görsel</th>
                                     <th>Başlık</th>
-                                    <th>URL</th>
+                                    <th>Alt linkler</th>
                                     <th>Sıra</th>
                                     <th>Durum</th>
                                     <th class="text-center">İşlemler</th>
@@ -140,11 +141,44 @@
                                 <tbody>
                                 @foreach($menu->sub_items()->get() as $submenu)
                                     <tr>
+                                        <td>
 
+                                            @if(!empty($submenu['thumb']))
+                                                <img src="{{url($submenu['thumb'])}}" alt="" style="max-width: 150px">
+                                            @endif
+
+                                        </td>
                                         <td>
                                             <b>{{$submenu['title']}}</b>
                                         </td>
-                                        <td><a href="{{$submenu['link']}}" target="_blank">{{$submenu['link']}}</a> </td>
+                                        <td >
+                                            @if(!empty($submenu->menu_groups()->get()))
+                                                <table width="100%">
+
+
+                                                @foreach($submenu->menu_groups()->get() as $group)
+                                                    <tr><td>{{$group['title']}}</td><td>
+                                                            <a href="#" onclick="deleteSubGroup({{$group['id']}})"
+                                                               class="btn btn-danger"><i class="fa fa-close"></i></a>
+                                                            <a href="#" onclick="addSubLink({{$group['id']}})"
+                                                               class="btn btn-success"><i class="fa fa-plus"></i></a>
+                                                        </td></tr>
+                                                    @if(!empty($group->menu_links()->get()))
+                                                        @foreach($group->menu_links()->get() as $link)
+                                                                <tr><td> -- {{$link['title']}}</td><td>
+                                                                        <a href="#" onclick="deleteSubLink({{$link['id']}})"
+                                                                           class="btn btn-danger"><i class="fa fa-close"></i></a>
+
+                                                                    </td></tr>
+                                                            @endforeach
+
+
+                                                        @endif
+
+                                                @endforeach
+                                                </table>
+                                            @endif
+                                        </td>
                                         <td>  {{$submenu['order']}}</td>
                                         <td>
                                             @if($submenu['status']==1)
@@ -164,9 +198,15 @@
                                                 <a href="#" onclick="deleteSubMenu({{$submenu['id']}})"
                                                    class="btn btn-danger"><i class="fa fa-close"></i></a>
 
+                                                <hr>
+                                                <a href="#" onclick="addSubGroup({{$submenu['id']}})"
+                                                   class="btn btn-dark"><i class="fa fa-plus"></i></a>
+
+
                                             </div>
                                         </td>
                                     </tr>
+
                                 @endforeach
 
                                 </tbody>
@@ -218,6 +258,25 @@
             });
         }
 
+        function addSubGroup(id){
+            $('#show-lg-modal').click();
+            $.get( "{{url('admin/site/menu/create-sub-group/')}}/"+id, function( data ) {
+                $( "#lg-modal-title" ).html('Alt Link Grubu Ekle');
+                $( "#lg-modal-body" ).html( data );
+
+            });
+        }
+
+
+        function addSubLink(id){
+            $('#show-lg-modal').click();
+            $.get( "{{url('admin/site/menu/create-sub-menu-link/')}}/"+id, function( data ) {
+                $( "#lg-modal-title" ).html('Alt Link Ekle');
+                $( "#lg-modal-body" ).html( data );
+
+            });
+        }
+
         function deleteSubMenu(sub_id) {
             swal("Alt bağlantı silinecek, Emin misiniz?", {
                 buttons: ["İptal", "Evet"],
@@ -241,12 +300,62 @@
                 }
             })
         }
+
+        function deleteSubLink(link_id) {
+            swal("Alt link silinecek, Emin misiniz?", {
+                buttons: ["İptal", "Evet"],
+                dangerMode: true,
+            }).then((value) => {
+                if (value) {
+
+                    $.get("{{url('admin/site/menu/delete-sub-link-item')}}/" + link_id, function (data) {
+                        swal("" + data);
+                        setTimeout(function () {
+                            window.open('{{route('site.update-menu',[$menu['id']])}}', '_self')
+
+                        }, 2000);
+
+                        //   console.log(user_id+":"+follower_id);
+
+
+                    });
+
+
+                }
+            })
+        }
+
+        function deleteSubGroup(group_id) {
+            swal("Alt link grubu silinecek, Emin misiniz?", {
+                buttons: ["İptal", "Evet"],
+                dangerMode: true,
+            }).then((value) => {
+                if (value) {
+
+                    $.get("{{url('admin/site/menu/delete-sub-group')}}/" + group_id, function (data) {
+                        swal("" + data);
+                        setTimeout(function () {
+                            window.open('{{route('site.update-menu',[$menu['id']])}}', '_self')
+
+                        }, 2000);
+
+                        //   console.log(user_id+":"+follower_id);
+
+
+                    });
+
+
+                }
+            })
+        }
+
         function getOrder(add,selected){
             var tail = "/"+add;
 
             if(selected>0){
                 tail+="/"+selected;
             }
+
 
             $.get( "{{url('admin/site/menu/get-menu-count')}}/"+$('#location').val()+tail, function( data ) {
                 $( "#order" ).prop('disabled',false);

@@ -23,7 +23,13 @@
                         <form id="update-area" action="{{route('site.update-area-post')}}" method="post" enctype="multipart/form-data">
                             {{csrf_field()}}
                             <input type="hidden" name="id" id="id" value="{{$area['id']}}">
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Alan KODU :</label>
+                                <div class="col-lg-8"><b>{{$area['code']}}</b>
 
+
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Alan Adı :</label>
                                 <div class="col-lg-8">
@@ -62,7 +68,25 @@
                                     <span id="link_error"></span>
                                 </div>
                             </div>
-
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Boyut :</label>
+                                <div class="col-lg-2">
+                                    <select name="type" id="type" class="form-control">
+                                        <option value="small" @if($area['type']=='small') selected @endif>Küçük</option>
+                                        <option value="large" @if($area['type']=='large') selected @endif>Büyük</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Hizlama :</label>
+                                <div class="col-lg-2">
+                                    <select name="textStyle" id="textStyle" class="form-control">
+                                        <option value="left" @if($area['textStyle']=='left') selected @endif>Sol</option>
+                                        <option value="center" @if($area['textStyle']=='center') selected @endif>Orta</option>
+                                        <option value="right" @if($area['textStyle']=='right') selected @endif>Sağ</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Resim</label>
                                 <div class="col-lg-8">

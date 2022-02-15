@@ -22,6 +22,7 @@
                         <thead>
                         <tr>
                             <th>Görsel</th>
+                            <th>Alan Kodu</th>
                             <th>Başlık</th>
                             <th>Link</th>
 
@@ -37,6 +38,9 @@
                                     @if(!empty($area['thumb']))
                                         <img src="{{url($area['thumb'])}}">
                                     @endif
+                                </td>
+                                <td>
+                                    {{$area['code']}}
                                 </td>
                                 <td width="30%"><b>{{$area['title']}}</b>
                                     @if(!empty($area['txt_1']))

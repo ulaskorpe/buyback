@@ -1283,6 +1283,8 @@ trait GGTrait
         } else {
             $url = 'http://dev.gittigidiyor.com:8080/';
         }
+
+
         $url .= 'listingapi/ws/';
         switch ($serviceAccessType) {
             case 'anonymous':

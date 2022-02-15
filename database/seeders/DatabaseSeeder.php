@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         //$this->call(UserSeeder::class);
         //$this->call(SiteLocationSeeder::class);
         //$this->call(VariantGroupSeeder::class);
+//    $this->call(BannerSeeder::class);
     }
 }

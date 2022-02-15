@@ -18,6 +18,6 @@ class VariantValue extends Model
         'created_at','updated_at','deleted_at'
     ];
     public function variant(){
-        return $this->hasOne(ProductVariant::class,'variant_id','id');
+        return $this->hasOne(ProductVariant::class,'id','variant_id');
     }
 }

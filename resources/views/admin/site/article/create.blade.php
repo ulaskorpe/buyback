@@ -23,7 +23,15 @@
                         <form id="create-article" action="{{route('site.create-article-post')}}" method="post" enctype="multipart/form-data">
                             {{csrf_field()}}
 
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">YAZI KODU :</label>
+                                <div class="col-lg-8"><b>{{$code}}</b>
+                                    <input type="hidden" class="form-control" name="code" id="code"
+                                           value="{{$code}}" data-popup="tooltip" data-trigger="focus"
+                                           placeholder="Alan Adı">
 
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Başlık :</label>
                                 <div class="col-lg-8">

@@ -23,7 +23,15 @@
                         <form id="create-area" action="{{route('site.create-area-post')}}" method="post" enctype="multipart/form-data">
                             {{csrf_field()}}
 
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Alan KODU :</label>
+                                <div class="col-lg-8"><b>{{$code}}</b>
+                                    <input type="hidden" class="form-control" name="code" id="code"
+                                           value="{{$code}}" data-popup="tooltip" data-trigger="focus"
+                                           placeholder="Alan Adı">
 
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Alan Adı :</label>
                                 <div class="col-lg-8">
@@ -33,7 +41,15 @@
                                     <span id="title_error"></span>
                                 </div>
                             </div>
-
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">URL :</label>
+                                <div class="col-lg-8">
+                                    <input type="text" class="form-control" name="url" id="url"
+                                           value="" data-popup="tooltip" data-trigger="focus"
+                                           placeholder="Alan Adı">
+                                    <span id="title_error"></span>
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Yazı-1 :</label>
                                 <div class="col-lg-8">
@@ -62,7 +78,25 @@
                                     <span id="link_error"></span>
                                 </div>
                             </div>
-
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Boyut :</label>
+                                <div class="col-lg-2">
+                                    <select name="type" id="type" class="form-control">
+                                        <option value="small">Küçük</option>
+                                        <option value="large">Büyük</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Hizlama :</label>
+                                <div class="col-lg-2">
+                                    <select name="textStyle" id="textStyle"  class="form-control">
+                                        <option value="left">Sol</option>
+                                        <option value="center">Orta</option>
+                                        <option value="right">Sağ</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Resim</label>
                                 <div class="col-lg-8">

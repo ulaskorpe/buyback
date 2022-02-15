@@ -12,7 +12,7 @@ class SiteLocation extends Model
     protected $table = 'site_locations';
 
     protected $fillable = [
-        'name','status'
+        'name','status','keyword'
     ];
 
     protected $hidden = [

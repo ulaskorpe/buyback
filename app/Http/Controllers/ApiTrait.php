@@ -20,7 +20,7 @@ trait ApiTrait
 
 
 private $buyback_status_array = [0=>'Alındı',1=>'Kontrol Ediliyor',2=>'Hazırlanıyor',3=>'Tamamlandı',4=>'İptal Edildi'];
-private $menu_locations = [ 1=>'Üst Menu',2=>'Başlık Menü',3=>'Sol Menü'];
+private $menu_locations = [ 1=>'Üst Menu',2=>'Başlık Menü',3=>'Sol Menü',4=>'Mobil',5=>'Footer',6=>'Ürünler Sayfası'];
 
     private function randomPassword($len = 16,$alphabet=0) {
         if($alphabet==1){

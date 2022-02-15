@@ -20,8 +20,11 @@ class ArticleController extends Controller
 
     public function createArticle(){
 
+        $last = Article::select('id')->orderBy('id','desc')->first();
 
-        return view('admin.site.article.create' );
+        $code =(!empty($last['id'])) ? "AR".($last['id']+1) : "AR1";
+
+        return view('admin.site.article.create',['code'=>$code] );
     }
 
     public function createArticlePart($article_id){
@@ -49,6 +52,7 @@ class ArticleController extends Controller
             $resultArray = DB::transaction(function () use ($request) {
                 $article= new Article();
                 $article->title = $request['title'];
+                $article->code = $request['code'];
                 $article->prologue = $request['prologue'];
 
                 $article->status = (!empty($request['status']))?1:0;

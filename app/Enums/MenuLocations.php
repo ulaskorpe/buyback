@@ -14,5 +14,8 @@ final class MenuLocations extends Enum
     const top =   1;
     const header =   2;
     const left = 3;
+    const mobile  = 4;
+    const footer  = 5;
+    const shoppage  = 6;
 
 }

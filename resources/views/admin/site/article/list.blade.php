@@ -23,7 +23,7 @@
                         <tr>
 
                             <th>Başlık</th>
-                            <th></th>
+                            <th>Yazı Kodu</th>
                             <th></th>
                             <th>Durum</th>
                             <th class="text-center">İşlemler</th>
@@ -42,9 +42,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if(!empty($article['link']))
-                                        <a href="{{$article['link']}}" target="_blank">{{$article['link']}}</a>
-                                    @endif
+                                    {{$article['code']}}
                                 </td>
 
 

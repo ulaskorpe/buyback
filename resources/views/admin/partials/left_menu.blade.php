@@ -52,6 +52,7 @@
                     <li><a><i class="fa fa-map-marker"></i> Market <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{route('market.gittigidiyor')}}">GittiGidiyor</a></li>
+                            <li><a href="{{route('market.hepsi-burada')}}">HepsiBurada</a></li>
 
 
 
@@ -146,7 +147,11 @@
                             @if(!empty($area_id))
                                 <li style="display: none"><a href="{{route('site.update-area',$area_id)}}"></a></li>
                             @endif
-
+                            <li><a href="{{route('site.banner-list')}}">Bannerlar</a></li>
+                            <li style="display: none"><a href="{{route('site.create-banner')}}"></a></li>
+                            @if(!empty($banner_id))
+                                <li style="display: none"><a href="{{route('site.update-banner',$banner_id)}}"></a></li>
+                            @endif
                             <li><a href="{{route('site.slider-list')}}">Slider Listesi</a></li>
                             <li style="display: none"><a href="{{route('site.create-slider')}}"></a></li>
                             @if(!empty($slider_id))
@@ -170,6 +175,8 @@
                                 <li style="display: none"><a href="{{route('site.locate-product',$product_id)}}"></a></li>
 
                             @endif
+
+
                         </ul>
                     </li>
                     @endif

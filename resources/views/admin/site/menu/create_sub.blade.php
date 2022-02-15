@@ -33,6 +33,26 @@
                                 </div>
                             </div>
 
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Resim</label>
+                                <div class="col-lg-8">
+                                    <input type="file" name="image" id="image" class="form-control h-auto" data-popup="tooltip"
+                                           title=""
+                                           onchange="showImage('image','target','avatar_img')"
+                                           placeholder="">
+                                    <span id="image_error"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold"></label>
+                                <div class="col-lg-8">
+
+                                    <img id="target" style="display: none;max-width: 500px">
+                                    <img id="avatar_img" style="display: none;">
+
+                                </div>
+                            </div>
 
 
 
@@ -40,7 +60,7 @@
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Sıra :</label>
                                 <div class="col-lg-2">
                                     <select name="order_sub" id="order_sub" class="form-control">
-                                           @for($i=1;$i<$count;$i++)
+                                           @for($i=$count-1;$i>0;$i--)
                                             <option value="{{$i}}">{{$i}}</option>
                                             @endfor
                                     </select>
@@ -125,6 +145,8 @@
                 }
             }
             if(error){
+
+
                 return false;
             }else{
                 save(formData, '{{route('site.create-sub-menu-post')}}', '', '','');

@@ -17,6 +17,7 @@ use App\Models\Neighborhood;
 use App\Models\ProductBrand;
 use App\Models\ProductModel;
 use App\Models\Question;
+use App\Models\Tmp;
 use App\Models\Town;
 use App\Models\User;
 use Exception;
@@ -27,6 +28,109 @@ use Intervention\Image\Facades\Image;
 
 class DataController extends Controller
 {
+
+    use ApiTrait;
+
+    public function returnKey(Request $request){
+
+        return response()->json(['key'=>$this->generateKey()]);
+
+    }
+
+    public function deleteTmp($id){
+        $tmp = Tmp::find($id);
+        $tmp->delete();
+        return response()->json(['status'=>200,'msg'=>'DELETED']);
+    }
+
+    public function addTmp(Request $request){
+
+        if ($request->isMethod('post')) {
+            if ($request->header('x-api-key') == $this->generateKey()) {
+
+                //     return $request['invoice_date'];
+
+                $messages = [];
+                $rules = [
+                    'name'=>'required',
+                    'course'=>'required',
+                    'email'=>'required|email',
+                ];
+                $this->validate($request, $rules, $messages);
+                $resultArray = DB::transaction(function () use ($request) {
+
+                    $tmp = new Tmp();
+                    $tmp->title = $request['name'];
+                    $tmp->data = $request['course'] . ":" . $request['email'] . ":" . $request['phone'];
+                    $tmp->save();
+
+                    return ['status'=>true, 'status_code'=>200,'msg'=>'Başarıyla Eklendi'];
+                });
+
+            }else{
+                $resultArray['status'] = false;
+                $resultArray['status_code'] = 406;
+                $resultArray['msg'] = 'hatalı anahtar';
+            }
+        }else{
+            $returnArray['status'] = false;
+            $returnArray['status_code'] = 405;
+            $returnArray['msg'] = 'uygun olmayan method';
+        }
+
+        return json_encode($resultArray);
+    }
+
+    public function updateTmp(Request $request){
+
+        if ($request->isMethod('post')) {
+            if ($request->header('x-api-key') == $this->generateKey()) {
+
+                //     return $request['invoice_date'];
+
+                $messages = [];
+                $rules = [
+
+                ];
+                $this->validate($request, $rules, $messages);
+                $resultArray = DB::transaction(function () use ($request) {
+
+                    $tmp = Tmp::find($request['id']);
+                    $tmp->title = $request['name'];
+                    $tmp->data = $request['course']  ;
+                    $tmp->save();
+
+                    return ['status'=>true, 'status_code'=>200,'msg'=>'Başarıyla GÜNCELLENDİ'];
+                });
+
+            }else{
+                $resultArray['status'] = false;
+                $resultArray['status_code'] = 406;
+                $resultArray['msg'] = 'hatalı anahtar';
+            }
+        }else{
+            $returnArray['status'] = false;
+            $returnArray['status_code'] = 405;
+            $returnArray['msg'] = 'uygun olmayan method';
+        }
+
+        return json_encode($resultArray);
+    }
+
+    public function listTmp(){
+        return response()->json(['items'=>Tmp::all(),'status'=>200]);
+    }
+
+    public function getTmp($id){
+        $tmp = Tmp::find($id);
+        if(!empty($tmp['id'])){
+            return response()->json(['item'=>$tmp,'status'=>200]);
+        }else{
+            return response()->json(['item'=>null,'status'=>404]);
+        }
+
+    }
+
     public function brandlist()
     {
 

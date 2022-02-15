@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Enums\MenuLocations;
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Area;
+use App\Models\Banner;
 use App\Models\Color;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
+use App\Models\MenuSubItemLink;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
@@ -17,6 +19,7 @@ use App\Models\ProductLocation;
 use App\Models\SiteLocation;
 use App\Models\SiteSetting;
 use App\Models\Slider;
+use App\Models\SubLinkGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
@@ -49,8 +52,10 @@ class SiteController extends Controller
             $resultArray = DB::transaction(function () use ($request) {
                 $slider= new Slider();
                 $slider->title = $request['title'];
-                $slider->data = (!empty($request['data']))?$request['data']:'';
+                $slider->subtitle = (!empty($request['subtitle']))?$request['subtitle']:'';
                 $slider->link = (!empty($request['link']))?$request['link']:'';
+                $slider->btn_1 = (!empty($request['btn_1']))?$request['btn_1']:'';
+                $slider->btn_2 = (!empty($request['btn_2']))?$request['btn_2']:'';
                 $slider->note = (!empty($request['note']))?$request['note']:'';
                 $slider->status = (!empty($request['status']))?1:0;
                 $slider->count = $request['count'];
@@ -60,11 +65,12 @@ class SiteController extends Controller
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/slider");
+                  //  $path = public_path("images/slider");
+                    $path = "images/slider";
                     $th = GeneralHelper::fixName($request['title']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
-                    $file = $request->file('slider');
+
                     $img = Image::make($file->getRealPath());
                     $img->save($path . '/' . $filename);
                     $img->resize(150, 150, function ($constraint) {
@@ -74,6 +80,24 @@ class SiteController extends Controller
                     $slider->thumb = "images/slider/" . $th;
                 }
 
+
+
+                $file2 = $request->file('bgimg');
+                if (!empty($file2)) {
+
+                    $filenamebg =  "BG_". date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                   // $path = public_path("images/slider");
+                    $thbg =  "BGTH_". date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+
+                    $img = Image::make($file2->getRealPath());
+                    $img->save($path . '/' . $filenamebg);
+                    $img->resize(150, 150, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $thbg);
+                    $slider->bgimg = "images/slider/" . $filenamebg;
+                    $slider->bgthumb = "images/slider/" . $thbg;
+                }
                 $slider->save();
 
                 Slider::where('count','>=',$request['count'])
@@ -104,9 +128,12 @@ class SiteController extends Controller
 
                 $slider= Slider::find($request['id']);
                 $old=$slider['count'];
+
                 $slider->title = $request['title'];
-                $slider->data = (!empty($request['data']))?$request['data']:'';
+                $slider->subtitle = (!empty($request['subtitle']))?$request['subtitle']:'';
                 $slider->link = (!empty($request['link']))?$request['link']:'';
+                $slider->btn_1 = (!empty($request['btn_1']))?$request['btn_1']:'';
+                $slider->btn_2 = (!empty($request['btn_2']))?$request['btn_2']:'';
                 $slider->note = (!empty($request['note']))?$request['note']:'';
                 $slider->status = (!empty($request['status']))?1:0;
                 $slider->count = $request['count'];
@@ -116,11 +143,12 @@ class SiteController extends Controller
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/slider");
+                    //  $path = public_path("images/slider");
+                    $path = "images/slider";
                     $th = GeneralHelper::fixName($request['title']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
-                    $file = $request->file('slider');
+
                     $img = Image::make($file->getRealPath());
                     $img->save($path . '/' . $filename);
                     $img->resize(150, 150, function ($constraint) {
@@ -130,6 +158,24 @@ class SiteController extends Controller
                     $slider->thumb = "images/slider/" . $th;
                 }
 
+
+
+                $file2 = $request->file('bgimg');
+                if (!empty($file2)) {
+
+                    $filenamebg =  "BG_". date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    // $path = public_path("images/slider");
+                    $thbg =  "BGTH_". date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+
+                    $img = Image::make($file2->getRealPath());
+                    $img->save($path . '/' . $filenamebg);
+                    $img->resize(150, 150, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $thbg);
+                    $slider->bgimg = "images/slider/" . $filenamebg;
+                    $slider->bgthumb = "images/slider/" . $thbg;
+                }
                 $slider->save();
 
                 if($request['count']!=$old){
@@ -156,7 +202,7 @@ class SiteController extends Controller
 
     public function updateSlider($id){
         $count = Slider::count();
-        return view('admin.site.slider.update',['slider'=>Slider::find($id),'count'=>$count]);
+        return view('admin.site.slider.update',['slider'=>Slider::find($id),'count'=>$count,'slider_id'=>$id]);
     }
 
     public function siteSettings(){
@@ -277,7 +323,7 @@ class SiteController extends Controller
                 $menu->order = $request['order'];
                 $menu->location = $request['location'];
 
-                $file = $request->file('image');
+       /*         $file = $request->file('image');
                 if (!empty($file)) {
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
@@ -295,7 +341,7 @@ class SiteController extends Controller
                     $menu->image = "images/menu/" . $filename;
                     $menu->thumb = "images/menu/" . $th;
                 }
-
+*/
                 $menu->save();
 
                 MenuItem::where('order','>=',$request['order'])
@@ -339,7 +385,7 @@ class SiteController extends Controller
                 $menu->order = $request['order'];
                 $menu->location = $request['location'];
 
-                $file = $request->file('image');
+           /**     $file = $request->file('image');
                 if (!empty($file)) {
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
@@ -357,7 +403,7 @@ class SiteController extends Controller
                     $menu->image = "images/menu/" . $filename;
                     $menu->thumb = "images/menu/" . $th;
                 }
-
+                    */
                 $menu->save();
 
 
@@ -400,8 +446,10 @@ class SiteController extends Controller
     }
 
     public function updateMenu($id){
-        $menu = MenuItem::with('sub_items')->find($id);
+        $menu = MenuItem::with('sub_items','sub_items.menu_groups','sub_items.menu_groups.menu_links')->find($id);
         $count = MenuItem::where('location','=',$menu['location'])->count();
+
+
         return view('admin.site.menu.update',['menu'=>$menu,'count'=>$count,
             'locations'=>MenuLocations::asArray(),'menu_locations'=>$this->menu_locations
         ,'menu_id'=>$id
@@ -409,13 +457,15 @@ class SiteController extends Controller
         ]);
     }
 
-    public function getMenuCount($location,$add =1,$selected=0){
+    public function getMenuCount($location,$add =0,$selected=0){
 
         $count = MenuItem::where('location','=',$location)->count();
-        $count = ($count == 0)?2:$count+$add;
+        $add = ($selected>0)?0:1;
+        $count = ($count == 0)?1:$count+$add;
             $txt = "";
 
-        for($i=1;$i<($count );$i++){
+     //   for($i=1;$i<($count );$i++){
+        for($i=$count;$i>0;$i--){
             if($selected==$i){
                 $txt.="<option value='".$i."' selected>".$i."</option>";
             }else{
@@ -429,6 +479,18 @@ class SiteController extends Controller
     public function createSubMenu($menu_id){
 
         return view('admin.site.menu.create_sub',['menu_id'=>$menu_id,'count'=>MenuSubItem::where('menu_id','=',$menu_id)->count()+2]);
+    }
+
+    public function createSubLink($group_id){
+
+        return view('admin.site.menu.create_link',['group_id'=>$group_id,
+            'group'=>SubLinkGroup::with('menu_sub_item')->find($group_id),
+            'count'=>MenuSubItemLink::where('group_id','=',$group_id)->count()+2]);
+    }
+
+    public function createSubGroup($sub_menu_id){
+
+        return view('admin.site.menu.create_group',['sub_menu_id'=>$sub_menu_id,'count'=>SubLinkGroup::where('menu_sub_item_id','=',$sub_menu_id)->count()+2]);
     }
 
     public function createSubMenuPost(Request $request){
@@ -450,13 +512,13 @@ class SiteController extends Controller
                 $menu->status = (!empty($request['status_sub']))?1:0;
                 $menu->order = $request['order_sub'];
 
-                /*
+
                 $file = $request->file('image');
                 if (!empty($file)) {
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/menu");
+                    $path =  "images/menu";
                     $th = GeneralHelper::fixName($request['title']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
@@ -469,7 +531,7 @@ class SiteController extends Controller
                     $menu->image = "images/menu/" . $filename;
                     $menu->thumb = "images/menu/" . $th;
                 }
-*/
+
                 $menu->save();
 
                 MenuSubItem::where('order','>=',$request['order_sub'])
@@ -481,6 +543,77 @@ class SiteController extends Controller
 
 
                 return ['yeni alt menü unsuru eklendi', 'success', route('site.update-menu',$request['menu_id']), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function createSubLinkPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $group=SubLinkGroup::with('menu_sub_item')->find($request['group_id']);
+                //$sub=MenuSubItem::find($request['sub_menu_id']);
+
+                $menu = new MenuSubItemLink();
+                $menu->title = $request['title_link'];
+                $menu->group_id=$request['group_id'];
+                $menu->link = (!empty($request['sub_link']))?$request['sub_link']:'';
+
+                $menu->status = (!empty($request['status_link']))?1:0;
+                $menu->order = $request['order_link'];
+
+                $menu->save();
+                MenuSubItemLink::where('order','>=',$request['order_link'])
+                    ->where('group_id','=',$request['group_id'])
+                    ->where('id','<>',$menu['id'])
+                    ->increment('order');
+
+
+                return ['yeni alt menü link eklendi', 'success', route('site.update-menu',$group->menu_sub_item()->first()->menu_id), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function createSubGroupPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $sub=MenuSubItem::find($request['sub_menu_id']);
+
+                $menu = new SubLinkGroup();
+                $menu->title = $request['title_group'];
+                $menu->menu_sub_item_id=$request['sub_menu_id'];
+                $menu->link = (!empty($request['group_link']))?$request['group_link']:'';
+
+                $menu->status = (!empty($request['status_group']))?1:0;
+                $menu->order = $request['order_group'];
+
+                $menu->save();
+                SubLinkGroup::where('order','>=',$request['order_group'])
+                    ->where('menu_sub_item_id','=',$request['sub_menu_id'])
+                    ->where('id','<>',$menu['id'])
+                    ->increment('order');
+
+
+                return ['yeni alt menü link grubu eklendi', 'success', route('site.update-menu',$sub['menu_id']), '', ''];
             });
             return json_encode($resultArray);
 
@@ -541,6 +674,14 @@ class SiteController extends Controller
 
     public function deleteSubMenu($menu_id){
         $sub=MenuSubItem::find($menu_id);
+
+        $groups = SubLinkGroup::where('menu_sub_item_id','=',$menu_id)->get();
+        foreach ($groups as $group){
+            MenuSubItemLink::where('group_id','=',$group['id'])->delete();
+        }
+        SubLinkGroup::where('menu_sub_item_id','=',$menu_id)->delete();
+
+
         MenuSubItem::where('order','>=',$sub['order'])
             ->where('menu_id','=',$sub['menu_id'])
             ->where('id','<>',$sub['id'])
@@ -549,16 +690,55 @@ class SiteController extends Controller
         return "Alt bağlantı silindi";
     }
 
+    public function deleteSubGroup($group_id){
+
+        $group = SubLinkGroup::find($group_id);
+
+            MenuSubItemLink::where('group_id','=',$group['id'])->delete();
+
+
+
+
+        SubLinkGroup::where('order','>=',$group['order'])
+            ->where('menu_sub_item_id','=',$group['menu_sub_item_id'])
+            ->where('id','<>',$group['id'])
+            ->decrement('order');
+        $group->delete();
+        return "Bağlantı grubu silindi";
+    }
+
+    public function deleteSubLink($link_id){
+        $sub=MenuSubItemLink::find($link_id);
+        MenuSubItemLink::where('order','>=',$sub['order'])
+            ->where('menu_sub_item_id','=',$sub['menu_sub_item_id'])
+            ->where('id','<>',$sub['id'])
+            ->decrement('order');
+        $sub->delete();
+        return "Alt Link silindi";
+    }
+
 
     public  function areaList(){
-
-        return view('admin.site.area.list',['areas'=>Area::all()]);
+//$areas = Area::all();
+//foreach ($areas as $area){
+//    $code = "A".$area['id'];
+//    $area->code = $code;
+//    $area->save();
+//}
+        return view('admin.site.area.list',['areas'=> Area::all()]);
     }
 
     public function createArea(){
 
+//        $ch = true;
+//        while($ch){
+//        $code ="A".rand(100,999);
+//        $ch=$this->checkUnique('code','areas',$code);
+//        }
 
-        return view('admin.site.area.create');
+        $last = Area::select('id')->orderBy('id','desc')->first();
+        $code =(!empty($last['id'])) ? "A".($last['id']+1) : "A1";
+        return view('admin.site.area.create',['code'=>$code]);
     }
 
     public function createAreaPost(Request $request){
@@ -574,16 +754,21 @@ class SiteController extends Controller
             $resultArray = DB::transaction(function () use ($request) {
                 $area= new Area();
                 $area->title = $request['title'];
+                $area->code = $request['code'];
                 $area->txt_1 = (!empty($request['txt_1']))?$request['txt_1']:'';
                 $area->txt_2 = (!empty($request['txt_2']))?$request['txt_2']:'';
                 $area->link = (!empty($request['link']))?$request['link']:'';
+                $area->type = $request['type'];
+                $area->textStyle = $request['textStyle'];
+
                 $area->status = (!empty($request['status']))?1:0;
                 $file = $request->file('area');
                 if (!empty($file)) {
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/area");
+                 //   $path = public_path("images/area");
+                    $path = "images/area";
                     $th = GeneralHelper::fixName($request['title']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
@@ -626,13 +811,16 @@ class SiteController extends Controller
                 $area->txt_1 = (!empty($request['txt_1']))?$request['txt_1']:'';
                 $area->txt_2 = (!empty($request['txt_2']))?$request['txt_2']:'';
                 $area->link = (!empty($request['link']))?$request['link']:'';
+                $area->type = $request['type'];
+                $area->textStyle = $request['textStyle'];
                 $area->status = (!empty($request['status']))?1:0;
                 $file = $request->file('area');
                 if (!empty($file)) {
 
                     $filename = GeneralHelper::fixName($request['title']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/area");
+                   // $path = public_path("images/area");
+                    $path = "images/area";
                     $th = GeneralHelper::fixName($request['title']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
@@ -658,8 +846,6 @@ class SiteController extends Controller
 
         }
     }
-
-
 
     public function updateArea($id){
 
@@ -688,7 +874,7 @@ class SiteController extends Controller
         }
        $locations = ProductLocation::with('location')->where('product_id','=',$id)->get();
         return view('admin.site.product.locations',['product'=>Product::with('images')->find($id),
-            'product_id'=>$id,'locations'=>$locations,'count_locations'=>$count_array,'site_locations'=>$site_locations]);
+            'product_id'=>$id,'locations'=>$locations,'count_locations'=>$count_array,'site_locations'=>$site_locations,'selected'=>0]);
     }
 
 
@@ -780,5 +966,136 @@ class SiteController extends Controller
 
         return "Konum sırası güncellendi";
     }
+
+
+
+
+    public  function bannerList(){
+//$areas = Area::all();
+//foreach ($areas as $area){
+//    $code = "A".$area['id'];
+//    $area->code = $code;
+//    $area->save();
+//}
+        return view('admin.site.banner.list',['banners'=> Banner::all()]);
+    }
+
+    public function createBanner(){
+
+//        $ch = true;
+//        while($ch){
+//        $code ="A".rand(100,999);
+//        $ch=$this->checkUnique('code','areas',$code);
+//        }
+
+        $count = Banner::all()->count();
+
+        return view('admin.site.banner.create',['count'=>$count]);
+    }
+
+    public function createBannerPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $banner= new Banner();
+                $banner->title = $request['title'];
+                $banner->order = $request['order'];
+                $banner->link = $request['link'];
+                $banner->status = (!empty($request['status']))?1:0;
+                $file = $request->file('image');
+                if (!empty($file)) {
+                    $filename = GeneralHelper::fixName($request['title']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    //   $path = public_path("images/area");
+                    $path = "images/banners";
+
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $banner->image = "images/banners/" . $filename;
+                }
+                $banner->save();
+
+                Banner::where('order','>=',$request['order'])
+                    ->where('id','<>',$banner['id'])
+                    ->increment('order');
+
+
+
+                return ['yeni BANNER eklendi', 'success', route('site.banner-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateBannerPost(Request $request){
+
+
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $banner= Banner::find($request['id']);
+                $old=$banner['order'];
+
+                $banner->title = $request['title'];
+                $banner->order = $request['order'];
+                $banner->link = $request['link'];
+                $banner->status = (!empty($request['status']))?1:0;
+                $file = $request->file('image');
+                if (!empty($file)) {
+                    $filename = GeneralHelper::fixName($request['title']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    //   $path = public_path("images/area");
+                    $path = "images/banners";
+
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $banner->image = "images/banners/" . $filename;
+                }
+                $banner->save();
+
+
+                if($request['order']!=$old){
+                    if($request['order']>$old){
+                        Banner:: where('order','>=',$old)
+                            ->where('order','<=',$request['order'])
+                            ->where('id','<>',$banner['id'])
+                            ->decrement('order');
+
+                    }else{
+                        Banner:: where('order','<=',$old)
+                            ->where('order','>=',$request['order'])
+                            ->where('id','<>',$banner['id'])
+                            ->increment('order');
+                    }
+                }
+
+
+                return ['BANNER Güncelendi', 'success', route('site.area-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateBanner($id){
+        $count = Banner::all()->count();
+        return view('admin.site.banner.update',['banner'=>Banner::find($id),'banner_id'=>$id,'count'=>$count]);
+    }
+
 
 }

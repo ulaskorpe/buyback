@@ -14,7 +14,9 @@ class Tmp extends Model
     protected $fillable = [
        'title','data'
     ];
-
+    protected $hidden = [
+        'created_at','updated_at'
+    ];
     public function prunable()
     {
         return static::where('created_at','<=',now()->subMinute());

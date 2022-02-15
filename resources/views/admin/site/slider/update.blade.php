@@ -36,14 +36,35 @@
                             </div>
 
                             <div class="form-group row">
-                                <label class="col-lg-2 col-form-label font-weight-semibold">Açıklama :</label>
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Alt başlık :</label>
                                 <div class="col-lg-8">
-                                    <input type="text" class="form-control" name="data" id="data"
-                                           value="{{$slider['data']}}" data-popup="tooltip" data-trigger="focus"
+                                    <input type="text" class="form-control" name="subtitle" id="subtitle"
+                                           value="{{$slider['subtitle']}}" data-popup="tooltip" data-trigger="focus"
                                            placeholder="Açıklama Yazısı">
                                     <span id="data_error"></span>
                                 </div>
                             </div>
+
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">BTN başlık -1  :</label>
+                                <div class="col-lg-8">
+                                    <input type="text" class="form-control" name="btn_1" id="btn_1"
+                                           value="{{$slider['btn_1']}}" data-popup="tooltip" data-trigger="focus"
+                                           placeholder="">
+                                    <span id="btn_1_error"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">BTN Başlık -2 :</label>
+                                <div class="col-lg-8">
+                                    <input type="text" class="form-control" name="btn_2" id="btn_2"
+                                           value="{{$slider['btn_2']}}" data-popup="tooltip" data-trigger="focus"
+                                           placeholder="">
+                                    <span id="btn_2_error"></span>
+                                </div>
+                            </div>
+
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Link :</label>
                                 <div class="col-lg-8">
@@ -68,7 +89,7 @@
                                     <input type="file" name="slider" id="slider" class="form-control h-auto"
                                            data-popup="tooltip"
                                            title=""
-                                           onchange="showImage('slider','target','avatar_img',500,300)"
+                                           onchange="showImage('slider','target','avatar_img')"
                                            placeholder="">
                                     <span id="slider_error"></span>
                                 </div>
@@ -78,7 +99,7 @@
                                 <label class="col-lg-2 col-form-label font-weight-semibold"></label>
                                 <div class="col-lg-8">
 
-                                    <img id="target" style="display: none;">
+                                    <img id="target" style="display: none;max-width: 500px">
                                     @if(!empty($slider['thumb']))
                                         <a href="{{url($slider['image'])}}" target="_blank"><img id="avatar_img"
                                                                                                  src="{{url($slider['thumb'])}}"></a>
@@ -86,7 +107,30 @@
 
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Arka Plan</label>
+                                <div class="col-lg-8">
+                                    <input type="file" name="bgimg" id="bgimg" class="form-control h-auto"
+                                           data-popup="tooltip"
+                                           title=""
+                                           onchange="showImage('bgimg','targetbg','avatar_bg_img')"
+                                           placeholder="">
+                                    <span id="slider_error"></span>
+                                </div>
+                            </div>
 
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold"></label>
+                                <div class="col-lg-8">
+
+                                    <img id="targetbg" style="display: none;max-width: 500px">
+                                    @if(!empty($slider['bgthumb']))
+                                        <a href="{{url($slider['bgimg'])}}" target="_blank"><img id="avatar_bg_img"
+                                                                                                 src="{{url($slider['bgthumb'])}}"></a>
+                                    @endif
+
+                                </div>
+                            </div>
 
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Sıra :</label>

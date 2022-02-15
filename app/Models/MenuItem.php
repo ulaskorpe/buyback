@@ -21,6 +21,8 @@ class MenuItem extends Model
     ];
 
     public function sub_items(){
-        return $this->hasMany(MenuSubItem::class,'menu_id','id')->orderBy('order','DESC');
+        return $this->hasMany(MenuSubItem::class,'menu_id','id')
+            ->where('status','=',1)
+            ->orderBy('order','DESC');
     }
 }

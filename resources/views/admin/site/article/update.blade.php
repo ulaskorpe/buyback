@@ -23,7 +23,13 @@
                         <form id="update-article" action="{{route('site.update-article-post')}}" method="post" enctype="multipart/form-data">
                             {{csrf_field()}}
                             <input type="hidden" id="id" name="id" value="{{$article['id']}}">
+                            <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">YAZI KODU :</label>
+                                <div class="col-lg-8"><b>{{$article['code']}}</b>
 
+
+                                </div>
+                            </div>
                             <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">Başlık :</label>
                                 <div class="col-lg-8">

@@ -23,6 +23,6 @@ class ProductVariantValue extends Model
     }
 
     public function value(){
-        return $this->hasOne(VariantValue::class,'variant_value_id','id');
+        return $this->hasOne(VariantValue::class,'id','variant_value_id');
     }
 }

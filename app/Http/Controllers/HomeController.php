@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Session;
 class HomeController extends Controller
 {
     use ApiTrait;
-    public function index(){
+    public function home(){
 
 //        Session::put('admin_id',$check['id']);
 //        Session::put('name_surname',$check['name']." ".$check['surname']);
@@ -39,9 +39,23 @@ class HomeController extends Controller
 //        }
 
 //return  Session::get('auth_array');
-
-         return view('index',['brands'=>ProductBrand::all()]);
+       // return view('react');
+        return view('index',['brands'=>ProductBrand::all()]);
       //  return redirect(route('admin.index'));
+    }
+    public function react(){
+
+
+         return view('react');
+
+    }
+
+
+    public function site(){
+
+
+        return view('site.index');
+
     }
 
     public function login(){
@@ -71,6 +85,8 @@ class HomeController extends Controller
 
 
     public function logs(){
+
+        return  view('react');
         for($i=0;$i<10;$i++){
             $log = new Log();
             $log->data = '{
