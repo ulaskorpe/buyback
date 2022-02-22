@@ -32,6 +32,7 @@
                             <th>Geri Alımlar</th>
                             <th>Sistem</th>
                             <th>Site</th>
+                            <th>Müşteriler</th>
                             <th>Durum</th>
 
                             <th class="text-center">İşlemler</th>
@@ -65,6 +66,13 @@
                                 </td>
                                 <td>
                                     @if($group['site']==1)
+                                        <i class="fa fa-check"></i>
+                                    @else
+                                        <i class="fa fa-close"></i>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($group['customers']==1)
                                         <i class="fa fa-check"></i>
                                     @else
                                         <i class="fa fa-close"></i>

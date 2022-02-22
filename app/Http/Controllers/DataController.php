@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Answer;
 use App\Models\BuyBack;
+use App\Models\CargoCompany;
+use App\Models\CargoCompanyBranch;
 use App\Models\City;
 use App\Models\Color;
 use App\Models\ColorModel;
@@ -17,6 +19,7 @@ use App\Models\Neighborhood;
 use App\Models\ProductBrand;
 use App\Models\ProductModel;
 use App\Models\Question;
+use App\Models\ServiceAddress;
 use App\Models\Tmp;
 use App\Models\Town;
 use App\Models\User;
@@ -169,7 +172,8 @@ class DataController extends Controller
 
                     $filename = GeneralHelper::fixName($request['brandname']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/brands/");
+                 //   $path = public_path("images/brands/");
+                    $path = "images/brands/";
                     $th = GeneralHelper::fixName($request['brandname']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
@@ -564,6 +568,7 @@ class DataController extends Controller
             return  "none";
         }
     }
+
     public function getBrands($selected=0){
         $brands = ProductBrand::where('status','=',1)->orderBy('BrandName')->get();
         if(count($brands)>0){
@@ -798,7 +803,6 @@ class DataController extends Controller
 
     }
 
-
     public function curl_get(){
         $endpoint = "http://my.domain.com/test.php";
         $client = new \GuzzleHttp\Client();
@@ -815,8 +819,6 @@ class DataController extends Controller
         $statusCode = $response->getStatusCode();
         $content = $response->getBody();
     }
-
-
 
     public function checkImeiServer(){
 //        $imei = intval($imei);
@@ -903,8 +905,6 @@ $url ='https://kayit.mcks.gov.tr/refurbished-devices/oauth/token';
 // Further processing ...
       //  dd($server_output);
     }
-
-
 
     public function imeiQuery($model_id=0,$imei_no=0)
     {
@@ -1008,6 +1008,344 @@ if($responseCode==1){
 
         }else{
             return 0 ;
+        }
+    }
+
+
+    //////////CARGO//////////////////////////////
+
+    public function cargoList()
+    {
+
+        return view('admin.cargo.list', ['cargo_companies' => CargoCompany::all()]);
+    }
+
+    public function cargoAdd (){
+        return view('admin.cargo.add');
+    }
+    public function cargoUpdate ($cargo_id){
+
+        return view('admin.cargo.update',['cargo'=>CargoCompany::with('branches')->find($cargo_id),'cargo_id'=>$cargo_id]);
+    }
+
+    public function cargoAddPost(Request $request)
+    {
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+                $cargo = new CargoCompany();
+                $cargo->name = $request['name'];
+                $cargo->person = (!empty($request['person'])) ? $request['person'] : '';
+                $cargo->email = (!empty($request['email'])) ? $request['email'] : '';
+                $cargo->phone_number = (!empty($request['phone_number'])) ? $request['phone_number'] : '';
+
+
+                $file = $request->file('logo');
+                if (!empty($file)) {
+
+                    $filename = GeneralHelper::fixName($request['name']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    $path =  "images/cargo/";
+                    $th = GeneralHelper::fixName($request['name']) . "TH_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+                    $file = $request->file('logo');
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $img->resize(100, 100, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $th);
+
+                    $cargo->logo = "images/cargo/" . $th;
+                }
+
+                $cargo->save();
+
+
+                return ['yeni şirket eklendi', 'success', route('cargo.cargo-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+
+
+    }
+
+    public function cargoUpdatePost(Request $request)
+    {
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+                $cargo = CargoCompany::find($request['id']);
+                $cargo->name = $request['name'];
+                $cargo->person = (!empty($request['person'])) ? $request['person'] : '';
+                $cargo->email = (!empty($request['email'])) ? $request['email'] : '';
+                $cargo->phone_number = (!empty($request['phone_number'])) ? $request['phone_number'] : '';
+
+
+                $file = $request->file('logo');
+                if (!empty($file)) {
+
+                    $filename = GeneralHelper::fixName($request['name']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    $path =  "images/cargo/";
+                    $th = GeneralHelper::fixName($request['name']) . "TH_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+                    $file = $request->file('logo');
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $img->resize(100, 100, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $th);
+
+                    $cargo->logo = "images/cargo/" . $th;
+                }
+
+                $cargo->save();
+
+
+                return ['şirket Güncellendi', 'success', route('cargo.cargo-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+
+
+    }
+
+    public function addBranch($company_id){
+
+        return view('admin.cargo.add_branch',['company'=>CargoCompany::find($company_id),'cities'=>City::all()]);
+    }
+    public function addBranchPost(Request $request){
+
+
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $branch =  new CargoCompanyBranch();
+                $branch->cargo_company_id = $request['company_id'];
+                $branch->title = $request['title'];
+                $branch->person = (!empty($request['person']))?$request['person']:'';
+                $branch->address = $request['address'];
+                $branch->city_id = $request['city_id'];
+                if(!empty($request['town_id'])){
+                    $branch->town_id=$request['town_id'];
+                    if(!empty($request['district_id'])){
+                        $branch->district_id=$request['district_id'];
+                        if(!empty($request['neighborhood_id'])){
+                            $branch->neighborhood_id=$request['neighborhood_id'];
+                        }else{
+                            $branch->neighborhood_id=0;
+                        }
+                    }else{
+                        $branch->district_id=0;
+                        $branch->neighborhood_id=0;
+                    }
+
+                }else{
+                    $branch->town_id=0;
+                    $branch->district_id=0;
+                    $branch->neighborhood_id=0;
+                }
+
+                $branch->phone_number=(!empty($request['phone_number']))?$request['phone_number']:'';
+                $branch->phone_number_2=(!empty($request['phone_number_2']))?$request['phone_number_2']:'';
+                $branch->active=(!empty($request['status2']))?1:0;
+
+
+                $branch->save();
+                return ['Şube Eklendi', 'success', route('cargo.cargo-update',[$request['company_id']]), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateBranch($branch_id){
+        return view('admin.cargo.update_branch',['branch'=>CargoCompanyBranch::find($branch_id),'cities'=>City::all()]);
+    }
+
+    public function updateBranchPost(Request $request){
+
+
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $branch =   CargoCompanyBranch::find($request['id']);
+                //$branch->cargo_company_id = $request['company_id'];
+                $branch->title = $request['title'];
+                $branch->person = (!empty($request['person']))?$request['person']:'';
+                $branch->address = $request['address'];
+                $branch->city_id = $request['city_id'];
+                if(!empty($request['town_id'])){
+                    $branch->town_id=$request['town_id'];
+                    if(!empty($request['district_id'])){
+                        $branch->district_id=$request['district_id'];
+                        if(!empty($request['neighborhood_id'])){
+                            $branch->neighborhood_id=$request['neighborhood_id'];
+                        }else{
+                            $branch->neighborhood_id=0;
+                        }
+                    }else{
+                        $branch->district_id=0;
+                        $branch->neighborhood_id=0;
+                    }
+
+                }else{
+                    $branch->town_id=0;
+                    $branch->district_id=0;
+                    $branch->neighborhood_id=0;
+                }
+
+                $branch->phone_number=(!empty($request['phone_number']))?$request['phone_number']:'';
+                $branch->phone_number_2=(!empty($request['phone_number_2']))?$request['phone_number_2']:'';
+                $branch->active=(!empty($request['status2']))?1:0;
+
+
+                $branch->save();
+                return ['Şube Güncellendi', 'success', route('cargo.cargo-update',[$request['company_id']]), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+    //////////CARGO//////////////////////////////
+
+    public function serviceAddressesList()
+    {
+
+        return view('admin.service_addresses', ['service_addresses' => ServiceAddress::all()]);
+    }
+
+    public function addServiceAddress(){
+        return view('admin.add_service_address',['cities'=>City::all()]);
+    }
+
+    public function updateServiceAddress($address_id){
+        return view('admin.update_service_address',['cities'=>City::all(),'address'=>ServiceAddress::find($address_id)]);
+    }
+
+     public function addServiceAddressPost(Request $request){
+
+
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $branch =  new ServiceAddress();
+
+                $branch->title = $request['title'];
+                $branch->name_surname = (!empty($request['person']))?$request['person']:'';
+                $branch->address = $request['address'];
+                $branch->city_id = $request['city_id'];
+                if(!empty($request['town_id'])){
+                    $branch->town_id=$request['town_id'];
+                    if(!empty($request['district_id'])){
+                        $branch->district_id=$request['district_id'];
+                        if(!empty($request['neighborhood_id'])){
+                            $branch->neighborhood_id=$request['neighborhood_id'];
+                        }else{
+                            $branch->neighborhood_id=0;
+                        }
+                    }else{
+                        $branch->district_id=0;
+                        $branch->neighborhood_id=0;
+                    }
+
+                }else{
+                    $branch->town_id=0;
+                    $branch->district_id=0;
+                    $branch->neighborhood_id=0;
+                }
+
+                $branch->phone_number=(!empty($request['phone_number']))?$request['phone_number']:'';
+                $branch->phone_number_2=(!empty($request['phone_number_2']))?$request['phone_number_2']:'';
+                $branch->active=(!empty($request['status2']))?1:0;
+
+
+                $branch->save();
+                return ['Adres Eklendi', 'success', route('service-addresses-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+     public function updateServiceAddressPost(Request $request){
+
+
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $branch =  ServiceAddress::find($request['id']);
+
+                $branch->title = $request['title'];
+                $branch->name_surname = (!empty($request['person']))?$request['person']:'';
+                $branch->address = $request['address'];
+                $branch->city_id = $request['city_id'];
+                if(!empty($request['town_id'])){
+                    $branch->town_id=$request['town_id'];
+                    if(!empty($request['district_id'])){
+                        $branch->district_id=$request['district_id'];
+                        if(!empty($request['neighborhood_id'])){
+                            $branch->neighborhood_id=$request['neighborhood_id'];
+                        }else{
+                            $branch->neighborhood_id=0;
+                        }
+                    }else{
+                        $branch->district_id=0;
+                        $branch->neighborhood_id=0;
+                    }
+
+                }else{
+                    $branch->town_id=0;
+                    $branch->district_id=0;
+                    $branch->neighborhood_id=0;
+                }
+
+                $branch->phone_number=(!empty($request['phone_number']))?$request['phone_number']:'';
+                $branch->phone_number_2=(!empty($request['phone_number_2']))?$request['phone_number_2']:'';
+                $branch->active=(!empty($request['status2']))?1:0;
+
+
+                $branch->save();
+                return ['Adres Güncellendi', 'success', route('service-addresses-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
         }
     }
 

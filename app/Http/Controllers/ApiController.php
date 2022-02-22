@@ -6,14 +6,18 @@ use App\Enums\MenuLocations;
 use App\Models\Area;
 use App\Models\Article;
 use App\Models\Banner;
+use App\Models\City;
+use App\Models\District;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
 use App\Models\MenuSubItemLink;
+use App\Models\Neighborhood;
 use App\Models\ProductLocation;
 use App\Models\ProductStockMovement;
 use App\Models\SiteLocation;
 use App\Models\SiteSetting;
 use App\Models\Slider;
+use App\Models\Town;
 use Faker\Factory;
 use Illuminate\Http\Request;
 use phpDocumentor\Reflection\Types\Object_;
@@ -337,45 +341,46 @@ class ApiController extends Controller
 
         }
     }
+
     public function superOffer(Request $request)
     {
-       // if ($request->header('x-api-key') == $this->generateKey()) {
-               if(true){
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            if (true) {
 
-            $faker = Factory::create();
-            /***
-             * dealItem = [
-             * { id: 1, title: 'Ta555blet Red EliteBook Revolve',
-             * listPrice: '₺304,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/1.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
-             * { id: 2, title: 'Tablet Red EliteBook Revolve', listPrice: '₺424,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/2.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
-             * ]
-             */
+                $faker = Factory::create();
+                /***
+                 * dealItem = [
+                 * { id: 1, title: 'Ta555blet Red EliteBook Revolve',
+                 * listPrice: '₺304,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/1.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
+                 * { id: 2, title: 'Tablet Red EliteBook Revolve', listPrice: '₺424,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/2.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
+                 * ]
+                 */
 
-            $array = [];
-            //    foreach ($banners as $banner){
-            for ($i = 0; $i < 2; $i++) {
+                $array = [];
+                //    foreach ($banners as $banner){
+                for ($i = 0; $i < 2; $i++) {
 
-                $price = rand(2, 10) * 100;
-                $dis = rand(1, 3) * 30;
-                $array[$i]['id'] = $i + 1;
-                $array[$i]['title'] = $faker->sentence;
-                $array[$i]['listPrice'] = $price;
-                $array[$i]['price'] = $price + $dis;
+                    $price = rand(2, 10) * 100;
+                    $dis = rand(1, 3) * 30;
+                    $array[$i]['id'] = $i + 1;
+                    $array[$i]['title'] = $faker->sentence;
+                    $array[$i]['listPrice'] = $price;
+                    $array[$i]['price'] = $price + $dis;
 
-                $array[$i]['imageUrl'] = url('images/products/' . rand(1, 16) . ".jpg");
-                $array[$i]['win'] = $dis;
-                $array[$i]['stockItem'] = rand(10, 1000);
-                $array[$i]['soldItem'] = rand(10, 1000);
-                $array[$i]['seconds'] = 28800;;
+                    $array[$i]['imageUrl'] = url('images/products/' . rand(1, 16) . ".jpg");
+                    $array[$i]['win'] = $dis;
+                    $array[$i]['stockItem'] = rand(10, 1000);
+                    $array[$i]['soldItem'] = rand(10, 1000);
+                    $array[$i]['seconds'] = 28800;;
+
+                }
+
+                return $array;
 
             }
 
-            return $array;
-
         }
-
     }
-
 
     public function leftMenu(Request $request)
     {
@@ -722,8 +727,6 @@ class ApiController extends Controller
 
     }
 
-
-
     public function socialIcons(Request $request){
 
 
@@ -738,4 +741,49 @@ class ApiController extends Controller
         return $return_array;
     }
 
+
+    /////////////ADDRESS
+    public function getCities(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $cities = City::select('id','name')->orderBy('name')->get();
+
+            return  response()->json( $cities);
+
+        }
+    }
+
+    public function getTowns(Request $request,$city_id=0)
+    {
+        $city = City::find($city_id);
+
+        if ($request->header('x-api-key') == $this->generateKey() && (!empty($city['id']))) {
+
+            $towns = Town::select('id','name')->where('city_id','=',$city_id)->orderBy('name')->get();
+            return  response()->json( $towns);
+        }
+    }
+
+    public function getDistricts(Request $request,$town_id=0)
+    {
+        $town = Town::find($town_id);
+
+        if ($request->header('x-api-key') == $this->generateKey() && (!empty($town['id']))) {
+
+            $districts = District::select('id','name')->where('town_id','=',$town_id)->orderBy('name')->get();
+            return  response()->json( $districts);
+        }
+    }
+
+    public function getNeighborhoods(Request $request,$district_id=0)
+    {
+        $district = District::find($district_id);
+
+        if ($request->header('x-api-key') == $this->generateKey() && (!empty($district['id']))) {
+
+            $neighborhoods = Neighborhood::select('id','name')->where('district_id','=',$district_id)->orderBy('name')->get();
+            return  response()->json( $neighborhoods);
+        }
+    }
 }

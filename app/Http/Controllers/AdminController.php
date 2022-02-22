@@ -52,7 +52,7 @@ class AdminController extends Controller
         Session::put('sudo',null);
         Session::put('auth_array',null);
         //     Session::put('Userget',null);
-        return redirect(route('index'));
+        return redirect(route('admin.index'));
     }
 
     public function profile(){

@@ -59,7 +59,25 @@
                         </ul>
                     </li>
                     @endif
+                    @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['customers'])))
+                        <li><a><i class="fa fa-puzzle-piece"></i> Müşteriler <span class="fa fa-chevron-down"></span></a>
+                            <ul class="nav child_menu">
+                                <li><a href="{{route('customer.customer-list')}}">Müşteri Listesi</a></li>
+                                @if(!empty($customer_id))
+                                    <li style="display: none"><a href="{{route('customer.customer-update',$customer_id)}}"></a></li>
+                                @if(!empty($selected))
 
+                                    <li style="display: none"><a href="{{route('customer.customer-update',[$customer_id,$selected])}}"></a></li>
+                                @endif
+                                @endif
+                                <li><a href="#">Siparişler</a></li>
+
+
+
+
+                            </ul>
+                        </li>
+                    @endif
                     @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['users'])))
                     <li><a><i class="fa fa-users"></i>  Kullanıcılar <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
@@ -124,6 +142,14 @@
                             @if(!empty($question_id))
                                 <li style="display: none"><a href="{{route('question.questionupdate',$question_id)}}"></a></li>
                             @endif
+
+                            <li><a href="{{route('cargo.cargo-list')}}">Kargo Şirketleri</a></li>
+                            <li style="display: none"><a href="{{route('cargo.cargo-add')}}"></a></li>
+                            @if(!empty($cargo_id))
+                                <li style="display: none"><a href="{{route('cargo.cargo-update',$cargo_id)}}"></a></li>
+                            @endif
+                            <li><a href="{{route('service-addresses-list')}}">Şirket Adresleri</a></li>
+
                         </ul>
                     </li>
                     @endif

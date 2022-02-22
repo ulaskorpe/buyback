@@ -72,6 +72,15 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Müşteriler</label>
+                                <div class="col-lg-8">
+                                    <label>
+                                        <input type="checkbox" class="js-switch"   name="customers" id="customers" value="13" data-switchery="true"
+                                               style="display: none;">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-lg-2 col-form-label font-weight-semibold">DURUM</label>
                                 <div class="col-lg-8">
                                     <label>

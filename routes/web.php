@@ -294,6 +294,34 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
     });
 
-    });
+    Route::group(['prefix'=>'cargo','as'=>'cargo.'],function (){
+            Route::get('/',[\App\Http\Controllers\DataController::class,'cargoList'])->name('cargo-list');
+            Route::get('/add',[\App\Http\Controllers\DataController::class,'cargoAdd'])->name('cargo-add');
+            Route::post('/add-post',[\App\Http\Controllers\DataController::class,'cargoAddPost'])->name('cargo-add-post');
+            Route::get('/update/{id}',[\App\Http\Controllers\DataController::class,'cargoUpdate'])->name('cargo-update');
+            Route::get('/add-branch/{company_id}',[\App\Http\Controllers\DataController::class,'addBranch'])->name('cargo-add-branch');
+            Route::post('/add-branch-post',[\App\Http\Controllers\DataController::class,'addBranchPost'])->name('cargo-add-branch-post');
+            Route::get('/update-branch/{branch_id}',[\App\Http\Controllers\DataController::class,'updateBranch'])->name('cargo-update-branch');
+            Route::post('/update-branch-post',[\App\Http\Controllers\DataController::class,'updateBranchPost'])->name('cargo-update-branch-post');
 
+            Route::post('/update-post',[\App\Http\Controllers\DataController::class,'cargoUpdatePost'])->name('cargo-update-post');
+
+        });
+    });
+    Route::get('/service-addresses',[\App\Http\Controllers\DataController::class,'serviceAddressesList'])->name('service-addresses-list');
+    Route::get('/add-service-address',[\App\Http\Controllers\DataController::class,'addServiceAddress'])->name('add-service-address');
+    Route::post('/add-service-address-post',[\App\Http\Controllers\DataController::class,'addServiceAddressPost'])->name('add-service-address-post');
+    Route::get('/update-service-address/{address_id}',[\App\Http\Controllers\DataController::class,'updateServiceAddress'])->name('update-service-address');
+    Route::post('/update-service-address-post',[\App\Http\Controllers\DataController::class,'updateServiceAddressPost'])->name('update-service-address-post');
+
+
+    Route::group(['middleware'=>\App\Http\Middleware\customerAuth::class,'prefix'=>'customers','as'=>'customer.'],function (){
+        Route::get('/',[\App\Http\Controllers\CustomerController::class,'customerList'])->name('customer-list');
+        Route::get('/update/{customer_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'customerUpdate'])->name('customer-update');
+        Route::post('/update-post',[\App\Http\Controllers\CustomerController::class,'customerUpdatePost'])->name('customer-update-post');
+        Route::post('/update-pw',[\App\Http\Controllers\CustomerController::class,'customerUpdatePW'])->name('customer-update-pw');
+        Route::get('/check-email/{email}/{customer_id}',[\App\Http\Controllers\CustomerController::class,'checkEmail'])->name('customer-check-email');
+        Route::get('/address-update/{customer_id}/{address_id}',[\App\Http\Controllers\CustomerController::class,'addressUpdate'])->name('customer-address-update');
+        Route::post('/update-address-post',[\App\Http\Controllers\CustomerController::class,'customerUpdateAddress'])->name('customer-update-address');
+    });
 });

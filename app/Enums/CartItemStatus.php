@@ -11,7 +11,9 @@ use BenSampo\Enum\Enum;
  */
 final class CartItemStatus extends Enum
 {
-    const OptionOne =   0;
-    const OptionTwo =   1;
-    const OptionThree = 2;
+    const init =   0;
+    const paid =   1;
+    const cancelled = 2;
+    const sent = 3;
+    const completed = 4;
 }

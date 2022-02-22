@@ -13,10 +13,15 @@ class CreateCustomerFavoritesTable extends Migration
      */
     public function up()
     {
-        Schema::create('customer_favorites', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+//        Schema::create('customer_favorites', function (Blueprint $table) {
+//            $table->id();
+//            $table->integer('customer_id');
+//            $table->integer('product_id');
+//            $table->integer('memory_id')->default(0);
+//            $table->integer('color_id')->default(0);
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -26,6 +31,6 @@ class CreateCustomerFavoritesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('customer_favorites');
+        //Schema::dropIfExists('customer_favorites');
     }
 }

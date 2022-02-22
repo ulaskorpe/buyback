@@ -57,7 +57,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
     Route::post('/settings-update',[\App\Http\Controllers\AdminController::class,'settingsPost'])->name('settings-update');
     Route::post('/logout',[\App\Http\Controllers\AdminController::class,'logout'])->name('logout');
 
-    Route::group(['prefix'=>'users','as'=>'users.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\userAuth::class,'prefix'=>'users','as'=>'users.'],function (){
         Route::get('/user-list',[\App\Http\Controllers\UserController::class,'userList'])->name('user-list');
         Route::get('/create',[\App\Http\Controllers\UserController::class,'create'])->name('user-create');
         Route::post('/create',[\App\Http\Controllers\UserController::class,'createPost'])->name('user-create-post');
@@ -77,7 +77,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
     });
 
-    Route::group(['prefix'=>'site','as'=>'site.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\siteAuth::class,'prefix'=>'site','as'=>'site.'],function (){
         Route::group(['prefix'=>'slider'],function (){
             Route::get('/list',[\App\Http\Controllers\SiteController::class,'sliderList'])->name('slider-list');
             Route::get('/create',[\App\Http\Controllers\SiteController::class,'createSlider'])->name('create-slider');
@@ -101,7 +101,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         });
 
     });
-    Route::group(['prefix'=>'buyback','as'=>'buyback.'],function (){
+
+    Route::group(['middleware'=>\App\Http\Middleware\buybackAuth::class,'prefix'=>'buyback','as'=>'buyback.'],function (){
         Route::get('/create',[\App\Http\Controllers\BuyBackController::class,'createBuyBack'])->name('create-buyBack');
         Route::post('/create',[\App\Http\Controllers\BuyBackController::class,'createBuyBackPost'])->name('create-buyBack-post');
         Route::get('/list/{user_id?}',[\App\Http\Controllers\BuyBackController::class,'buybackList'])->name('buyback-list');
@@ -112,7 +113,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/user-info/{user_id}',[\App\Http\Controllers\BuyBackController::class,'userInfo'])->name('user-info');
     });
 
-    Route::group(['prefix'=>'brand','as'=>'brand.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class,'prefix'=>'brand','as'=>'brand.'],function (){
     Route::get('/list',[\App\Http\Controllers\DataController::class,'brandlist'])->name('brandlist');
     Route::get('/add',[\App\Http\Controllers\DataController::class,'brandadd'])->name('brandadd');
     Route::post('/add-post',[\App\Http\Controllers\DataController::class,'brandaddPost'])->name('brandadd-post');
@@ -121,7 +122,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
     });
 
-    Route::group(['prefix'=>'model','as'=>'model.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class,'prefix'=>'model','as'=>'model.'],function (){
         Route::get('/list',[\App\Http\Controllers\ProductModelController::class,'modelList'])->name('model-list');
         Route::get('/add',[\App\Http\Controllers\ProductModelController::class,'modelAdd'])->name('model-add');
         Route::post('/add-post',[\App\Http\Controllers\ProductModelController::class,'modelAddPost'])->name('model-add-post');
@@ -138,7 +139,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             ->name('update-model-answer');
     });
 
-    Route::group(['prefix'=>'color','as'=>'color.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class,'prefix'=>'color','as'=>'color.'],function (){
         Route::get('/list',[\App\Http\Controllers\DataController::class,'colorlist'])->name('color-list');
         Route::get('/add',[\App\Http\Controllers\DataController::class,'colorAdd'])->name('color-add');
         Route::post('/add-post',[\App\Http\Controllers\DataController::class,'colorAddPost'])->name('colorAdd-post');
@@ -146,7 +147,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::post('/update-post',[\App\Http\Controllers\DataController::class,'colorUpdatePost'])->name('colorUpdate-post');
     });
 
-    Route::group(['prefix'=>'question','as'=>'question.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class,'prefix'=>'question','as'=>'question.'],function (){
         Route::get('/',[\App\Http\Controllers\DataController::class,'questionList'])->name('question-list');
         Route::get('/add',[\App\Http\Controllers\DataController::class,'questionAdd'])->name('questionadd');
         Route::post('/add-post',[\App\Http\Controllers\DataController::class,'questionAddPost'])->name('questionadd-post');
@@ -155,7 +156,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/update-answer/{id}/{value}',[\App\Http\Controllers\DataController::class,'updateAnswer'])->name('updateAnswer');
     });
 
-    Route::group(['prefix'=>'memory','as'=>'memory.'],function (){
+    Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class,'prefix'=>'memory','as'=>'memory.'],function (){
         Route::get('/',[\App\Http\Controllers\DataController::class,'memorylist'])->name('memorylist');
         Route::get('/add',[\App\Http\Controllers\DataController::class,'memoryadd'])->name('memoryadd');
         Route::post('/add-post',[\App\Http\Controllers\DataController::class,'memoryaddPost'])->name('memoryadd-post');
@@ -164,5 +165,13 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/check-memory/{val}/{id?}',[\App\Http\Controllers\DataController::class,'checkMemory'])->name('check-memory');
 
     });
+    Route::group(['middleware'=>\App\Http\Middleware\customerAuth::class,'prefix'=>'customers','as'=>'customer.'],function (){
+        Route::get('/',[\App\Http\Controllers\CustomerController::class,'customerList'])->name('customer-list');
+
+    });
+
 
 });
+
+
+

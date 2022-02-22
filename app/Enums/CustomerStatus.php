@@ -11,7 +11,8 @@ use BenSampo\Enum\Enum;
  */
 final class CustomerStatus extends Enum
 {
-    const OptionOne =   0;
-    const OptionTwo =   1;
-    const OptionThree = 2;
+    const init =   0;
+    const active =   1;
+    const inactive = 2;
+    const banned = 3;
 }

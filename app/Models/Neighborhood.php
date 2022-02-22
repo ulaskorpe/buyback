@@ -21,7 +21,7 @@ class Neighborhood extends Model
     ];
 
     public function district(){
-        return $this->hasOne(Town::class,'id','district_id');
+        return $this->hasOne(District::class,'id','district_id');
     }
 
 

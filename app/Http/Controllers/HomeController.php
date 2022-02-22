@@ -125,7 +125,7 @@ class HomeController extends Controller
 
 
                     Session::put('auth_array',['buyback'=>$auth['buybacks'],'users'=>$auth['users'],'system'=>$auth['system']
-                        ,'site'=>$auth['site'],'market_place'=>$auth['market_place'],'products'=>$auth['products']]);
+                        ,'site'=>$auth['site'],'market_place'=>$auth['market_place'],'products'=>$auth['products'],'customers'=>$auth['customers']]);
 
                   //  return  Session::get('auth_array');
                     }

@@ -13,16 +13,16 @@ class CreateSubLinkGroupsTable extends Migration
      */
     public function up()
     {
-        Schema::create('sub_link_groups', function (Blueprint $table) {
-            $table->id();
-            $table->integer('menu_sub_item_id');
-            $table->string('title');
-            $table->string('link')->nullable()->default(null);
-            $table->integer('order');
-            $table->boolean('status')->default(1);
-            $table->softDeletes();
-            $table->timestamps();
-        });
+//        Schema::create('sub_link_groups', function (Blueprint $table) {
+//            $table->id();
+//            $table->integer('menu_sub_item_id');
+//            $table->string('title');
+//            $table->string('link')->nullable()->default(null);
+//            $table->integer('order');
+//            $table->boolean('status')->default(1);
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -32,6 +32,6 @@ class CreateSubLinkGroupsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sub_link_groups');
+   //     Schema::dropIfExists('sub_link_groups');
     }
 }
