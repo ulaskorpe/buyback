@@ -325,6 +325,9 @@ class ApiProductController extends Controller
                 $items[$i] = ['id'=>$color['id'],'filterName'=>strtolower($color['filter_name']),'title'=>ucfirst($color['color_name']),'isChosen'=>false];
                 $i++;
             }
+
+            $array[1] =['id'=>2,'title'=>'Renkler','filterName'=>'colors','items'=>$items];
+
             $memories = Memory::select('id','memory_value')->get();
             $items = array();
             $i=0;
@@ -332,7 +335,7 @@ class ApiProductController extends Controller
                 $items[$i] = ['id'=>$memory['id'],'filterName'=>$memory['memory_value'] ,'title'=>$memory['memory_value']."GB",'isChosen'=>false];
                 $i++;
             }
-            $array[2] =['id'=>2,'title'=>'Hafızalar','filterName'=>'memory','items'=>$items];
+            $array[2] =['id'=>3,'title'=>'Hafızalar','filterName'=>'memory','items'=>$items];
             return $array;
 
         }
