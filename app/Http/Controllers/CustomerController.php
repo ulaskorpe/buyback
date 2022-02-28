@@ -9,6 +9,7 @@ use App\Models\CartItem;
 use App\Models\City;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +51,6 @@ class CustomerController extends Controller
 
     }
 
-
     public function checkEmail($email,$customer_id){
 
 
@@ -67,7 +67,6 @@ class CustomerController extends Controller
 
 
     }
-
 
     public function customerUpdatePost(Request $request){
         if ($request->isMethod('post')) {
@@ -115,7 +114,6 @@ class CustomerController extends Controller
 
         }
     }
-
 
     public function customerUpdatePW(Request $request){
         if ($request->isMethod('post')) {
@@ -211,5 +209,27 @@ class CustomerController extends Controller
             return json_encode($resultArray);
 
         }
+    }
+
+    public function orders(){
+
+            $orders = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','payment_method'
+                ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
+             //   ->where('id','=',1)
+                ->orderBy('id','DESC')
+                ->get();
+
+ //  return $orders;
+       return view('admin.customer.orders',['orders'=>$orders,'order_status'=>[0=>'Sepette',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı']]);
+    }
+
+    public function orderUpdate($order_id){
+        $order = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','payment_method'
+            ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
+               ->where('id','=',$order_id)
+            ->orderBy('id','DESC')
+            ->first();
+
+        return $order;
     }
 }

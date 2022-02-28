@@ -6,28 +6,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Order extends Model
+class OrderReturn extends Model
 {
     use HasFactory;
+
     use SoftDeletes;
-    protected $table = 'orders';
+    protected $table = 'order_returns';
 
     protected $fillable = [
-        'order_code','name_surname','cargo_company_id','cargo_company_branch_id',
-        'payment_method','cargo_code','customer_id','customer_address_id','service_address_id','status'
+        'order_id','name_surname','cargo_company_id','cargo_company_branch_id','cargo_code','customer_address_id','service_address_id','status'
     ];
 
     protected $hidden = [
         'deleted_at'
     ];
 
-    public function payment_method(){
-        return $this->hasOne(BankAccount::class,'id','payment_method');
+    public function order(){
+        return $this->hasOne(Order::class,'id','order_id');
     }
 
-    public function customer(){
-        return $this->hasOne(Customer::class,'id','customer_id');
-    }
 
     public function customer_address(){
         return $this->hasOne(CustomerAddress::class,'id','customer_address_id');
@@ -42,11 +39,6 @@ class Order extends Model
 
     public function service_address(){
         return $this->hasOne(ServiceAddress::class,'id','customer_id');
-    }
-
-    public function cart_items(){
-       //return $this->hasManyThrough(CartItem::class,CartOrderPivot::class,'order_id','id');
-        return $this->hasMany(CartItem::class,'order_id','id');
     }
 
 }

@@ -70,7 +70,7 @@
                                     <li style="display: none"><a href="{{route('customer.customer-update',[$customer_id,$selected])}}"></a></li>
                                 @endif
                                 @endif
-                                <li><a href="#">Siparişler</a></li>
+                                <li><a href="{{route('customer.orders')}}">Siparişler</a></li>
 
 
 

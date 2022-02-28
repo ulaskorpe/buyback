@@ -215,7 +215,8 @@ class ProductController extends Controller
 
                     $filename = GeneralHelper::fixName($p['title']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                    $path = public_path("images/products");
+                    //$path = public_path("images/products");
+                    $path = "images/products";
                     $th = GeneralHelper::fixName($p['title']) . "TH_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 

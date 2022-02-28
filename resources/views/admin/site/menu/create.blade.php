@@ -209,6 +209,7 @@
                 '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
                 '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
             return !!pattern.test(str);
+            //return true;
         }
         $('#create-menu').submit(function (e) {
             e.preventDefault();
@@ -234,9 +235,9 @@
 
             if ($('#link').val() != '') {
                 if(!validURL($('#link').val())){
-                    $('#link_error').html('<span style="color: red">Geçersiz URL</span>');
-                    $('#link').val('');
-                    error = true;
+                    // $('#link_error').html('<span style="color: red">Geçersiz URL</span>');
+                    // $('#link').val('');
+                    // error = true;
                 }else{
                     $('#link_error').html('');
                 }

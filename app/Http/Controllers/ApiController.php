@@ -27,12 +27,13 @@ class ApiController extends Controller
 
     use ApiTrait;
 
+
     public function settingList(Request $request, $code = 0)
     {
 
 
         if ($request->header('x-api-key') == $this->generateKey()) {
-
+            $status_code = 200;
 
             if ($code > 0) {
                 $resultArray = SiteSetting::where('code', '=', $code)->first();
@@ -42,12 +43,13 @@ class ApiController extends Controller
 
         } else {
             $resultArray['status'] = false;
-            $resultArray['status_code'] = 406;
-            $resultArray['msg'] = 'hatalı anahtar';
+           // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
         }
 
 
-        return response()->json($resultArray);
+        return response()->json($resultArray,$status_code);
         // return json_encode($resultArray);
     }
 
@@ -79,7 +81,7 @@ class ApiController extends Controller
 
         if ($request->header('x-api-key') == $this->generateKey()) {
             //  if(true){
-
+            $status_code = 200;
             $sliders = Slider::where('status', '=', 1)->orderBy('count')->get();
             $array = [];
             $i = 0;
@@ -98,12 +100,13 @@ class ApiController extends Controller
             $resultArray = $array;
         } else {
             $resultArray['status'] = false;
-            $resultArray['status_code'] = 406;
+         //   $resultArray['status_code'] = 406;
+            $status_code = 406;
             $resultArray['msg'] = 'hatalı anahtar';
         }
 
 
-        return response()->json($resultArray);
+        return response()->json($resultArray, $status_code);
         // return json_encode($resultArray);
     }
 
@@ -180,7 +183,7 @@ class ApiController extends Controller
         }
 
 
-        return response()->json($resultArray);
+        return response()->json($resultArray,200);
         // return json_encode($resultArray);
     }
 

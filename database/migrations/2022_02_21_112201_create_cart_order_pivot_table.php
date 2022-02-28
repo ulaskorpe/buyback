@@ -29,6 +29,6 @@ class CreateCartOrderPivotTable extends Migration
      */
     public function down()
     {
-      //  Schema::dropIfExists('cart_order_pivot');
+     //   Schema::dropIfExists('cart_order_pivot');
     }
 }

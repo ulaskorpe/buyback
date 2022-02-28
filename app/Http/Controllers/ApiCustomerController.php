@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\CartItem;
+
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\CustomerFavorite;
 use App\Models\Neighborhood;
+use App\Models\Order;
 use App\Models\Product;
 use Faker\Factory;
 use Illuminate\Http\Request;
@@ -22,7 +24,7 @@ class ApiCustomerController extends Controller
     public function create(Request $request)
     {
         if ($request->isMethod('post')) {
-
+            $status_code =201;
             if ($request->header('x-api-key') == $this->generateKey()) {
 
                 /*
@@ -98,38 +100,46 @@ class ApiCustomerController extends Controller
                         $c->save();
                         //return  response()->json( $c);
                         $returnArray['status'] = true;
-                        $returnArray['status_code'] = 201;
-                        $returnArray['data'] = $c;
+                      // $returnArray['status_code'] = 201;
+
+                        $returnArray['data'] =['customer'=>$c];
 
                     } else {
                         $returnArray['status'] = false;
-                        $returnArray['status_code'] = 409;
-                        $returnArray['msg'] = 'conflict/invalid';
+                        //$returnArray['status_code'] = 409;
+                        $status_code=409;
+                        $returnArray['errors'] =['msg'=>'conflict/invalid'] ;
                     }
 
                 } else {
                     $returnArray['status'] = false;
-                    $returnArray['status_code'] = 406;
-                    $returnArray['msg'] = 'missing data';
+                    //$returnArray['status_code'] = 406;
+                    $status_code=406;
+                    //$returnArray['msg'] = 'missing data';
+                    $returnArray['errors'] =['msg'=>'missing data'] ;
                 }
 
 
             } else {
                 $returnArray['status'] = false;
-                $returnArray['status_code'] = 498;
-                $returnArray['msg'] = 'invalid key';
+             //  $returnArray['status_code'] = 498;
+                $status_code=498;
+             //   $returnArray['msg'] = 'invalid key';
+                $returnArray['errors'] =['msg'=>'invalid key'] ;
             }
 
 
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
+            //$returnArray['status_code'] = 405;
+                 $status_code=405;
 
-            $returnArray['msg'] ='method_not_allowed';
+      //      $returnArray['msg'] ='method_not_allowed';
+            $returnArray['errors'] =['msg'=>'method_not_allowed'] ;
         }
 
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function updateProfile(Request $request)
@@ -140,7 +150,7 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
 
             if ($request->header('x-api-key') == $this->generateKey()) {
-
+                $status_code=200;
 
                 if (!empty($request['name']) && !empty($request['surname']) && !empty($request['customer_id'])  ) {
 
@@ -169,33 +179,37 @@ class ApiCustomerController extends Controller
                         $c->save();
                         //return  response()->json( $c);
                         $returnArray['status'] = true;
-                        $returnArray['status_code'] = 200;
-                        $returnArray['data'] = $c;
+                    //    $returnArray['status_code'] = 200;
+                        $returnArray['data'] =['customer'=>$c] ;
 
 
                 } else {
                     $returnArray['status'] = false;
-                    $returnArray['status_code'] = 406;
-                    $returnArray['msg'] = 'missing data';
+                   // $returnArray['status_code'] = 406;
+                    $status_code=406;
+                    $returnArray['errors'] = ['msg'=>'missing data'];
                 }
 
 
             } else {
                 $returnArray['status'] = false;
-                $returnArray['status_code'] = 498;
-                $returnArray['msg'] = 'invalid key';
+                //$returnArray['status_code'] = 498;
+                $status_code=498;
+                //$returnArray['msg'] = 'invalid key';
+                $returnArray['errors'] = ['msg'=>'missing data'];
             }
 
 
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-
-            $returnArray['msg'] ='method_not_allowed';
+            //$returnArray['status_code'] = 405;
+            $status_code=405;
+            //$returnArray['msg'] ='method_not_allowed';
+            $returnArray['errors'] = ['msg'=>'method_not_allowed'];
         }
 
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function updatePassword(Request $request)
@@ -207,7 +221,7 @@ class ApiCustomerController extends Controller
 
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-
+                $status_code=200;
                 if ( !empty($request['customer_id'])  && !empty($request['password'])) {
 
                         $c = Customer::where('customer_id','=',$request['customer_id'])->first();
@@ -220,33 +234,38 @@ class ApiCustomerController extends Controller
                         $c->save();
                         //return  response()->json( $c);
                         $returnArray['status'] = true;
-                        $returnArray['status_code'] = 200;
-                        $returnArray['data'] = $c;
+                   //     $returnArray['status_code'] = 200;
+                        $returnArray['data'] = ['customer'=>$c];
 
 
                 } else {
                     $returnArray['status'] = false;
-                    $returnArray['status_code'] = 406;
-                    $returnArray['msg'] = 'missing data';
+//                    $returnArray['status_code'] = 406;
+//                    $returnArray['msg'] = 'missing data';
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
                 }
 
 
             } else {
                 $returnArray['status'] = false;
-                $returnArray['status_code'] = 498;
-                $returnArray['msg'] = 'invalid key';
+                //$returnArray['status_code'] = 498;
+              //  $returnArray['msg'] = 'invalid key';
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid_key'];
+
             }
 
 
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-
-            $returnArray['msg'] ='method_not_allowed';
+           // $returnArray['status_code'] = 405;
+            $status_code=405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
 
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function login(Request $request)
@@ -270,7 +289,7 @@ class ApiCustomerController extends Controller
         die();**/
         if ($request->isMethod('post')) {
         if ($request->header('x-api-key') == $this->generateKey()) {
-
+                $status_code = 200;
             if(!empty($request['email']) && !empty($request['password']) ){
 
                 $ch =  Customer::where('email','=',$request['email'])
@@ -281,43 +300,44 @@ class ApiCustomerController extends Controller
                     if($ch['status']==1) {
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['data'] =$ch;
-
+                        $returnArray['data'] =['customer'=>$ch];
 
                     }elseif ($ch['status']==0){
                         $returnArray['status']=false;
-                        $returnArray['status_code']=403;
-                        $returnArray['msg'] ='inactive user';
+                        $status_code=403;
+                        $returnArray['errors'] =['msg'=>'inactive user'];
                     }elseif ($ch['status']==2){
                         $returnArray['status']=false;
-                        $returnArray['status_code']=403;
-                        $returnArray['msg'] ='banned user';
+                        $status_code=403;
+                        $returnArray['errors'] =['msg'=>'banned user'];
                     }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+
+                $status_code=406;
+                $returnArray['errors'] =['msg'=>'missing data'];
+
             }
 
 
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-
-            $returnArray['msg'] ='method_not_allowed';
+            //$returnArray['status_code'] = 405;
+            $status_code=405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function templateFx(Request $request)
@@ -336,7 +356,7 @@ class ApiCustomerController extends Controller
                     if($ch['status']==1) {
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
+                       $status_code=200;
                         $returnArray['data'] =$ch;
 
 
@@ -355,7 +375,7 @@ class ApiCustomerController extends Controller
             }else{
                 $returnArray['status']=false;
                 $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+                $returnArray['errors'] =['msg'=>'missing data'];
             }
 
 
@@ -400,42 +420,45 @@ class ApiCustomerController extends Controller
 
                         $ch->save();
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['data'] =$ch;
+                        $status_code =200;
+                        $returnArray['data'] =['customer'=>$ch];
 
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=304;
-                        $returnArray['msg'] ="not modified";
+                        $status_code =304;
+                        $returnArray['errors'] =['msg'=>"not modified"];
 
                     }
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=404;
-                    $returnArray['msg'] ="not found";
+                    $status_code =404;
+                    $returnArray['errors'] =['msg'=>"not found"];
+
                 }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+                $status_code =406;
+                $returnArray['errors'] =['msg'=>"missing data"];
+
             }
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code =498;
+            $returnArray['errors'] =['msg'=>"invalid key"];
+
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code =405;
+            $returnArray['errors'] =['msg'=>"method_not_allowed"];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
 
@@ -463,40 +486,38 @@ class ApiCustomerController extends Controller
                     }
 
                     $ch->save();
-
-
-                        $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['msg'] ='pw sent';
-
-
-
+                      $returnArray['status']=true;
+                      $returnArray['data']=['customer'=>$ch];
+                      $status_code = 200;
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=404;
-                    $returnArray['msg'] ="not found";
+                    $status_code=404;
+
+                    $returnArray['errors'] =['msg'=>'not found'];
                 }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+                $status_code=406;
+
+                $returnArray['errors'] =['msg'=>'missing data'];
             }
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code=498;
+
+            $returnArray['errors'] =['msg'=>'invalid key'];
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
 ///////////////////////////////ADDRESS////////////////////////////////////////////////////////
@@ -524,37 +545,38 @@ class ApiCustomerController extends Controller
                     }
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['addresses'] =$addresses;
+                     //  $status_code=200;
+                    $status_code =200;
+                        $returnArray['data'] =['addresses'=>$addresses];
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=404;
-                    $returnArray['msg'] ="not found";
+                    $status_code =404;
+                    $returnArray['errors'] =['msg'=>'not found'];
                 }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+                $status_code =406;
+                $returnArray['errors'] =['msg'=>'missing data'];
             }
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code =498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code =405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function addAddress(Request $request)
@@ -628,37 +650,38 @@ class ApiCustomerController extends Controller
                     }
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=201;
-                        $returnArray['msg'] ='address added';
+                       $status_code= 201;
+                        $returnArray['data'] =['address'=>$address];
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=404;
-                    $returnArray['msg'] ="not found";
+                    $status_code= 404;
+
+                    $returnArray['errors'] =['msg'=>'not found'];
                 }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+                $status_code= 406;
+                $returnArray['errors'] =['msg'=>'missing data'];
             }
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code= 498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code= 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function updateAddress(Request $request)
@@ -733,37 +756,38 @@ if(!empty($request['customer_id']) && !empty($request['title']) && !empty($reque
                     }
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['msg'] ='address updated';
+                        $status_code = 200;
+                        $returnArray['data'] =['address'=>$address];
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=404;
-                    $returnArray['msg'] ="not found";
+                    $status_code = 404;
+
+                    $returnArray['errors'] =['msg'=>'not found'];
                 }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+                $status_code = 406;
+                $returnArray['errors'] =['msg'=>'missing data'];
             }
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code = 498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function deleteAddress(Request $request)
@@ -802,37 +826,41 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                     }
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['msg'] ='address deleted';
+                       $status_code=200;
+                        //$returnArray['msg'] ='address deleted';
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=404;
-                    $returnArray['msg'] ="not found";
+                    $status_code=404;
+
+                    $returnArray['errors'] =['msg'=>'not found'];
                 }
 
 
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=406;
-                $returnArray['msg'] ='missing data';
+    $status_code=406;
+
+    $returnArray['errors'] =['msg'=>'missing data'];
             }
 
         }else{
             $returnArray['status']=false;
-            $returnArray['status_code']=498;
-            $returnArray['msg'] ='invalid key';
+            $status_code=498;
+
+            $returnArray['errors'] =['msg'=>'invalid key'];
         }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+
+        return response()->json($returnArray,$status_code);
     }
 
 ///////////////////////////////ADDRESS////////////////////////////////////////////////////////
@@ -873,37 +901,40 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                         }
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=201;
-                        $returnArray['msg'] ='favorite added';
+                       $status_code=201;
+
 
 
 
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=404;
-                        $returnArray['msg'] ="not found";
+                        $status_code=404;
+
+                        $returnArray['errors'] =['msg'=>'not found'];
                     }
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['msg'] ='missing data';
+                    $status_code=406;
+
+                    $returnArray['errors'] =['msg'=>'missing data'];
                 }
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+                $status_code=498;
+
+                $returnArray['errors'] =['msg'=>'invalid key'];
             }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function removeFromFavorites(Request $request)
@@ -927,13 +958,14 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                            $fav->delete();
 
                             $returnArray['status']=true;
-                            $returnArray['status_code']=200;
-                            $returnArray['msg'] ='favorite deleted';
+                           $status_code=200;
+
                         }else{
 
                             $returnArray['status']=false;
-                            $returnArray['status_code']=404;
-                            $returnArray['msg'] ='favorite not found';
+                            $status_code=404;
+
+                            $returnArray['errors'] =['msg'=>'not found'];
                         }
 
                         //$ch->activation_key=0;
@@ -947,30 +979,33 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=404;
-                        $returnArray['msg'] ="not found";
+                        $status_code=404;
+
+                        $returnArray['errors'] =['msg'=>'not found'];
                     }
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['msg'] ='missing data';
+                    $status_code=406;
+
+                    $returnArray['errors'] =['msg'=>'missing data'];
                 }
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+                $status_code=498;
+
+                $returnArray['errors'] =['msg'=>'invalid key'];
             }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function showFavorites(Request $request)
@@ -989,7 +1024,7 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
 
                             $returnArray['status']=true;
-                            $returnArray['status_code']=200;
+                           $status_code=200;
                             $returnArray['data'] =CustomerFavorite::with('product.brand','product.model','product.category','color','memory','product.firstImage')
                                 ->where('customer_id','=',$ch['id'])
                                 ->orderBy('created_at','DESC')
@@ -1006,30 +1041,33 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=404;
-                        $returnArray['msg'] ="not found";
+                        $status_code=404;
+
+                        $returnArray['errors'] =['msg'=>'not found'];
                     }
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['msg'] ='missing data';
+                    $status_code=406;
+
+                    $returnArray['errors'] =['msg'=>'missing data'];
                 }
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+                $status_code=498;
+
+                $returnArray['errors'] =['msg'=>'invalid key'];
             }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
 
@@ -1040,12 +1078,13 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
 
     private function generateItemCode(){
-            return "ITEM".date("YmdHis").rand(100,2000);
+            return "ITEM".date("YmdHis");
     }
 
     private function generateOrderCode(){
-        return "ORDER".date("YmdHis").rand(100,2000);
+        return "ORDER".date("YmdHis");
     }
+
     public function addToCart(Request $request)
     {
 
@@ -1064,6 +1103,7 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
                         $cart = CartItem::where('customer_id','=',$ch['id'])
                             ->where('product_id','=',$request['product_id'])
+                            ->where('status','=',0)
                             ->where('memory_id','=',$memory_id)
                             ->where('color_id','=',$color_id)
                             ->where('status','=',0)
@@ -1079,8 +1119,13 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                         }else{
                             $item_code = $cart['item_code'];
                         }
-
-                        $cart->quantity  = (!empty($request['quantity']))?$request['quantity']:1;
+                        $qty=(!empty($request['quantity']))?$request['quantity']:1;
+                        $cart->quantity  = $qty;
+                            if($request['price']>0){
+                                $cart->price = ((float)$request['price'])*$qty;
+                            }else{
+                                $cart->price = ((float)$product['price'])*$qty;
+                            }
                         $cart->save();
 
                         //$ch->activation_key=0;
@@ -1090,38 +1135,41 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                         }
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=201;
+                       $status_code=201;
                         $returnArray['data']=['item_code'=>$item_code];
-                        $returnArray['msg'] ='item added to cart';
+
 
 
 
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=404;
-                        $returnArray['msg'] ="not found";
+                        $status_code=404;
+                        $returnArray['errors'] =['msg'=>'not found'];
+
                     }
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['msg'] ='missing data';
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
+
                 }
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
+
             }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function removeFromCart(Request $request)
@@ -1131,69 +1179,50 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) && !empty($request['product_id'])){
+                if(!empty($request['customer_id']) && !empty($request['item_code'])){
 
-                    $memory_id=(!empty($request['memory_id']))?$request['memory_id']:0;
-                    $color_id=(!empty($request['color_id']))?$request['color_id']:0;
+
 
                     $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
-                    $product=  Product::find($request['product_id']);
+                    $item=  CartItem::where('item_code','=',$request['item_code'])->where('customer_id','=',$ch['id'])->first(); //Product::find($request['product_id']);
 
-                    if(!empty($ch['id']) && !empty($product['id'])){
-
-                        $cart = CartItem::where('customer_id','=',$ch['id'])
-                            ->where('product_id','=',$request['product_id'])
-                            ->where('memory_id','=',$memory_id)
-                            ->where('color_id','=',$color_id)
-                            ->first();
-                        if(!empty($cart['id'])){
-                            $cart->delete();
-
+                    if(!empty($ch['id']) && !empty($item['id'])){
+                            $item->delete();
                             $returnArray['status']=true;
-                            $returnArray['status_code']=200;
-                            $returnArray['msg'] ='cart item deleted';
-                        }else{
+                           $status_code=200;
 
-                            $returnArray['status']=false;
-                            $returnArray['status_code']=404;
-                            $returnArray['msg'] ='item not found';
-                        }
-
-                        //$ch->activation_key=0;
                         if(!empty($request['ip_address'])){
                             $ch->ip_address=$request['ip_address'];
                             $ch->save();
                         }
 
 
-
-
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=404;
-                        $returnArray['msg'] ="not found";
+                        $status_code=404;
+                        $returnArray['errors'] =['msg'=>'not found'];
                     }
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['msg'] ='missing data';
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
                 }
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
             }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
     }
 
     public function showCart(Request $request)
@@ -1212,13 +1241,34 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
 
                         $returnArray['status']=true;
-                        $returnArray['status_code']=200;
-                        $returnArray['data'] =CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                            ->where('customer_id','=',$ch['id'])
-                            ->where('status','=',0)
-                            ->orderBy('created_at','DESC')
-                            ->get();
+                       $status_code=200;
+                       $item_array=array();
+                       $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
+                           ->where('status','=',0)
+                           ->where('customer_id','=',$ch['id'])
+                           ->where('status','=',0)
+                           ->orderBy('created_at','DESC')
+                           ->get();
+                        $i=0;
+                        foreach ($cart_items as $cart_item){
+                            $item_array[$i]['item_code']=$cart_item['item_code'];
+                            $item_array[$i]['price']=$cart_item['price'];
+                            $item_array[$i]['quantity']=$cart_item['quantity'];
+                            $item_array[$i]['created_at']=$cart_item['created_at'];
+                            $item_array[$i]['product']=$cart_item->product()->first()->title;
+                            $item_array[$i]['description']=$cart_item->product()->first()->description;
+                            $item_array[$i]['brand']=$cart_item->product()->first()->brand()->first()->BrandName;
+                            $item_array[$i]['model']=$cart_item->product()->first()->model()->first()->Modelname;
+                            $item_array[$i]['category']=$cart_item->product()->first()->category()->first()->category_name;
+                            $item_array[$i]['image']=$cart_item->product()->first()->firstImage()->first()->image;
+                            $item_array[$i]['thumb']=$cart_item->product()->first()->firstImage()->first()->thumb;
+                            $item_array[$i]['color']=$cart_item->color()->first()->color_name;
+                            $item_array[$i]['memory']=$cart_item->memory()->first()->memory_value." GB";
+                            $i++;
+                        }
 
+
+                        $returnArray['data'] =['cart_items'=>$item_array];
                         //$ch->activation_key=0;
                         if(!empty($request['ip_address'])){
                             $ch->ip_address=$request['ip_address'];
@@ -1230,30 +1280,186 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
                     }else{
                         $returnArray['status']=false;
-                        $returnArray['status_code']=404;
-                        $returnArray['msg'] ="not found";
+                        $status_code=404;
+                        $returnArray['errors'] =['msg'=>'not found'];
                     }
 
 
 
                 }else{
                     $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['msg'] ='missing data';
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
                 }
 
             }else{
                 $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
             }
 
         }else{
             $returnArray['status'] = false;
-            $returnArray['status_code'] = 405;
-            $returnArray['msg'] ='method_not_allowed';
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
-        return response()->json($returnArray);
+        return response()->json($returnArray,$status_code);
+    }
+
+
+    private function addressCheck($customer_id,$address_id=0){
+        if($address_id>0){
+        $address= CustomerAddress::find($address_id);
+        if($customer_id != $address['customer_id']){
+            $address = CustomerAddress::where('customer_id','=',$customer_id)->orderBy('first','DESC')->first();
+            $address_id = (!empty($address['id'])) ? $address['id'] :0;
+        }
+        }else{
+            $address = CustomerAddress::where('customer_id','=',$customer_id)->orderBy('first','DESC')->first();
+            $address_id = (!empty($address['id'])) ? $address['id'] :0;
+        }
+        return $address_id;
+    }
+
+    public function placeOrder(Request $request)
+    {
+
+        if ($request->isMethod('post')) {
+            if ($request->header('x-api-key') == $this->generateKey()) {
+                if(!empty($request['customer_id']) ){
+                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',1)->first();
+
+
+                    if(!empty($ch['id']) && !empty($request['cargo_company_id'])    ){
+
+                        $order_status=0;
+                        if($request['payment_method']=='cc' || $request['payment_method']==0){
+                            if(!empty($request['cc_no']) && !empty($request['expires_at']) && !empty($request['cvc'])){
+                                if(!$this->ccPayment($request['cc_no'],$request['expires_at'],$request['cvc'])){
+                                    $returnArray['status']=false;
+                                    $status_code=402;
+                                    $returnArray['errors'] =['msg'=>'payment_required'];
+                                    return response()->json($returnArray,$status_code);
+                                }
+                                $order_status=1;
+                            }else{
+                                $returnArray['status']=false;
+                                $status_code=406;
+                                $returnArray['errors'] =['msg'=>'missing data'];
+                                return response()->json($returnArray,$status_code);
+
+                            }
+                        }/////CC PAYMENT
+                        $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
+                        if($address_id == 0){
+                            $returnArray['status']=false;
+                            $status_code=406;
+                            $returnArray['errors'] =['msg'=>'address not found'];
+                            return response()->json($returnArray,$status_code);
+                        }
+
+
+                        if(!empty($request['item_array'])){
+                            $item_array= explode(',',$request['item_array']);
+                            $items = CartItem::with('product.firstImage','memory','color')
+                                ->where('status','=',0)
+                                ->where('customer_id','=',$ch['id'])->whereIn('item_code',$item_array)->get();
+                        }else{
+                            $items = CartItem::with('product.firstImage','memory','color')
+                                ->where('status','=',0)
+                                ->where('customer_id','=',$ch['id'])->get();
+                        }
+
+                        if($items->count()==0){
+                            $returnArray['status']=false;
+                            $status_code=404;
+                            $returnArray['errors'] =['msg'=>'no item found'];
+                            return response()->json($returnArray,$status_code);
+                        }
+
+
+
+                        $order=new Order();
+                        $order->order_code = $this->generateOrderCode();
+                        $order->name_surname = (!empty($request['name_surname'])) ? $request['name_surname']:$ch['name']." ".$ch['surname'];
+                        $order->cargo_company_id = $request['cargo_company_id'];
+                        $order->customer_id= $ch['id'];
+                        $order->customer_address_id = $address_id;
+                        $order->payment_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
+                        $order->status = $order_status;
+                        $order->amount = 0;
+                        $order->save();
+
+
+                        $price = 0 ;
+                        $delete_item_array = array();
+                        foreach ($items as $item){
+
+                                $price += $item['price'];
+                                $delete_item_array[]=$item['id'];
+                        }
+                        $order->amount=$price;
+                        $order->save();
+
+                        $result = array();
+                        $i=0;
+                        foreach ($items as $item){
+
+
+                            $result[$i]['item_code']=$item['item_code'];
+                            $result[$i]['product']=$item->product()->first()->title;
+                            $result[$i]['image']=$item->product()->first()->firstImage()->first()->thumb;
+                            $result[$i]['memory']=$item->memory()->first()->memory_value."GB";
+                            $result[$i]['color']=$item->color()->first()->color_name;
+                            $result[$i]['quantity']=$item['quantity'];
+                            $result[$i]['price']=$item['price'];
+                            $i++;
+                        }
+                        CartItem::whereIn('id',$delete_item_array)->update(['status'=>1,'order_id'=>$order['id']]);//->delete();
+                        $returnArray['status']=true;
+                        $status_code=200;
+                        $returnArray['data'] =['items'=>$result];
+                        //$ch->activation_key=0;
+                        if(!empty($request['ip_address'])){
+                            $ch->ip_address=$request['ip_address'];
+                            $ch->save();
+                        }
+                    }else{
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'missing data'];
+                    }
+                }else{
+                    $returnArray['status']=false;
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
+                }
+            }else{
+                $returnArray['status']=false;
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
+            }
+
+        }else{
+            $returnArray['status'] = false;
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+        }
+        return response()->json($returnArray,$status_code);
+
+    }
+
+
+    private function ccPayment($ccno,$expires_at,$cvc){
+        $mo = (int)$expires_at;
+      //  return (int)date('Ym').":".$mo;
+
+
+        if($mo>(int)date('ym') && strlen($ccno)==16 && strlen($cvc)==3){
+        return true;
+        }else{
+            return  false;
+        }
     }
 
 }

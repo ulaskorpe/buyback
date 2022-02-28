@@ -121,9 +121,9 @@
         if ($('#sub_link').val() != '') {
             if(!validURL($('#sub_link').val())){
 
-                $('#sub_link_error').html('<span style="color: red">Geçersiz URL</span>');
-                $('#sub_link').val('');
-                error12 = true;
+                // $('#sub_link_error').html('<span style="color: red">Geçersiz URL</span>');
+                // $('#sub_link').val('');
+                // error12 = true;
             }else{
 
                 $('#sub_link_error').html('');

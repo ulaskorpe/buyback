@@ -120,9 +120,9 @@
         if ($('#group_link').val() != '') {
             if(!validURL($('#sub_link').val())){
 
-                $('#group_link_error').html('<span style="color: red">Geçersiz URL</span>');
-                $('#group_link').val('');
-                error12 = true;
+                // $('#group_link_error').html('<span style="color: red">Geçersiz URL</span>');
+                // $('#group_link').val('');
+                // error12 = true;
             }else{
 
                 $('#group_link_error').html('');

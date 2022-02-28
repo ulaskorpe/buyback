@@ -323,5 +323,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/check-email/{email}/{customer_id}',[\App\Http\Controllers\CustomerController::class,'checkEmail'])->name('customer-check-email');
         Route::get('/address-update/{customer_id}/{address_id}',[\App\Http\Controllers\CustomerController::class,'addressUpdate'])->name('customer-address-update');
         Route::post('/update-address-post',[\App\Http\Controllers\CustomerController::class,'customerUpdateAddress'])->name('customer-update-address');
+        Route::get('/orders',[\App\Http\Controllers\CustomerController::class,'orders'])->name('orders');
+        Route::get('/order-update/{order_id}',[\App\Http\Controllers\CustomerController::class,'orderUpdate'])->name('order-update');
+        Route::post('/order-update-post',[\App\Http\Controllers\CustomerController::class,'orderUpdatePost'])->name('order-update-post');
     });
 });

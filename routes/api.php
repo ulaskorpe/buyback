@@ -26,11 +26,15 @@ Route::delete('/delete-tmp/{id}', [ \App\Http\Controllers\DataController::class,
 Route::get('/list-tmp', [ \App\Http\Controllers\DataController::class, 'listTmp'])->name('list-tmp');
 Route::post('/country-list', [ \App\Http\Controllers\DataController::class, 'countryList'])->name('country-list');
 Route::post('/product-list', [ \App\Http\Controllers\ProductController::class, 'productListApi'])->name('product-list-api');
-Route::get('/product-detail/{count?}', [ \App\Http\Controllers\ProductController::class, 'productDetailApi'])->name('product-detail-api');
+
 Route::get('/get-cities', [ \App\Http\Controllers\ApiController::class, 'getCities'])->name('get-cities-api');
 Route::get('/get-towns/{city_id}', [ \App\Http\Controllers\ApiController::class, 'getTowns'])->name('get-towns-api');
 Route::get('/get-districts/{town_id}', [ \App\Http\Controllers\ApiController::class, 'getDistricts'])->name('get-districts-api');
 Route::get('/get-neighborhoods/{district_id}', [ \App\Http\Controllers\ApiController::class, 'getNeighborhoods'])->name('get-neighborhoods-api');
+Route::get('/service-addresses', [ \App\Http\Controllers\DataController::class, 'serviceAddresses'])->name('service-addresses-api');
+Route::get('/cargo-companies', [ \App\Http\Controllers\DataController::class, 'cargoCompanies'])->name('cargo-companies-api');
+
+
 
 Route::group(['prefix' => 'site'], function () {
     Route::get('/setting-list/{id?}', [ \App\Http\Controllers\ApiController::class, 'settingList'])->name('setting-list-api');
@@ -59,6 +63,7 @@ Route::group(['prefix' => 'products'], function () {
     Route::post('/product-seeder', [ \App\Http\Controllers\ApiProductController::class, 'productSeeder'])->name('product-seeder-api');
     Route::get('/middle-products', [ \App\Http\Controllers\ApiProductController::class, 'middleProducts'])->name('middle-products-api');
     Route::get('/product-filters', [ \App\Http\Controllers\ApiProductController::class, 'productFilters'])->name('product-filters-api');
+    Route::get('/product-detail/{product_id}', [ \App\Http\Controllers\ApiProductController::class, 'productDetail'])->name('product-detail-api');
 });
 Route::group(['prefix' => 'customers'], function () {
     Route::post('/create', [ \App\Http\Controllers\ApiCustomerController::class, 'create'])->name('create-customer-api');
@@ -72,6 +77,10 @@ Route::group(['prefix' => 'cart'], function () {
     Route::post('/show', [ \App\Http\Controllers\ApiCustomerController::class, 'showCart'])->name('show-cart-api');
     Route::post('/add', [ \App\Http\Controllers\ApiCustomerController::class, 'addToCart'])->name('add-to-cart-api');
     Route::post('/remove', [ \App\Http\Controllers\ApiCustomerController::class, 'removeFromCart'])->name('remove-cart-api');
+    Route::post('/place-order', [ \App\Http\Controllers\ApiCustomerController::class, 'placeOrder'])->name('place-order-api');
+    Route::post('/show-order', [ \App\Http\Controllers\ApiCustomerController::class, 'showOrder'])->name('show-order-api');
+
+
 });
 
 Route::group(['prefix' => 'favorites'], function () {
@@ -86,5 +95,6 @@ Route::group(['prefix' => 'address'], function () {
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'updateAddress'])->name('update-address-api');
     Route::post('/delete', [ \App\Http\Controllers\ApiCustomerController::class, 'deleteAddress'])->name('delete-address-api');
 });
+
 
 });

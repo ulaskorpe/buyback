@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Color;
+use App\Models\ColorModel;
 use App\Models\Memory;
 use App\Models\Product;
 use App\Models\ProductBrand;
@@ -16,6 +17,7 @@ use Faker\Factory;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use phpDocumentor\Reflection\Types\Object_;
+use Illuminate\Support\Facades\DB;
 
 class ApiProductController extends Controller
 {
@@ -148,6 +150,7 @@ class ApiProductController extends Controller
     public function allProducts(Request $request)
     {
 
+//return  DB::table('product_memories')->count();
 
         if ($request->header('x-api-key') == $this->generateKey()) {
             $array = [];
@@ -161,13 +164,14 @@ class ApiProductController extends Controller
                 $brands = ProductBrand::pluck('id')->toArray();
 
             }
-            $page = (!empty($request['page']))?$request['page']:0;
+            $page = (!empty($request['page']))?($request['page']-1):0;
+            $page = ($page<0)?0:$page;
             $page_count = (!empty($request['page_count']))?$request['page_count']:20;
+
             if(!empty($request['colors'])){
                 $colors = explode(",",trim($request['colors']));
             }else{
                 $colors = Color::pluck('id')->toArray();
-
             }
 
             if(!empty($request['memories'])){
@@ -176,21 +180,61 @@ class ApiProductController extends Controller
                 $memories = Memory::pluck('id')->toArray();
 
             }
+            $a1 = ProductColor::whereIn('color_id',$colors)->pluck('product_id')->toArray();
+            $a2 =  ProductMemory::whereIn('memory_id',$memories)->pluck('product_id')->toArray();
+            //return $memories;
+           // $products=Product::with('colors')->orderBy('id')->limit(30)->get();
+            //return $products;
 
-            $products = Product::with('brand','firstImage')->whereIn('brand_id',$brands)
+          //  return ProductColor::whereIn('color_id',$colors)->where('product_id','=',4)->count();
+
+            $products = Product::with('brand','firstImage','colors','memories')->whereIn('brand_id',$brands)
                 ->where('price','>=',$min_price)
+                ->whereIn('id',array_intersect($a1,$a2))
                 ->where('price','<=',$max_price)
                 ->skip($page*$page_count)
                 ->limit($page_count)
-                ->orderBy($order,$desc)
-                ->get();
+                ->orderBy($order,$desc) ;
+              $product_count = $products->count();
+           //   return $product_count;
+
+            $products = $products->get();
 
 
 
-            $faker = Factory::create();
+            //$faker = Factory::create();
             $i=0;
             $array=array();
+
+
+
+
+
             foreach ($products as $product){
+                $show = true;
+            /*    if(!empty($request['colors'])) {
+                    $show = false;
+                    $color_array = ProductColor::where('product_id', '=', $product['id'])->pluck('color_id')->toArray();
+                    foreach ($color_array as $item){
+                        if(in_array($item,$colors)){
+                            $show = true;
+                            break;
+                        }
+                    }
+                }///colors
+
+                if(!empty($request['memories'])) {
+                    $show = false;
+                    $memory_array = ProductMemory::where('product_id', '=', $product['id'])->pluck('')->toArray();
+                    foreach ($memory_array as $item){
+                        if(in_array($item,$memories)){
+                            $show = true;
+                            break;
+                        }
+                    }
+                }///*/
+
+                if($show){
                 $details  =array();
                $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
                $j=0;
@@ -202,22 +246,139 @@ class ApiProductController extends Controller
 
 
                 $array[$i]['id'] = $product['id'];
-                $array[$i]['filterData'] = array(['filterType'=>'brand',"value"=> $product->brand()->first()->BrandName],['filterType'=>'color','value'=>'red']);
+          //      $array[$i]['filterData'] = array(['filterType'=>'brand',"value"=> $product->brand()->first()->BrandName],['filterType'=>'color','value'=>'red']);
                 $array[$i]['title'] = $product['title'];
                 $array[$i]['listPrice'] = $product['price'];
                 $array[$i]['price'] = $product['price_ex'];
+                $array[$i]['brand'] = $product->brand()->first()->BrandName;
+                $array[$i]['model'] = $product->model()->first()->Modelname;
+
                 $array[$i]['url'] = '/urun-detay/'.str_replace(" ","-",$product['title'])."/".$product['id'];
                 $array[$i]['imageUrl'] = url($product->firstImage()->first()->thumb);
                 $array[$i]['discount'] = $product['price']-$product['price_ex'];
                 $array[$i]['details'] =  $details;
                 $i++;
+                }///show ??
             }
 
-            return $array;
+            $count = (count($array)>0)?true:false;
+           $resultArray['status'] = ($count)?true:false;
+            $resultArray['data'] = $array;//['products'=>$array];
+            $resultArray['errors'] = ['msg'=>($count)?'':'Not Found'];
+            $resultArray['item_count'] =$product_count;
+
+            $status_code  = ($count)?200:404;
+
+            return response()->json($resultArray,$status_code);
+           // return $array;
         }
     }
 
+    public function productDetail(Request $request,$product_id){
+//return response()->json('ok',200);
 
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $product = Product::with('brand','model','firstImage','category','images')->where('id','=',$product_id)->first();
+
+            if(!empty($product['id'])) {
+
+                    $faker= Factory::create();
+                $details  =array();
+                $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
+                $j=0;
+
+                foreach ($variants as $variant){
+
+                    //$details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
+                    $details[$j]=['name'=>$variant->value()->first()->variant()->first()->variant_name,'value'=>$variant->value()->first()->value];
+                    $j++;
+                }
+
+                $imageGallery=array();
+                $i=0;
+                foreach ($product->images()->get() as $img){
+                    $imageGallery[$i]['id']=$img['id'];
+                    $imageGallery[$i]['imageUrl']=$img['thumb'];
+                    $i++;
+                }
+
+                $content="";
+                for($i=0;$i<5;$i++) {
+                $content.="<p>".$faker->sentence."</p>";
+                }
+               $reviews=array();
+                for($i=0;$i<5;$i++){
+                  $reviews[$i] = ['name'=>$faker->name,'comment'=>$faker->sentence,'date'=>'22/02/2022','rating'=>rand(1,10)];
+
+                }
+
+                $together =  Product::with('firstImage','brand','model')->where('id','<>',$product['id'])->inRandomOrder()->limit(5)->get();
+                $item_array=array();
+                $i=0;
+                foreach ($together as $t){
+                    $item_array[$i] = ['id'=>$t['id'],'title'=>$t->brand()->first()->BrandName." ".$t->model()->first()->Modelname
+                        ,'imageUrl'=>$t->firstImage()->first()->thumb,'listPrice'=>$t['price'],'price'=>$t['price_ex']];
+                    $i++;
+                }
+
+                $tabs=array();
+                $tabs[0] = ['id'=>2,'title'=>'Ürün Bilgisi','name'=>'tab-description','type'=>'html','content'=>$content];
+                $tabs[1] = ['id'=>3,'title'=>'Teknik Özellikler','name'=>'tab-specification','type'=>'html','content'=>$details];
+                $tabs[2] = ['id'=>4,'title'=>'Yorumlar','name'=>'tab-reviews' ,'content'=>$reviews];
+                $tabs[3] = ['id'=>5,'title'=>'Birlikte Al','name'=>'tab-accessories' ,'content'=>$item_array];
+
+                $array['id'] = $product['id'];
+                $array['title'] = $product['title'];
+                $array['brand']['id'] = $product->brand()->first()->id ;
+                $array['brand']['title'] = $product->brand()->first()->BrandName ;
+                $array['brand']['imageUrl'] = $product->brand()->first()->ImageLarge ;
+                $array['category']['id']=$product->category()->first()->id;
+                $array['category']['title']=$product->category()->first()->category_name;
+
+                $array['features']=$product['description'];
+                $array['listPrice'] = $product['price'];
+                $array['price'] = $product['price_ex'];
+                $array['discount'] = $product['price']-$product['price_ex'];
+                $array['stockCode'] ='HKS'.rand(100000,999999);
+                $array['rating'] =1;
+                $array['imageGallery'] =$imageGallery;
+                $array['tabs'] =$tabs;
+                $array['crumbs'] =[
+                    ['url'=>'/cat/phones','title'=>'Telefonlar'],
+                    ['url'=>'#','title'=>$product->brand()->first()->BrandName." ".$product->model()->first()->Modelname],
+
+                ];
+
+/*
+
+                $array['model'] = $product->model()->first()->Modelname;
+                $array['url'] = '/urun-detay/'.str_replace(" ","-",$product['title'])."/".$product['id'];
+                $array['imageUrl'] = url($product->firstImage()->first()->thumb);
+
+                $array['details'] =  $details;
+*/
+                $returnArray['status'] = true;
+                $status_code=200;
+                $returnArray['data'] =$array;//['product'=>$array] ;
+                $returnArray['errors'] =['msg'=>''] ;
+            } else {
+                $returnArray['status'] = false;
+                $status_code=404;
+                $returnArray['errors'] =['msg'=>'not found'] ;
+            }
+
+
+        } else {
+            $returnArray['status'] = false;
+
+            $status_code=498;
+
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
 
     public function allProducts_ex(Request $request)
     {
@@ -316,7 +477,7 @@ class ApiProductController extends Controller
                 $i++;
             }
 
-            $array[0] =['id'=>1,'title'=>'Markalar','filterName'=>'brand','items'=>$items];
+            $array[0] =['id'=>1,'title'=>'Markalar','filterName'=>'brands','items'=>$items];
 
           $colors = Color::select('id','color_name','filter_name')->get();
             $items = array();
@@ -335,9 +496,17 @@ class ApiProductController extends Controller
                 $items[$i] = ['id'=>$memory['id'],'filterName'=>$memory['memory_value'] ,'title'=>$memory['memory_value']."GB",'isChosen'=>false];
                 $i++;
             }
-            $array[2] =['id'=>3,'title'=>'Hafızalar','filterName'=>'memory','items'=>$items];
-            return $array;
+            $array[2] =['id'=>3,'title'=>'Hafızalar','filterName'=>'memories','items'=>$items];
+        //    return $array;
 
+            $count = (count($array)>0)?true:false;
+            $resultArray['status'] = ($count)?true:false;
+            $resultArray['data'] = $array;//['products'=>$array];
+            $resultArray['errors'] = ['msg'=>($count)?'':'Not Found'];
+         //   $resultArray['item_count'] = ['msg'=>($count)?'':'Not Found'];
+
+            $status_code  = ($count)?200:404;
+            return response()->json($resultArray,$status_code);
         }
 
     }

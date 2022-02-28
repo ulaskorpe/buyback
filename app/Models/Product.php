@@ -41,4 +41,15 @@ class Product extends Model
         return $this->hasMany(ProductImage::class,'product_id','id')->where('first','=',1);
     }
 
+    public function colors(){
+        //return $this->hasMany(Color)
+        return $this->hasManyThrough(Color::class,ProductColor::class,'product_id','id','id','color_id');
+    }
+    public function memories(){
+        //return $this->hasMany(Color)
+        return $this->hasManyThrough(Memory::class,ProductMemory::class,'product_id','id','id','memory_id');
+    }
+//    public function memories(){
+//        return $this->hasMany(ProductMemory::class,'product_id','id');
+//    }
 }

@@ -1235,6 +1235,31 @@ if($responseCode==1){
 
         }
     }
+
+
+
+    public function cargoCompanies(Request $request )
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $status_code = 200;
+            $resultArray['status'] = true;
+            $resultArray['data']= ['cargo_companies'=>CargoCompany::where('status','=',1)->get()];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
     //////////CARGO//////////////////////////////
 
     public function serviceAddressesList()
