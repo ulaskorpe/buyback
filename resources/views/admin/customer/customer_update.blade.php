@@ -522,12 +522,6 @@
 
 
 
-
-
-
-
-
-
         });
     </script>
 @endsection

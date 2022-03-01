@@ -24,9 +24,9 @@
                             <th>Sipariş Kodu</th>
                             <th>Müşteri</th>
                             <th>Ürünler</th>
-                            <th>Ödeme Yöntemi</th>
-                            <th>Tutar</th>
-                            <th>Durum</th>
+
+                            <th>Tutar / Durum</th>
+
                             <th>Tarih</th>
                             <th class="text-center">İşlemler</th>
                         </tr>
@@ -70,18 +70,7 @@
                                         </table>
 
                                     </td>
-                                    <td>
-                                        @if($order['payment_method'] > 0)
-                                            <b>Havale</b><br>
-                                        {{$order->payment_method()->first()->bank_name}}/{{$order->payment_method()->first()->branch}}<br>
 
-                                        {{$order->payment_method()->first()->name_surname}}
-                                        {{$order->payment_method()->first()->iban}}
-                                        @else
-                                                KrediKartı Ödemesi
-                                            @endif
-
-                                    </td>
                                     <td>
                                         @if($amount != $order['amount'])
                                             {{$order['amount']}}TL <br>
@@ -89,11 +78,21 @@
                                         @else
                                             {{$amount}}TL
                                             @endif
-                                          </td>
-                                    <td>
-                                        <h2>{{$order_status[$order['status']]}}</h2>
+                                            <hr>
+                                            @if($order['payment_method'] > 0)
+                                                <b>Havale</b><br>
+                                                {{$order->payment_method()->first()->bank_name}}/{{$order->payment_method()->first()->branch}}<br>
 
-                                    </td>
+                                                {{$order->payment_method()->first()->name_surname}}
+                                                {{$order->payment_method()->first()->iban}}
+                                            @else
+                                                KrediKartı Ödemesi
+                                            @endif
+
+                                            <h2>{{$order_status[$order['status']]}}</h2>
+
+                                          </td>
+
                                     <td>{{\Carbon\Carbon::parse($order['created_at'])->format('d.m.Y H:i')}}</td>
                                     <td>
                                         <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order['id'])}}','_self')">GÜNCELLE</button>

@@ -72,7 +72,13 @@
                                 @endif
                                 <li><a href="{{route('customer.orders')}}">Siparişler</a></li>
 
+                                @if(!empty($order_id))
+                                    <li style="display: none"><a href="{{route('customer.order-update',$order_id)}}"></a></li>
+                                    @if(!empty($selected))
 
+                                        <li style="display: none"><a href="{{route('customer.order-update',[$order_id,$selected])}}"></a></li>
+                                    @endif
+                                @endif
 
 
                             </ul>

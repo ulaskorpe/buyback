@@ -324,7 +324,12 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/address-update/{customer_id}/{address_id}',[\App\Http\Controllers\CustomerController::class,'addressUpdate'])->name('customer-address-update');
         Route::post('/update-address-post',[\App\Http\Controllers\CustomerController::class,'customerUpdateAddress'])->name('customer-update-address');
         Route::get('/orders',[\App\Http\Controllers\CustomerController::class,'orders'])->name('orders');
-        Route::get('/order-update/{order_id}',[\App\Http\Controllers\CustomerController::class,'orderUpdate'])->name('order-update');
+        Route::get('/cargo-branches/{cc_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'cargoBranchSelect'])->name('cargo-branch-select');
+        Route::get('/branch-detail/{branch_id}',[\App\Http\Controllers\CustomerController::class,'branchDetail'])->name('branch-detail');
+        Route::get('/customer-address-detail/{address_id}',[\App\Http\Controllers\CustomerController::class,'customerAddressDetail'])->name('customer-address-detail');
+        Route::get('/service-address-detail/{address_id}',[\App\Http\Controllers\CustomerController::class,'serviceAddressDetail'])->name('service-address-detail');
+        Route::get('/bank-account-detail/{address_id}',[\App\Http\Controllers\CustomerController::class,'bankAccountDetail'])->name('bank-account-detail');
+        Route::get('/order-update/{order_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'orderUpdate'])->name('order-update');
         Route::post('/order-update-post',[\App\Http\Controllers\CustomerController::class,'orderUpdatePost'])->name('order-update-post');
     });
 });

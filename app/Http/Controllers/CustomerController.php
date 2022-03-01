@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Enums\CartItemStatus;
 use App\Enums\CustomerStatus;
 use App\Http\Controllers\Helpers\GeneralHelper;
+use App\Models\BankAccount;
+use App\Models\CargoCompany;
+use App\Models\CargoCompanyBranch;
 use App\Models\CartItem;
 use App\Models\City;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Models\ServiceAddress;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +26,8 @@ class CustomerController extends Controller
     public function customerList(){
         return view('admin.customer.customerlist',['customers'=>Customer::all()]);
     }
+
+    private $order_status_array= [0=>'Sepette',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı'];
 
     public function customerUpdate ($customer_id,$selected=0){
 
@@ -220,16 +226,155 @@ class CustomerController extends Controller
                 ->get();
 
  //  return $orders;
-       return view('admin.customer.orders',['orders'=>$orders,'order_status'=>[0=>'Sepette',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı']]);
+       return view('admin.customer.orders',['orders'=>$orders,'order_status'=>$this->order_status_array]);
     }
 
-    public function orderUpdate($order_id){
+    public function orderUpdate($order_id,$selected=0){
         $order = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','payment_method'
             ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
                ->where('id','=',$order_id)
             ->orderBy('id','DESC')
             ->first();
 
-        return $order;
+        return view('admin.customer.order_update',['order'=>$order,'order_status'=>$this->order_status_array
+            ,'selected'=>$selected,'order_id'=>$order_id,'cargo_companies'=>CargoCompany::with('branches')->get()
+            ,'service_addresses'=>ServiceAddress::all(),'bank_accounts'=>BankAccount::all()]);
+    }
+
+    public function orderUpdatePost(Request $request){
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $order = Order::find($request['id']);
+                    $order->cargo_company_id=$request['cargo_company_id'];
+                    $order->cargo_company_branch_id=$request['cargo_branch_id'];
+                    $order->service_address_id=$request['service_address_id'];
+                    $order->payment_method=$request['payment_method'];
+                    $order->cargo_code=$request['cargo_code'];
+                    $order->status=$request['status'];
+                    $order->save();
+
+                return ['Sipariş  Güncellendi:', 'success', route('customer.order-update',[$request['id'],1]), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function cargoBranchSelect($cc_id,$selected=0){
+        $cc=CargoCompany::with('branches')->find($cc_id);
+
+        if($selected>0){
+            $txt = "";
+            foreach($cc->branches as $branch){
+                if($branch['id']==$selected){
+                    $txt.="<option value='".$branch['id']."' selected>".$branch['title']."</option>";
+                }else{
+                    $txt.="<option value='".$branch['id']."'>".$branch['title']."</option>";
+                }
+
+            }
+        }else{
+            $txt = "<option value='0'>Şube Seçiniz</option>";
+            foreach($cc->branches as $branch){
+                $txt.="<option value='".$branch['id']."'>".$branch['title']."</option>";
+            }
+        }
+
+        $cargo = "<table><tr>";
+        if(!empty($cc['logo'])){
+        $cargo.= "<td><img src='".url($cc['logo'])."'></td>";
+        }
+        $cargo .= "<td><b>Yetkili Kişi :</b>".$cc['person']."<br>";
+        $cargo .= "<b>Telefon :</b>".$cc['phone_number']."<br>";
+        $cargo .= "<b>Eposta:</b>".$cc['email']."</td>";
+        $cargo.="</tr></table>";
+        return response()->json(['branches'=>$txt,'cargo'=>$cargo]);
+
+
+    }
+
+    public function branchDetail($branch_id){
+
+
+if($branch_id>0){
+        $branch=CargoCompanyBranch::with('city','town','district','neighborhood')->find($branch_id);
+
+        $bra="<b>".$branch['title']."</b><br>";
+        $bra.="".$branch['person']."<br>";
+        $bra.="".$branch['address'].", ";
+        $bra.="".$branch->neighborhood()->first()->name.", ";
+        $bra.="".$branch->district()->first()->name."<br>";
+        $bra.="".$branch->town()->first()->name." ".$branch->neighborhood()->first()->zipcode."<br>";
+        $bra.="".$branch->city()->first()->name."<br>";
+        $bra.="".$branch['phone_number']."/";
+        $bra.="".$branch['phone_number_2'];
+}else{
+    $bra="";
+}
+
+        return response()->json(['branch'=>$bra]);
+    }
+
+    public function customerAddressDetail($address_id){
+
+
+if($address_id>0){
+        $address=CustomerAddress::with('city','town','district','neighborhood')->find($address_id);
+
+    $add="<b>".$address['title']."</b><br>";
+    $add.="".$address['name_surname']."<br>";
+    $add.="".$address['address'].", ";
+    $add.="".$address->neighborhood()->first()->name.", ";
+    $add.="".$address->district()->first()->name."<br>";
+    $add.="".$address->town()->first()->name." ".$address->neighborhood()->first()->zipcode."<br>";
+    $add.="".$address->city()->first()->name."<br>";
+    $add.="".$address['phone_number']."/";
+    $add.="".$address['phone_number_2'];
+}else{
+    $add="";
+}
+
+        return response()->json(['branch'=>$add]);
+    }
+
+    public function serviceAddressDetail($address_id){
+
+
+if($address_id>0){
+        $address=ServiceAddress::with('city','town','district','neighborhood')->find($address_id);
+
+    $add="<b>".$address['title']."</b><br>";
+    $add.="".$address['name_surname']."<br>";
+    $add.="".$address['address'].", ";
+    $add.="".$address->neighborhood()->first()->name.", ";
+    $add.="".$address->district()->first()->name."<br>";
+    $add.="".$address->town()->first()->name." ".$address->neighborhood()->first()->zipcode."<br>";
+    $add.="".$address->city()->first()->name."<br>";
+    $add.="".$address['phone_number']."/";
+    $add.="".$address['phone_number_2'];
+}else{
+    $add="";
+}
+
+        return response()->json(['branch'=>$add]);
+    }
+
+    public function bankAccountDetail($bank_id){
+        $txt="";
+        if($bank_id>0){
+            $bank=BankAccount::find($bank_id);
+            $txt="<b>".$bank['bank_name']."</b><br>";
+            $txt.=$bank['name_surname']."<br>";
+            $txt.=$bank['branch']." şb.<br>";
+            $txt.="Hsp No:".$bank['account_number']."<br>";
+            $txt.="IBAN:".$bank['branch'];
+        }
+        return response()->json(['bank'=>$txt]);
+
     }
 }

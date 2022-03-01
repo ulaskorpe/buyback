@@ -13,6 +13,7 @@ use App\Models\ProductImage;
 use App\Models\ProductMemory;
 use App\Models\ProductModel;
 use App\Models\ProductVariantValue;
+use App\Models\VariantGroup;
 use Faker\Factory;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
@@ -253,7 +254,8 @@ class ApiProductController extends Controller
                 $array[$i]['brand'] = $product->brand()->first()->BrandName;
                 $array[$i]['model'] = $product->model()->first()->Modelname;
 
-                $array[$i]['url'] = '/urun-detay/'.str_replace(" ","-",$product['title'])."/".$product['id'];
+                //$array[$i]['url'] = '/urun-detay/'.$product['category_id'].'/'.str_replace(" ","-",$product['title'])."/".$product['id'];
+                $array[$i]['url'] = '/urun-detay/'.GeneralHelper::fixName($product['title'])."/".$product['id'];
                 $array[$i]['imageUrl'] = url($product->firstImage()->first()->thumb);
                 $array[$i]['discount'] = $product['price']-$product['price_ex'];
                 $array[$i]['details'] =  $details;
@@ -285,14 +287,32 @@ class ApiProductController extends Controller
 
                     $faker= Factory::create();
                 $details  =array();
-                $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
                 $j=0;
+            /*    $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
+
 
                 foreach ($variants as $variant){
 
                     //$details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
                     $details[$j]=['name'=>$variant->value()->first()->variant()->first()->variant_name,'value'=>$variant->value()->first()->value];
                     $j++;
+                }*/
+
+                $vg = VariantGroup::all();
+                foreach ($vg as $g){
+                    $values = array();
+                    for($h=0;$h<rand(2,5);$h++){
+                        $values[$h]['id']=$h+2;
+                        $values[$h]['name']=$faker->word;
+                        $values[$h]['value']=$faker->words(2,3);
+                    }
+
+                    $details[$j]['id']=$g['id'];
+                    $details[$j]['title']=$g['group_name'];
+                    $details[$j]['items']=$values;
+
+                    $j++;
+
                 }
 
                 $imageGallery=array();
@@ -324,9 +344,9 @@ class ApiProductController extends Controller
 
                 $tabs=array();
                 $tabs[0] = ['id'=>2,'title'=>'Ürün Bilgisi','name'=>'tab-description','type'=>'html','content'=>$content];
-                $tabs[1] = ['id'=>3,'title'=>'Teknik Özellikler','name'=>'tab-specification','type'=>'html','content'=>$details];
-                $tabs[2] = ['id'=>4,'title'=>'Yorumlar','name'=>'tab-reviews' ,'content'=>$reviews];
-                $tabs[3] = ['id'=>5,'title'=>'Birlikte Al','name'=>'tab-accessories' ,'content'=>$item_array];
+                $tabs[1] = ['id'=>3,'title'=>'Teknik Özellikler','name'=>'tab-specification','type'=>'technique','content'=>$details];
+                $tabs[2] = ['id'=>4,'title'=>'Yorumlar','name'=>'tab-reviews','type'=>'review' ,'content'=>$reviews];
+                $tabs[3] = ['id'=>5,'title'=>'Birlikte Al','type'=>'accessory','name'=>'tab-accessories' ,'content'=>$item_array];
 
                 $array['id'] = $product['id'];
                 $array['title'] = $product['title'];
