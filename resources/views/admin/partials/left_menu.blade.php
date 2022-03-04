@@ -169,6 +169,9 @@
                                 <li style="display: none"><a href="{{route('site.setting-update',$setting_id)}}"></a></li>
                             @endif
                             <li><a href="{{route('site.menu-list')}}">Menu Bağlantıları</a></li>
+                            @if(!empty($menu_type))
+                                <li><a href="{{route('site.menu-list',$menu_type)}}">Menu Bağlantıları</a></li>
+                                @endif
                             <li style="display: none"><a href="{{route('site.create-menu')}}"></a></li>
                             @if(!empty($menu_id))
                                 <li style="display: none"><a href="{{route('site.update-menu',$menu_id)}}"></a></li>
@@ -189,6 +192,18 @@
                             @if(!empty($slider_id))
                                 <li style="display: none"><a href="{{route('site.update-slider',$slider_id)}}"></a></li>
                             @endif
+
+                            <li><a href="{{route('site.faq-list')}}">SSS Listesi</a></li>
+                            <li style="display: none"><a href="{{route('site.create-faq')}}"></a></li>
+                            @if(!empty($faq_id))
+                                <li style="display: none"><a href="{{route('site.update-faq',$faq_id)}}"></a></li>
+                            @endif
+                            <li><a href="{{route('site.news-list')}}">Haber Listesi</a></li>
+                            <li style="display: none"><a href="{{route('site.create-news')}}"></a></li>
+                            @if(!empty($news_id))
+                                <li style="display: none"><a href="{{route('site.update-news',$news_id)}}"></a></li>
+                            @endif
+
                             <li><a href="{{route('site.article-list')}}">Yazılar Listesi</a></li>
                             <li style="display: none"><a href="{{route('site.create-article')}}"></a></li>
                             @if(!empty($article_id))

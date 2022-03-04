@@ -55,6 +55,9 @@ Route::group(['prefix' => 'site'], function () {
     Route::get('/shoppage-menu', [ \App\Http\Controllers\ApiController::class, 'shoppageMenu'])->name('shoppage-menu-api');
     Route::get('/shoppage-header', [ \App\Http\Controllers\ApiController::class, 'shoppageHeader'])->name('shoppage-header-api');
     Route::get('/social-icons', [ \App\Http\Controllers\ApiController::class, 'socialIcons'])->name('social-icons-api');
+    Route::get('/news/{page?}/{page_count?}', [ \App\Http\Controllers\ApiController::class, 'getNews'])->name('get-news-api');
+    Route::get('/news-detail/{id}', [ \App\Http\Controllers\ApiController::class, 'detailNews'])->name('detail-news-api');
+    Route::get('/faq-list', [ \App\Http\Controllers\ApiController::class, 'faqList'])->name('faq-list-api');
 
 });
 Route::group(['prefix' => 'products'], function () {
@@ -69,6 +72,7 @@ Route::group(['prefix' => 'customers'], function () {
     Route::post('/create', [ \App\Http\Controllers\ApiCustomerController::class, 'create'])->name('create-customer-api');
     Route::post('/login', [ \App\Http\Controllers\ApiCustomerController::class, 'login'])->name('login-customer-api');
     Route::post('/activate', [ \App\Http\Controllers\ApiCustomerController::class, 'activate'])->name('activate-customer-api');
+    Route::post('/resend-activate', [ \App\Http\Controllers\ApiCustomerController::class, 'resendActivate'])->name('resend-activate-api');
     Route::post('/forget-password', [ \App\Http\Controllers\ApiCustomerController::class, 'forgetPassword'])->name('forget-pw-api');
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'updateProfile'])->name('update-profile-api');
     Route::post('/update-password', [ \App\Http\Controllers\ApiCustomerController::class, 'updatePassword'])->name('update-password-api');

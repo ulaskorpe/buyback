@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\News;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -19,5 +20,7 @@ class DatabaseSeeder extends Seeder
         //$this->call(VariantGroupSeeder::class);
 //    $this->call(BannerSeeder::class);
     //$this->call(BankAccountSeeder::class);
+//    $this->call(FaqSeeder::class);
+//    $this->call(NewsSeeder::class);
     }
 }

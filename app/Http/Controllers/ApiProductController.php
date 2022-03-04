@@ -151,8 +151,6 @@ class ApiProductController extends Controller
     public function allProducts(Request $request)
     {
 
-//return  DB::table('product_memories')->count();
-
         if ($request->header('x-api-key') == $this->generateKey()) {
             $array = [];
             $min_price = (!empty($request['min_price']))?$request['min_price']:0;
@@ -184,10 +182,10 @@ class ApiProductController extends Controller
             $a1 = ProductColor::whereIn('color_id',$colors)->pluck('product_id')->toArray();
             $a2 =  ProductMemory::whereIn('memory_id',$memories)->pluck('product_id')->toArray();
             //return $memories;
-           // $products=Product::with('colors')->orderBy('id')->limit(30)->get();
+            // $products=Product::with('colors')->orderBy('id')->limit(30)->get();
             //return $products;
 
-          //  return ProductColor::whereIn('color_id',$colors)->where('product_id','=',4)->count();
+            //  return ProductColor::whereIn('color_id',$colors)->where('product_id','=',4)->count();
 
             $products = Product::with('brand','firstImage','colors','memories')->whereIn('brand_id',$brands)
                 ->where('price','>=',$min_price)
@@ -196,8 +194,14 @@ class ApiProductController extends Controller
                 ->skip($page*$page_count)
                 ->limit($page_count)
                 ->orderBy($order,$desc) ;
-              $product_count = $products->count();
-           //   return $product_count;
+            $product_count = Product::whereIn('brand_id',$brands)
+                ->where('price','>=',$min_price)
+                ->whereIn('id',array_intersect($a1,$a2))
+                ->where('price','<=',$max_price)->count();
+
+
+                //$products->count();
+            //   return $product_count;
 
             $products = $products->get();
 
@@ -213,58 +217,58 @@ class ApiProductController extends Controller
 
             foreach ($products as $product){
                 $show = true;
-            /*    if(!empty($request['colors'])) {
-                    $show = false;
-                    $color_array = ProductColor::where('product_id', '=', $product['id'])->pluck('color_id')->toArray();
-                    foreach ($color_array as $item){
-                        if(in_array($item,$colors)){
-                            $show = true;
-                            break;
+                /*    if(!empty($request['colors'])) {
+                        $show = false;
+                        $color_array = ProductColor::where('product_id', '=', $product['id'])->pluck('color_id')->toArray();
+                        foreach ($color_array as $item){
+                            if(in_array($item,$colors)){
+                                $show = true;
+                                break;
+                            }
                         }
-                    }
-                }///colors
+                    }///colors
 
-                if(!empty($request['memories'])) {
-                    $show = false;
-                    $memory_array = ProductMemory::where('product_id', '=', $product['id'])->pluck('')->toArray();
-                    foreach ($memory_array as $item){
-                        if(in_array($item,$memories)){
-                            $show = true;
-                            break;
+                    if(!empty($request['memories'])) {
+                        $show = false;
+                        $memory_array = ProductMemory::where('product_id', '=', $product['id'])->pluck('')->toArray();
+                        foreach ($memory_array as $item){
+                            if(in_array($item,$memories)){
+                                $show = true;
+                                break;
+                            }
                         }
-                    }
-                }///*/
+                    }///*/
 
                 if($show){
-                $details  =array();
-               $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
-               $j=0;
-               foreach ($variants as $variant){
+                    $details  =array();
+                    $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
+                    $j=0;
+                    foreach ($variants as $variant){
 
-                    $details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
-                    $j++;
-               }
+                        $details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
+                        $j++;
+                    }
 
 
-                $array[$i]['id'] = $product['id'];
-          //      $array[$i]['filterData'] = array(['filterType'=>'brand',"value"=> $product->brand()->first()->BrandName],['filterType'=>'color','value'=>'red']);
-                $array[$i]['title'] = $product['title'];
-                $array[$i]['listPrice'] = $product['price'];
-                $array[$i]['price'] = $product['price_ex'];
-                $array[$i]['brand'] = $product->brand()->first()->BrandName;
-                $array[$i]['model'] = $product->model()->first()->Modelname;
+                    $array[$i]['id'] = $product['id'];
+                    //      $array[$i]['filterData'] = array(['filterType'=>'brand',"value"=> $product->brand()->first()->BrandName],['filterType'=>'color','value'=>'red']);
+                    $array[$i]['title'] = $product['title'];
+                    $array[$i]['listPrice'] = $product['price'];
+                    $array[$i]['price'] = $product['price_ex'];
+                    $array[$i]['brand'] = $product->brand()->first()->BrandName;
+                    $array[$i]['model'] = $product->model()->first()->Modelname;
 
-                //$array[$i]['url'] = '/urun-detay/'.$product['category_id'].'/'.str_replace(" ","-",$product['title'])."/".$product['id'];
-                $array[$i]['url'] = '/urun-detay/'.GeneralHelper::fixName($product['title'])."/".$product['id'];
-                $array[$i]['imageUrl'] = url($product->firstImage()->first()->thumb);
-                $array[$i]['discount'] = $product['price']-$product['price_ex'];
-                $array[$i]['details'] =  $details;
-                $i++;
+                    //$array[$i]['url'] = '/urun-detay/'.$product['category_id'].'/'.str_replace(" ","-",$product['title'])."/".$product['id'];
+                    $array[$i]['url'] = '/urun-detay/'.GeneralHelper::fixName($product['title'])."/".$product['id'];
+                    $array[$i]['imageUrl'] = url($product->firstImage()->first()->thumb);
+                    $array[$i]['discount'] = $product['price']-$product['price_ex'];
+                    $array[$i]['details'] =  $details;
+                    $i++;
                 }///show ??
             }
 
             $count = (count($array)>0)?true:false;
-           $resultArray['status'] = ($count)?true:false;
+            $resultArray['status'] = ($count)?true:false;
             $resultArray['data'] = $array;//['products'=>$array];
             $resultArray['errors'] = ['msg'=>($count)?'':'Not Found'];
             $resultArray['item_count'] =$product_count;
@@ -272,7 +276,7 @@ class ApiProductController extends Controller
             $status_code  = ($count)?200:404;
 
             return response()->json($resultArray,$status_code);
-           // return $array;
+            // return $array;
         }
     }
 

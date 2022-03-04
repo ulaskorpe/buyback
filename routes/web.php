@@ -93,6 +93,23 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateSlider'])->name('update-slider');
             Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateSliderPost'])->name('update-slider-post');
         });
+
+        Route::group(['prefix'=>'faq'],function (){
+            Route::get('/list',[\App\Http\Controllers\SiteController::class,'faqList'])->name('faq-list');
+            Route::get('/create',[\App\Http\Controllers\SiteController::class,'createFaq'])->name('create-faq');
+            Route::post('/create-post',[\App\Http\Controllers\SiteController::class,'createFaqPost'])->name('create-faq-post');
+            Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateFaq'])->name('update-faq');
+            Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateFaqPost'])->name('update-faq-post');
+        });
+
+        Route::group(['prefix'=>'news'],function (){
+            Route::get('/list',[\App\Http\Controllers\SiteController::class,'newsList'])->name('news-list');
+            Route::get('/create',[\App\Http\Controllers\SiteController::class,'createNews'])->name('create-news');
+            Route::post('/create-post',[\App\Http\Controllers\SiteController::class,'createNewsPost'])->name('create-news-post');
+            Route::get('/update/{id}',[\App\Http\Controllers\SiteController::class,'updateNews'])->name('update-news');
+            Route::post('/update-post',[\App\Http\Controllers\SiteController::class,'updateNewsPost'])->name('update-news-post');
+        });
+
         Route::group(['prefix'=>'product'],function (){
             Route::get('/list/{brand_id?}/{model_id?}',[\App\Http\Controllers\SiteController::class,'productLocation'])->name('product-location');
 
@@ -116,7 +133,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         });
 
         Route::group(['prefix'=>'menu'],function (){
-            Route::get('/menu-list',[\App\Http\Controllers\SiteController::class,'menuList'])->name('menu-list');
+            Route::get('/menu-list/{menu_type?}',[\App\Http\Controllers\SiteController::class,'menuList'])->name('menu-list');
             Route::get('/create-menu-item',[\App\Http\Controllers\SiteController::class,'createMenu'])->name('create-menu');
             Route::post('/create-menu-item-post',[\App\Http\Controllers\SiteController::class,'createMenuPost'])->name('create-menu-post');
             Route::get('/update-menu-item/{id}',[\App\Http\Controllers\SiteController::class,'updateMenu'])->name('update-menu');

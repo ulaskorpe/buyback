@@ -7,9 +7,11 @@ use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Area;
 use App\Models\Banner;
 use App\Models\Color;
+use App\Models\Faq;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
 use App\Models\MenuSubItemLink;
+use App\Models\News;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
@@ -20,6 +22,7 @@ use App\Models\SiteLocation;
 use App\Models\SiteSetting;
 use App\Models\Slider;
 use App\Models\SubLinkGroup;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
@@ -27,7 +30,7 @@ use Intervention\Image\Facades\Image;
 class SiteController extends Controller
 {
     use ApiTrait;
-
+    //////////////SLIDER/////////////////////////////////////
     public  function sliderList(){
 
         return view('admin.site.slider.list',['sliders'=>Slider::all()]);
@@ -204,6 +207,233 @@ class SiteController extends Controller
         $count = Slider::count();
         return view('admin.site.slider.update',['slider'=>Slider::find($id),'count'=>$count,'slider_id'=>$id]);
     }
+    //////////////SLIDER/////////////////////////////////////
+
+    //////////////SLIDER/////////////////////////////////////
+    public  function newsList(){
+
+        return view('admin.site.news.list',['newss'=>News::all()]);
+    }
+
+    public function createNews(){
+        $count = News::count();
+
+        return view('admin.site.news.create',['count'=>$count+1]);
+    }
+
+    public function createNewsPost(Request $request){
+        if ($request->isMethod('post')) {
+
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+                $news= new News();
+                $news->title = (!empty($request['title']))?$request['title']:'';
+                $news->description = (!empty($request['description']))?$request['description']:'';
+                $news->content = (!empty($request['content']))?$request['content']:'';
+                $news->date=Carbon::parse($request['date'])->format('Y-m-d');
+                $news->status = (!empty($request['status']))?1:0;
+                $file = $request->file('image');
+                if (!empty($file)) {
+
+                    $filename = GeneralHelper::fixName($request['title']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    //  $path = public_path("images/slider");
+                    $path = "images/news";
+                    $th = GeneralHelper::fixName($request['title']) . "TH_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $img->resize(150, 150, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $th);
+                    $news->image = "images/news/" . $filename;
+                    $news->thumb = "images/news/" . $th;
+                }
+
+
+
+                $news->save();
+
+                $news->url ='/bizden-haberler/'.$news['id'];
+                $news->save();
+
+                return ['yeni HABER eklendi', 'success', route('site.news-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateNewsPost(Request $request){
+        if ($request->isMethod('post')) {
+
+
+            //     return $request['invoice_date'];
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+                $news= News::find($request['id']);
+                $news->title = (!empty($request['title']))?$request['title']:'';
+                $news->description = (!empty($request['description']))?$request['description']:'';
+                $news->content = (!empty($request['content']))?$request['content']:'';
+                $news->date=Carbon::parse($request['date'])->format('Y-m-d');
+                $news->status = (!empty($request['status']))?1:0;
+                $file = $request->file('image');
+                if (!empty($file)) {
+
+                    $filename = GeneralHelper::fixName($request['title']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+                    //  $path = public_path("images/slider");
+                    $path = "images/news";
+                    $th = GeneralHelper::fixName($request['title']) . "TH_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
+
+
+                    $img = Image::make($file->getRealPath());
+                    $img->save($path . '/' . $filename);
+                    $img->resize(150, 150, function ($constraint) {
+                        $constraint->aspectRatio();
+                    })->save($path . '/' . $th);
+                    $news->image = "images/news/" . $filename;
+                    $news->thumb = "images/news/" . $th;
+                }
+
+
+
+                $news->save();
+
+
+                return ['HABER güncellendi', 'success', route('site.news-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateNews($id){
+
+        return view('admin.site.news.update',['news'=>News::find($id),'news_id'=>$id]);
+    }
+    //////////////SLIDER/////////////////////////////////////
+
+    //////////////////////FAQ///////////////////////////////////
+    public function faqlist(){
+
+/*
+        $path = "images/news";
+
+        for($i=1;$i<8;$i++){
+$file=$path."/".$i.".jpg";
+        $th = $i . "TH" . "." . GeneralHelper::findExtension($path."/".$i.".jpg");
+
+
+        $img = Image::make($file );
+     //   $img->save($path . '/' . $filename);
+        $img->resize(150, 150, function ($constraint) {
+            $constraint->aspectRatio();
+        })->save($path . '/' . $th);
+
+        }*/
+
+        return view('admin.site.faq.list',['faqs'=>Faq::orderBy('order')->get()]);
+    }
+
+    public function createFaq(){
+        $count = Faq::count();
+
+        return view('admin.site.faq.create',['count'=>$count+1]);
+    }
+
+    public function updateFaq($faq_id){
+        $count = Faq::count();
+
+        return view('admin.site.faq.update',['count'=>$count,'faq'=>Faq::find($faq_id),'faq_id'=>$faq_id]);
+    }
+
+    public function createFaqPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $faq= new Faq();
+                $faq->title = $request['title'];
+                $faq->content = (!empty($request['content']))?$request['content']:'';
+
+                $faq->status = (!empty($request['status']))?1:0;
+                $faq->order = $request['order'];
+                $faq->save();
+                Faq::where('order','>=',$request['order'])
+                    ->where('id','<>',$faq['id'])
+                    ->increment('order');
+                return ['yeni SSS eklendi', 'success', route('site.faq-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function updateFaqPost(Request $request){
+        if ($request->isMethod('post')) {
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                $faq= Faq::find($request['id']);
+                $old=$faq['order'];
+                $faq->title = $request['title'];
+                $faq->content = (!empty($request['content']))?$request['content']:'';
+
+                $faq->status = (!empty($request['status']))?1:0;
+                $faq->order = $request['order'];
+                $faq->save();
+
+
+                if($request['order']!=$old){
+                    if($request['order']>$old){
+                        Faq:: where('order','>=',$old)
+                            ->where('order','<=',$request['order'])
+                            ->where('id','<>',$faq['id'])
+                            ->decrement('order');
+
+                    }else{
+                        Faq:: where('order','<=',$old)
+                            ->where('order','>=',$request['order'])
+                            ->where('id','<>',$faq['id'])
+                            ->increment('order');
+                    }
+                }
+
+                return ['SSS Güncellendi', 'success', route('site.faq-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    //////////////////////FAQ///////////////////////////////////
+
 
     public function siteSettings(){
         return view('admin.site.setting.list',['settings'=>SiteSetting::all()]);
@@ -291,11 +521,17 @@ class SiteController extends Controller
     }
 
 
-    public  function menuList(){
+    public  function menuList($menu_type=0){
+        if($menu_type>0){
+            $menus = MenuItem::where('location','=',$menu_type)->orderBy('order')->get();
+        }else{
+            $menus = MenuItem::where('location','>',$menu_type)->orderBy('order')->get();
+        }
 
 
 
-       return view('admin.site.menu.list',['menus'=>MenuItem::all(), 'menu_locations'=>$this->menu_locations]);
+
+       return view('admin.site.menu.list',['menus'=>$menus, 'menu_locations'=>$this->menu_locations,'menu_type'=>$menu_type]);
     }
 
     public function createMenu(){

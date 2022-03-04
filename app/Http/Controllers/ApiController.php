@@ -8,16 +8,19 @@ use App\Models\Article;
 use App\Models\Banner;
 use App\Models\City;
 use App\Models\District;
+use App\Models\Faq;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
 use App\Models\MenuSubItemLink;
 use App\Models\Neighborhood;
+use App\Models\News;
 use App\Models\ProductLocation;
 use App\Models\ProductStockMovement;
 use App\Models\SiteLocation;
 use App\Models\SiteSetting;
 use App\Models\Slider;
 use App\Models\Town;
+use Carbon\Carbon;
 use Faker\Factory;
 use Illuminate\Http\Request;
 use phpDocumentor\Reflection\Types\Object_;
@@ -27,6 +30,138 @@ class ApiController extends Controller
 
     use ApiTrait;
 
+    private function makeDate($date){
+        $months  = ["","Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+        $dz = explode("-",$date);
+        ///"Şubat 1, 2022",
+        return $months[intval($dz[1])]." ".intval($dz[2]).",".$dz[0];
+    }
+
+    public function detailNews(Request $request,$id=0)
+    {
+        /***
+        title: 'Amet elit fugiat qui officia excepteur esse culpa.',
+        imageUrl: '/assets/images/haber3.jpg',
+        date: "Şubat 1, 2022",
+        content: `<p>Officia magna laborum veniam elit ea elit qui duis cupidatat dolor labore exercitation ipsum. Anim nulla cillum cupidatat laboris exercitation id amet ea amet proident. Adipisicing sint amet culpa eu aliqua ullamco eu. Mollit ea consequat esse culpa velit ex qui quis ullamco. Non nisi eu ea pariatur eiusmod do sunt pariatur.\r\n</p>
+        <p>Ea nisi ea nostrud fugiat velit id aliquip eiusmod ex Lorem nostrud veniam commodo. Excepteur cillum quis nisi dolor sit aliqua exercitation proident cillum. Et amet eu fugiat eu ullamco cupidatat consequat labore proident Lorem esse. Commodo mollit eu quis ullamco esse sint commodo commodo pariatur ad enim adipisicing pariatur elit.\r\n</p>
+        <p>Commodo ipsum reprehenderit reprehenderit deserunt aliqua in esse amet voluptate anim est duis nulla. Adipisicing ea reprehenderit pariatur nisi enim eiusmod labore anim fugiat voluptate et ullamco. Qui nulla et eu anim esse Lorem ex tempor. Cupidatat voluptate nostrud irure ea veniam duis labore nostrud Lorem irure eiusmod aliquip culpa aliqua. Nostrud ex id consequat eu est culpa sit ex in.\r\n</p>
+        <p>In sunt non voluptate ullamco qui duis nostrud sint incididunt aute dolore et. Esse deserunt esse laboris sint dolore Lorem irure consequat proident. Aliqua cupidatat nulla consequat voluptate dolor exercitation ea ipsum duis consectetur magna deserunt eu. Labore laboris occaecat ea cupidatat in anim ullamco est. Velit qui officia eiusmod ea commodo consequat. Sit nostrud adipisicing Lorem commodo ad ut mollit in adipisicing est quis. Minim occaecat tempor consequat qui consequat aute cillum et laboris occaecat.\r\n</p>
+        `,
+        previousContent: {
+        title: 'Commodo ipsum reprehenderit reprehenderit deserunt aliqua',
+        url: '#'
+        },
+        nextContent: {
+        title: 'In sunt non voluptate ullamco qui duis nostrud sint',
+        url: '#'
+        }
+         */
+
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $n = News::find($id);
+            if(!empty($n['id'])){
+                $array=array();
+                $array['title'] = $n['title'];
+                $array['imageUrl'] = $n['image'];
+                $array['date'] = $this->makeDate($n['date']);
+                $array['content'] = $n['content'];
+
+                $prev = News::select('id','title','url')->where('date','<',$n['date'])->orderBy('date','DESC')->first();
+                $next = News::select('id','title','url')->where('date','>',$n['date'])->orderBy('date','ASC')->first();
+                $array['previousContent']['title']=$prev['title'];
+                $array['previousContent']['url']=$prev['url'];
+                $array['previousContent']['id']=$prev['id'];
+                $array['nextContent']['title']=$next['title'];
+                $array['nextContent']['url']=$next['url'];
+                $array['nextContent']['id']=$next['id'];
+            $status_code = 200;
+            $resultArray['status'] = true;
+            $resultArray['data'] =$array;
+            }else{
+                $resultArray['status'] = false;
+
+                $status_code=404;
+                $resultArray['errors'] =['msg'=>'kayıt bulunamadı'] ;
+            }
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+    public function getNews(Request $request,$page=0,$page_count=10)
+    {
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $status_code = 200;
+            $news = News::where('status','=',1)
+               ->skip($page*$page_count)
+                ->limit($page_count)
+                ->orderBy('date','desc')->get() ;
+        //    $date = Carbon::now();//parse("27.06.2016")->format('Y-m-d');
+            $array=array();
+            $i=0;
+            foreach($news as $n){
+                $array[$i]['id'] = $n['id'];
+                $array[$i]['title'] = $n['title'];
+                $array[$i]['imageUrl'] = $n['image'];
+                $array[$i]['url'] = $n['url'];
+                $array[$i]['date'] =$this->makeDate($n['date']);
+                $array[$i]['description'] = $n['description'];
+                $i++;
+            }
+
+
+            $resultArray['status'] = true;
+            $resultArray['data'] =$array;
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+
+    public function faqList(Request $request)
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $status_code = 200;
+
+            $resultArray['status'] = true;
+            $resultArray['data'] = Faq::select('id','title','content')->where('status','=',1)->orderBy('order')->get();
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
 
     public function settingList(Request $request, $code = 0)
     {

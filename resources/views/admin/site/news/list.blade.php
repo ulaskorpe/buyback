@@ -1,84 +1,71 @@
 @extends('admin.main_layout')
 @section('css_')
-    <link href="{{url('vendors/switchery/dist/switchery.min.css')}}" rel="stylesheet">
+    <link href="{{url('vendors/datatables.net-bs/css/dataTables.bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{url('vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{url('vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{url('vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{url('vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css')}}" rel="stylesheet">
+
 @endsection
 @section('main')
+
     <div class="content">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="text-right">
-                            <a href="{{route("site.create-menu")}}">
-                                <button type="button"
-                                        class="btn btn-primary">
-                                    <b><i class="fa fa-plus-circle"></i></b> Yeni Bağlantı Ekle
-                                </button>
-
-
-                            </a>
-                        </div>
                         <div class="text-center">
-
-                            <select name="menu_type" id="menu_type" class="form-control w-25 float-right"
-                                    onchange="window.open('{{url('/admin/site/menu/menu-list')}}/'+this.value,'_self')">
-                                <option value="">TÜMÜ</option>
-                                <option value="1" @if($menu_type == 1) selected @endif>ÜST MENÜ</option>
-                                <option value="2" @if($menu_type == 2) selected @endif>BAŞLIK MENÜ</option>
-                                <option value="3" @if($menu_type == 3) selected @endif>SOL MENÜ</option>
-                                <option value="4" @if($menu_type == 4) selected @endif>MOBİL MENÜ</option>
-                                <option value="5" @if($menu_type == 5) selected @endif>DİP MENÜ</option>
-                                <option value="6" @if($menu_type == 6) selected @endif>ÜRÜNLER SAYFASI MENÜ</option>
-
-                            </select>
+                            <a href="{{route("site.create-news")}}"  class="btn btn-primary">Yeni Haber Ekle</a>
                         </div>
                     </div>
                     <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>
                         <tr>
-                            <th>Görsel</th>
+                            <th>news</th>
                             <th>Başlık</th>
-                            <th>URL</th>
-                            <th>Konum</th>
+                            <th>Ön Yazı</th>
+                            <th>Tarih</th>
                             <th>Durum</th>
                             <th class="text-center">İşlemler</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($menus as $menu)
+                        @foreach($newss as $news)
                             <tr>
-                                <td width="20%">
-                                    @if(!empty($menu['thumb']))
-                                        <img src="{{url($menu['thumb'])}}">
+                                <td>
+
+                                    @if(!empty($news['thumb']))
+                                        <img src="{{url($news['thumb'])}}">
                                     @endif
+                                </td>
+                                <td width="30%"><b>{{$news['title']}}</b>
 
                                 </td>
                                 <td>
-                                    <b>{{$menu['title']}}</b>
+                                {{substr($news['description'],0,100)}}
                                 </td>
-                                <td><a href="{{$menu['link']}}" target="_blank">{{$menu['link']}}</a> </td>
-                                <td>{{$menu_locations[$menu['location']]}} - {{$menu['order']}}</td>
+
+
+                                <td>{{\Carbon\Carbon::parse($news['date'])->format('d.m.Y')}}</td>
                                 <td>
-                                    @if($menu['status']==1)
+                                    @if($news['status']==1)
                                         <span class="badge badge-success">Aktif</span>
                                     @else
                                         <span class="badge badge-danger">Pasif</span>
-                                    @endif
-                                </td>
-
-
+                                    @endif</td>
                                 <td class="text-center">
                                     <div class="list-icons">
-                                        <a href="{{route('site.update-menu',$menu['id'])}}"
-                                           class="btn btn-primary">Güncelle <i class="fa fa-pencil"></i>
-                                        </a>
 
-
+                                        <a href="{{route("site.update-news",$news['id'])}}"
+                                           class="btn btn-primary"><i class="fa fa-pencil"></i> Güncelle</a>
+                                        <!--
+                                        <a href="" class="list-icons-item text-violet-800"><i class="icon-eye"></i></a>
+                                        -->
                                     </div>
                                 </td>
+
                             </tr>
                         @endforeach
-
                         </tbody>
                     </table>
                 </div>
@@ -87,9 +74,12 @@
             <!-- Inline form modal -->
         </div>
     </div>
-@endsection
 
+
+@endsection
 @section('scripts')
+
+
     <script src="{{url('vendors/datatables.net/js/jquery.dataTables.min.js')}}"></script>
     <script src="{{url('vendors/datatables.net-bs/js/dataTables.bootstrap.min.js')}}"></script>
     <script src="{{url('vendors/datatables.net-buttons/js/dataTables.buttons.min.js')}}"></script>
@@ -107,15 +97,6 @@
         $(document).ready(function () {
             init_DataTables();
         });
-
-        function userDetail(user_id){
-            $('#show-lg-modal').click();
-            $.get( "{{url('admin/buyback/user-info')}}/"+user_id, function( data ) {
-                $( "#lg-modal-title" ).html('Kullanıcı Detay');
-                $( "#lg-modal-body" ).html( data );
-
-            });
-        }
     </script>
 
 @endsection

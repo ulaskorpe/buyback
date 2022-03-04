@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
+use App\Mail\ForgetPassword;
+use App\Mail\Register;
 use App\Models\CartItem;
 
 use App\Models\Customer;
@@ -13,6 +15,8 @@ use App\Models\Order;
 use App\Models\Product;
 use Faker\Factory;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Mailer;
+use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
 
 class ApiCustomerController extends Controller
@@ -21,7 +25,7 @@ class ApiCustomerController extends Controller
 
 
     use ApiTrait;
-    public function create(Request $request)
+    public function create(Request $request,Mailer $mailer)
     {
         if ($request->isMethod('post')) {
             $status_code =201;
@@ -97,18 +101,37 @@ class ApiCustomerController extends Controller
                         }
 
 
-                        $c->save();
-                        //return  response()->json( $c);
-                        $returnArray['status'] = true;
-                      // $returnArray['status_code'] = 201;
+                      //  $c->save();
 
-                        $returnArray['data'] =['customer'=>$c];
+
+                        //////send email ////////////////
+                        //if(){
+                            $c->save();
+
+
+                            //return  response()->json( $c);
+                            $returnArray['status'] = true;
+                            // $returnArray['status_code'] = 201;
+
+                            $returnArray['data'] =['customer'=>$c];
+                        $mailer->to($request['email'])->send(new Register($key));
+//                        }else{
+//                            $returnArray['status'] = false;
+//                            //$returnArray['status_code'] = 409;
+//                            $status_code=409;
+//                            $returnArray['errors'] =['msg'=>'conflict/invalid'] ;
+//                        }
+                        //////send email ////////////////
+
+
 
                     } else {
                         $returnArray['status'] = false;
                         //$returnArray['status_code'] = 409;
                         $status_code=409;
                         $returnArray['errors'] =['msg'=>'conflict/invalid'] ;
+
+
                     }
 
                 } else {
@@ -292,20 +315,30 @@ class ApiCustomerController extends Controller
                 $status_code = 200;
             if(!empty($request['email']) && !empty($request['password']) ){
 
-                $ch =  Customer::where('email','=',$request['email'])
-                    ->where('password','=',md5($request['password']))
-                    ->where('status','=',1)
+
+
+                $ch =  Customer::select('customer_id','name','surname','email','status')->where('email','=',$request['email'])
+                  ->where('password','=',md5($request['password']))
+               //    ->where('status','=',1)
                     ->first();
+
+                if(empty($ch['customer_id'])){
+                    $returnArray['status']=false;
+                    $status_code=404;
+                    $returnArray['errors'] =['msg'=>'kullanıcı bulunamadı'];
+                    return response()->json($returnArray,$status_code);
+                }
 
                     if($ch['status']==1) {
 
                         $returnArray['status']=true;
-                        $returnArray['data'] =['customer'=>$ch];
+                        $returnArray['data'] =$ch;//['customer'=>$ch];
 
                     }elseif ($ch['status']==0){
                         $returnArray['status']=false;
                         $status_code=403;
-                        $returnArray['errors'] =['msg'=>'inactive user'];
+                        $returnArray['data'] = $ch['email'];
+                        $returnArray['errors'] =['msg'=>'','code'=>'not_verified'];
                     }elseif ($ch['status']==2){
                         $returnArray['status']=false;
                         $status_code=403;
@@ -461,8 +494,75 @@ class ApiCustomerController extends Controller
         return response()->json($returnArray,$status_code);
     }
 
+    public function resendActivate(Request $request,Mailer $mailer)
+    {
 
-    public function forgetPassword(Request $request)
+
+        if ($request->isMethod('post')) {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            if(!empty($request['email'])){
+
+
+                $ch =  Customer::where('email','=',$request['email'])
+               //     ->where('activation_key','=',$request['activation_key'])
+                    ->first();
+
+                if(!empty($ch['id'])){
+
+                    if($ch['status']==0) {
+
+
+                        if(!empty($request['ip_address'])){
+                            $ch->ip_address=$request['ip_address'];
+                            $ch->save();
+                        }
+
+                        $mailer->to($request['email'])->send(new Register($ch['activation_key']));
+                        $returnArray['status']=true;
+                        $status_code =200;
+                        $returnArray['data'] =$ch['email'];//['customer'=>$ch];
+
+                    }else{
+                        $returnArray['status']=false;
+                        $status_code =304;
+                        $returnArray['errors'] =['msg'=>"zaten aktif"];
+
+                    }
+
+                }else{
+                    $returnArray['status']=false;
+                    $status_code =404;
+                    $returnArray['errors'] =['msg'=>"not found"];
+
+                }
+
+
+
+            }else{
+                $returnArray['status']=false;
+                $status_code =406;
+                $returnArray['errors'] =['msg'=>"missing data"];
+
+            }
+
+        }else{
+            $returnArray['status']=false;
+            $status_code =498;
+            $returnArray['errors'] =['msg'=>"invalid key"];
+
+        }
+
+        }else{
+            $returnArray['status'] = false;
+            $status_code =405;
+            $returnArray['errors'] =['msg'=>"method_not_allowed"];
+        }
+        return response()->json($returnArray,$status_code);
+    }
+
+
+    public function forgetPassword(Request $request,Mailer $mailer)
     {
 
 
@@ -470,25 +570,41 @@ class ApiCustomerController extends Controller
         if ($request->header('x-api-key') == $this->generateKey()) {
 
             if(!empty($request['email']) ){
-                $ch =  Customer::where('email','=',$request['email'])->first();
+                $ch =  Customer::select('customer_id','email','status')
+                    ->where('email','=',$request['email'])->first();
 
-                if(!empty($ch['id'])){
+                if(!empty($ch['customer_id'])){
+                    if($ch['status']==1) {
+                        ///////////SEND EMAIL///////////////
+                        $pw = GeneralHelper::randomPassword(8,1);
+                        $mailer->to($request['email'])->send(new ForgetPassword($pw));
+                        ///////////SEND EMAIL///////////////
+                        $ch->password= md5($pw);
+                        //$ch->activation_key=0;
+                        if(!empty($request['ip_address'])){
+                            $ch->ip_address=$request['ip_address'];
+                        }
+
+                        $ch->save();
+                        $returnArray['status']=true;
+                        $returnArray['data']=$ch['email'];//['customer'=>$ch];
+                        $status_code = 200;
+
+///                        $returnArray['status']=true;
 
 
-                    ///////////SEND EMAIL///////////////
-                    $pw = GeneralHelper::randomPassword(8,1);
-
-                    ///////////SEND EMAIL///////////////
-                    $ch->password= md5($pw);
-                    //$ch->activation_key=0;
-                    if(!empty($request['ip_address'])){
-                        $ch->ip_address=$request['ip_address'];
+                    }elseif ($ch['status']==0){
+                        $returnArray['status']=false;
+                        $status_code=403;
+                        $returnArray['data'] = $ch['email'];
+                        $returnArray['errors'] =['msg'=>'','code'=>'not_verified'];
+                    }elseif ($ch['status']==2){
+                        $returnArray['status']=false;
+                        $status_code=403;
+                        $returnArray['errors'] =['msg'=>'banned user'];
                     }
 
-                    $ch->save();
-                      $returnArray['status']=true;
-                      $returnArray['data']=['customer'=>$ch];
-                      $status_code = 200;
+
                 }else{
                     $returnArray['status']=false;
                     $status_code=404;
