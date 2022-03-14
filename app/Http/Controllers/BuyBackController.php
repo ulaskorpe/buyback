@@ -69,7 +69,7 @@ class BuyBackController extends Controller
                 $bb->offer_price = $request['offered_price'];
                 $bb->save();
 
-                $this->makeTmp($request['imei_id'],$bb['id']);
+                //$this->makeTmp($request['imei_id'],$bb['id']);
 
                 $answer_array = explode('@', substr($request['answers'], 0, strlen($request['answers']) - 1));
                 $answers = Answer::whereIn('id', $answer_array)->get();

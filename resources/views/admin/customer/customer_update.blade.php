@@ -30,54 +30,57 @@
                 <ul class="nav nav-tabs bar_tabs" id="myTab" role="tablist">
                     @if($selected==0)
                         <li class="nav-item">
-                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#profile" role="tab"
                                aria-controls="home" aria-selected="true">Müşteri Bilgisi</a>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                            <a class="nav-link" id="home-tab" data-toggle="tab" href="#profile" role="tab"
                                aria-controls="home" aria-selected="false">Müşteri Bilgisi</a>
                         </li>
                     @endif
 
                     @if($selected==1)
                         <li class="nav-item">
-                            <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+                            <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#addresses" role="tab"
                                aria-controls="profile" aria-selected="true">Adresleri</a>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#addresses" role="tab"
                                aria-controls="profile" aria-selected="false">Adresleri</a>
                         </li>
                     @endif
 
-                    @if($selected==2)
-                        <li class="nav-item">
-                            <a class="nav-link active" id="contact-tab" data-toggle="tab" href="#variant" role="tab"
-                               aria-controls="contact" aria-selected="true">Sepeti ve Sipariş Geçmişi  </a>
-                        </li>
-                    @else
-                        <li class="nav-item">
-                            <a class="nav-link" id="variant-tab" data-toggle="tab" href="#variant" role="tab"
-                               aria-controls="contact" aria-selected="false">Sepeti ve Sipariş Geçmişi</a>
-                        </li>
-                    @endif
+                        @if($selected==2)
+                            <li class="nav-item">
+                                <a class="nav-link active" id="contact-tab" data-toggle="tab" href="#order_cart" role="tab"
+                                   aria-controls="contact" aria-selected="true">Sepeti ve Sipariş Geçmişi  </a>
+                            </li>
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link" id="variant-tab" data-toggle="tab" href="#order_cart" role="tab"
+                                   aria-controls="contact" aria-selected="false">Sepeti ve Sipariş Geçmişi</a>
+                            </li>
+                        @endif
+
+
+
 
                     @if($selected==3)
                         <li class="nav-item">
-                            <a class="nav-link active" id="stock-tab" data-toggle="tab" href="#stock" role="tab"
+                            <a class="nav-link active" id="stock-tab" data-toggle="tab" href="#messages" role="tab"
                                aria-controls="contact" aria-selected="true">Mesajları</a>
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" id="stock-tab" data-toggle="tab" href="#stock" role="tab"
+                            <a class="nav-link" id="stock-tab" data-toggle="tab" href="#messages" role="tab"
                                aria-controls="contact" aria-selected="false">Mesajları</a>
                         </li>
                     @endif
                 </ul>
                 <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade  @if($selected==0) active show @endif" id="home" role="tabpanel"
+                    <div class="tab-pane fade  @if($selected==0) active show @endif" id="profile" role="tabpanel"
                          aria-labelledby="home-tab">
                         <div class="row">
                             <div class="col-12 mx-5">
@@ -85,6 +88,12 @@
                                       enctype="multipart/form-data">
                                     {{csrf_field()}}
                                     <input type="hidden" id="id" name="id" value="{{$customer['id']}}">
+                                    <div class="form-group row">
+                                        <label class="col-lg-2 col-form-label font-weight-semibold">Müşteri ID :</label>
+                                        <div class="col-lg-8">
+                                             {{$customer['customer_id']}}
+                                        </div>
+                                    </div>
                                     <div class="form-group row">
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Adı :</label>
                                         <div class="col-lg-8">
@@ -101,6 +110,17 @@
                                                    value="{{$customer['surname']}}" data-popup="tooltip" data-trigger="focus"
                                                    title="" placeholder="">
                                             <span id="surname_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-lg-2 col-form-label font-weight-semibold">Cinsiyet :</label>
+                                        <div class="col-lg-2">
+                                            <select name="gender" id="gender" class="form-control">
+                                                <option value="0" @if($customer['gender']==0) selected @endif>Belirtilmedi</option>
+                                                <option value="1" @if($customer['gender']==1) selected @endif>Erkek</option>
+                                                <option value="2" @if($customer['gender']==2) selected @endif>Kadın</option>
+
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="form-group row">
@@ -195,12 +215,12 @@
                         </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade @if($selected==1) active show @endif" id="profile" role="tabpanel"
+                    <div class="tab-pane fade @if($selected==1) active show @endif" id="addresses" role="tabpanel"
                          aria-labelledby="profile-tab">
 
                         <div class="row">
                             <div class="col-12">
-                                <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                                <table id="datatable-responsive-1" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                                     <thead>
                                     <tr>
                                         <th>Başlık</th>
@@ -220,22 +240,22 @@
                                             <td>
                                                 {{$address->city()->first()->name}}
                                                 @if($address['town_id']>0)
-                                                        &gt;{{$address->town()->first()->name}}
+                                                    &gt;{{$address->town()->first()->name}}
                                                     @if($address['district_id']>0)<br>
-                                                        &gt;{{$address->district()->first()->name}}
-                                                        @if($address['neighborhood_id']>0)
-                                                            &gt;{{$address->neighborhood()->first()->name}}
+                                                    &gt;{{$address->district()->first()->name}}
+                                                    @if($address['neighborhood_id']>0)
+                                                        &gt;{{$address->neighborhood()->first()->name}}
                                                     @endif
                                                     @endif
-                                                    @endif
+                                                @endif
 
                                             </td>
                                             <td>
-                                            {{$address['phone_number']}}
+                                                {{$address['phone_number']}}
                                                 @if(!empty($address['phone_number_2']))
                                                     <hr>
-                                            {{$address['phone_number_2']}}
-                                                    @endif
+                                                    {{$address['phone_number_2']}}
+                                                @endif
 
                                             </td>
                                             <td>
@@ -253,11 +273,67 @@
 
 
                     </div>
-                    <div class="tab-pane fade @if($selected==2) active show @endif" id="variant" role="tabpanel"
+                    <div class="tab-pane fade @if($selected==2) active show @endif" id="order_cart" role="tabpanel"
                          aria-labelledby="variant-tab">
+
                         <div class="row">
                             <div class="col-12">
-                                <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                                <p class="h2">Sepetindeki Ürünler</p>
+                                <table id="datatable-responsive-2" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                                    <thead>
+                                    <tr>
+                                        <th>Ürün</th>
+                                        <th>Durum</th>
+                                        <th>Sipariş</th>
+
+                                        <th class="text-center">İşlemler</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach($cart_items as $cart_item)
+                                        <tr>
+                                            <td>
+                                                {{$cart_item->product()->first()->title}}<br>
+                                                {{$cart_item->product()->first()->brand()->first()->BrandName}}
+                                                &gt;
+                                                {{$cart_item->product()->first()->model()->first()->Modelname}}
+                                                @if($cart_item['memory_id']>0)
+                                                    <br>
+                                                    {{$cart_item->memory()->first()->memory_value}} GB
+                                                @endif
+                                                @if($cart_item['color_id']>0)
+                                                    <br>
+                                                    {{$cart_item->color()->first()->color_name}}
+                                                @endif
+                                            </td>
+                                            <td>{{$status_array[$cart_item['status']]}}</td>
+                                            <td>
+                                                @if($cart_item['order_id']>0)
+                                                    {{$cart_item['order_id']}}
+
+                                                @endif
+                                            </td>
+                                            <td>
+
+                                                <button class="btn btn-primary"  onclick="update_address({{$cart_item['id']}})">GÜNCELLE</button>
+
+                                            </td>
+
+                                        </tr>
+                                    @endforeach
+                                    </tbody>
+                                </table>
+
+
+
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-12">
+                                <p class="h2">Alışveriş Geçmişi</p>
+                                <table id="datatable-responsive-2" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                                     <thead>
                                     <tr>
                                         <th>Ürün</th>
@@ -293,7 +369,7 @@
                                             </td>
                                             <td>
 
-                                                <button class="btn btn-primary"  onclick="update_address({{$address['id']}})">GÜNCELLE</button>
+                                                <button class="btn btn-primary"  onclick="update_address({{$cart_item['id']}})">GÜNCELLE</button>
 
                                             </td>
 
@@ -301,6 +377,9 @@
                                     @endforeach
                                     </tbody>
                                 </table>
+
+
+
                             </div>
                         </div>
 
@@ -310,7 +389,7 @@
 
 
                     </div>
-                    <div class="tab-pane fade @if($selected==3) active show @endif" id="stock" role="tabpanel"
+                    <div class="tab-pane fade @if($selected==3) active show @endif" id="messages" role="tabpanel"
                          aria-labelledby="stock-tab">
                         <div class="row">
                             <div class="col-12">
@@ -350,7 +429,8 @@
 
          //   brandSelect();
        //     init_DataTables();
-            init_DataTables();
+            $('#datatable-responsive-1').DataTable();
+            $('#datatable-responsive-2').DataTable();
 
             if ($("input.flat")[0]) {
                 $(document).ready(function () {

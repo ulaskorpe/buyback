@@ -22,7 +22,7 @@ class ModelQuestion extends Model
     }
 
     public function question(){
-        return $this->hasOne(Question::class,'id','question_id');
+        return $this->hasOne(Question::class,'id','question_id')->where('status','=',1);
     }
 
 

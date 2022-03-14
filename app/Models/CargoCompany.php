@@ -13,7 +13,7 @@ class CargoCompany extends Model
     protected $table = 'cargo_companies';
 
     protected $fillable = [
-        'item_code', 'customer_id','product_id','memory_id','color_id','order_id','status','quantity','price'
+       'name','person','logo','email','phone_number','status'
     ];
 
     protected $hidden = [

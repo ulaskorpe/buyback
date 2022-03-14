@@ -161,7 +161,7 @@
 //console.log("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei);
              //   $.get("{{url('data/check-imei')}}/" + $('#model_id').val() + "/" + imei, function (data) {
                     $.get("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei, function (data) {
-                        console.log("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei);
+                       // console.log("https://buyback.garantiliteknoloji.com/data/imei-query/" + $('#model_id').val() + "/" + imei);
                         var parsed = JSON.parse(data);
                         var arr = [];
                         for (var x in parsed) {

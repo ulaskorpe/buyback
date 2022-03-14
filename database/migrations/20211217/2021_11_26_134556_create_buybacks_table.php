@@ -13,16 +13,16 @@ class CreateBuybacksTable extends Migration
      */
     public function up()
     {
-//        Schema::create('buybacks', function (Blueprint $table) {
-//            $table->id();
-//            $table->integer('buyback_user_id');
-//            $table->string('imei');
-//            $table->integer('model_id');
-//            $table->integer('color_id')->default(0);
-//            $table->float('offer_price')->default(0);
-//            $table->softDeletes();
-//            $table->timestamps();
-//        });
+        Schema::create('buybacks', function (Blueprint $table) {
+            $table->id();
+            $table->integer('buyback_user_id');
+            $table->string('imei');
+            $table->integer('model_id');
+            $table->integer('color_id')->default(0);
+            $table->float('offer_price')->default(0);
+            $table->softDeletes();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -32,6 +32,6 @@ class CreateBuybacksTable extends Migration
      */
     public function down()
     {
-  //      Schema::dropIfExists('buybacks');
+       Schema::dropIfExists('buybacks');
     }
 }

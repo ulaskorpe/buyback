@@ -13,7 +13,9 @@ final class CartItemStatus extends Enum
 {
     const init =   0;
     const paid =   1;
-    const cancelled = 2;
-    const sent = 3;
+    const sent = 2;
+    const cancelled = 3;
     const completed = 4;
+
+
 }

@@ -69,10 +69,12 @@ class ApiCustomerController extends Controller
                         $c->customer_id = $last['customer_id'] + 1;
                         $c->name = $request['name'];
                         $c->surname = $request['surname'];
+                        $c->gender = (!empty($request['gender']))?$request['gender']:'';
                         $c->email = $request['email'];
                         $c->password = md5($request['password']);
                         $c->status = 0;
                         $ch = true;
+
                         while ($ch) {
                             $key = rand(100000, 999999);
 
@@ -181,6 +183,7 @@ class ApiCustomerController extends Controller
 
                         $c->name = $request['name'];
                         $c->surname = $request['surname'];
+                        $c->gender = (!empty($request['gender']))?$request['gender']:'';
                         $c->ip_address = (!empty($request['ip_address'])) ? $request['ip_address'] : '';
                         $file = $request->file('avatar');
                         if (!empty($file)) {
@@ -980,6 +983,7 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
     }
 
 ///////////////////////////////ADDRESS////////////////////////////////////////////////////////
+
 /// /////////////////////////// FAVORITES ////////////////////////////////////////////////
 
     public function addToFavorites(Request $request)
@@ -1205,6 +1209,7 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
     {
 
 
+
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
@@ -1376,7 +1381,7 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                             $item_array[$i]['brand']=$cart_item->product()->first()->brand()->first()->BrandName;
                             $item_array[$i]['model']=$cart_item->product()->first()->model()->first()->Modelname;
                             $item_array[$i]['category']=$cart_item->product()->first()->category()->first()->category_name;
-                            $item_array[$i]['image']=$cart_item->product()->first()->firstImage()->first()->image;
+                            $item_array[$i]['imageUrl']=$cart_item->product()->first()->firstImage()->first()->image;
                             $item_array[$i]['thumb']=$cart_item->product()->first()->firstImage()->first()->thumb;
                             $item_array[$i]['color']=$cart_item->color()->first()->color_name;
                             $item_array[$i]['memory']=$cart_item->memory()->first()->memory_value." GB";
@@ -1422,6 +1427,9 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
         return response()->json($returnArray,$status_code);
     }
 
+    private function calculateShipping($order_id){
+        return rand(5,10)*10;
+    }
 
     private function addressCheck($customer_id,$address_id=0){
         if($address_id>0){
@@ -1446,26 +1454,10 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                     $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',1)->first();
 
 
-                    if(!empty($ch['id']) && !empty($request['cargo_company_id'])    ){
+                    if(!empty($ch['id']) && !empty($request['cargo_company_id'])  ){
 
                         $order_status=0;
-                        if($request['payment_method']=='cc' || $request['payment_method']==0){
-                            if(!empty($request['cc_no']) && !empty($request['expires_at']) && !empty($request['cvc'])){
-                                if(!$this->ccPayment($request['cc_no'],$request['expires_at'],$request['cvc'])){
-                                    $returnArray['status']=false;
-                                    $status_code=402;
-                                    $returnArray['errors'] =['msg'=>'payment_required'];
-                                    return response()->json($returnArray,$status_code);
-                                }
-                                $order_status=1;
-                            }else{
-                                $returnArray['status']=false;
-                                $status_code=406;
-                                $returnArray['errors'] =['msg'=>'missing data'];
-                                return response()->json($returnArray,$status_code);
 
-                            }
-                        }/////CC PAYMENT
                         $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
                         if($address_id == 0){
                             $returnArray['status']=false;
@@ -1492,6 +1484,34 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                             $returnArray['errors'] =['msg'=>'no item found'];
                             return response()->json($returnArray,$status_code);
                         }
+                        $price = 0 ;
+                        $delete_item_array = array();
+                        foreach ($items as $item){
+
+                            $price += $item['price'];
+                            $delete_item_array[]=$item['id'];
+                        }
+
+                        $shipping_price=$this->calculateShipping(3);
+
+
+                        if($request['payment_method']=='cc' || $request['payment_method']==0){
+                            if(!empty($request['cc_no']) && !empty($request['expires_at']) && !empty($request['cvc'])){
+                                if(!$this->ccPayment($request['cc_no'],$request['expires_at'],$request['cvc'],($price+$shipping_price))){
+                                    $returnArray['status']=false;
+                                    $status_code=402;
+                                    $returnArray['errors'] =['msg'=>'payment_required'];
+                                    return response()->json($returnArray,$status_code);
+                                }
+                                $order_status=1;
+                            }else{
+                                $returnArray['status']=false;
+                                $status_code=406;
+                                $returnArray['errors'] =['msg'=>'missing data'];
+                                return response()->json($returnArray,$status_code);
+
+                            }
+                        }/////CC PAYMENT
 
 
 
@@ -1501,23 +1521,13 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                         $order->cargo_company_id = $request['cargo_company_id'];
                         $order->customer_id= $ch['id'];
                         $order->customer_address_id = $address_id;
-                        $order->payment_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
+                        $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
                         $order->status = $order_status;
-                        $order->amount = 0;
+                        $order->amount = $price;
+                        $order->shipping_price = $shipping_price;
                         $order->save();
 
-
-                        $price = 0 ;
-                        $delete_item_array = array();
-                        foreach ($items as $item){
-
-                                $price += $item['price'];
-                                $delete_item_array[]=$item['id'];
-                        }
-                        $order->amount=$price;
-                        $order->save();
-
-                        $result = array();
+                       $result = array();
                         $i=0;
                         foreach ($items as $item){
 
@@ -1531,10 +1541,13 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
                             $result[$i]['price']=$item['price'];
                             $i++;
                         }
+
+                        //$result['shipping_price']=50;
+
                         CartItem::whereIn('id',$delete_item_array)->update(['status'=>1,'order_id'=>$order['id']]);//->delete();
                         $returnArray['status']=true;
                         $status_code=200;
-                        $returnArray['data'] =['items'=>$result];
+                        $returnArray['data'] =['items'=>$result,'amount'=>$price,'shipping_price'=>$shipping_price];
                         //$ch->activation_key=0;
                         if(!empty($request['ip_address'])){
                             $ch->ip_address=$request['ip_address'];
@@ -1565,13 +1578,155 @@ if(!empty($request['customer_id']) && !empty($request['address_id'])){
 
     }
 
+    private $orderStatus =['Open','Paid','Sent','Completed','Cancelled'];
 
-    private function ccPayment($ccno,$expires_at,$cvc){
+
+    private function orderDetail($order){
+        $result['order_id']=$order['order_code'];
+        $items = array();
+        $i=0;
+        foreach ( $order->cart_items()->get() as $item){
+            $items[$i]['title']=$item->product()->first()->title;
+            $items[$i]['model']=$item->product()->first()->brand()->first()->BrandName." ".$item->product()->first()->model()->first()->Modelname;
+            $items[$i]['color']=$item->color()->first()->color_name;
+            $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
+            $items[$i]['quantity']=$item['quantity'];
+            $items[$i]['price']=$item['price'];
+            $i++;
+        }
+        $result['items']=$items;
+
+        $result['amount']=$order['amount'];
+        $result['cargo_company']=$order->cargo_company()->first()->name;
+        if($order['cargo_company_branch_id']>0){
+            $result['cargo_company_branch']=$order->cargo_company_branch()->first()->title;
+        }
+        $shipping_address=$order->customer_address()->first()->title.", "
+            .$order->customer_address()->first()->address;
+        $shipping_address.=($order->customer_address()->first()->neighborhood_id>0)?", ".$order->customer_address()->first()->neighborhood()->first()->name:"";
+        $shipping_address.=($order->customer_address()->first()->district_id>0)?", ".$order->customer_address()->first()->district()->first()->name:"";
+        $shipping_address.=($order->customer_address()->first()->town_id>0)?", ".$order->customer_address()->first()->town()->first()->name:"";
+        $shipping_address.=($order->customer_address()->first()->city_id>0)?", ".$order->customer_address()->first()->city()->first()->name:"";
+
+        $result['shipping_address']['name_surname']=$order->customer_address()->first()->name_surname;
+        $result['shipping_address']['address']=$shipping_address;
+        $result['shipping_address']['phone']=$order->customer_address()->first()->phone_number;
+        $result['shipping_address']['phone'].=(!empty($order->customer_address()->first()->phone_number_2))?" (".$order->customer_address()->first()->phone_number_2.")":"";
+        $result['shipping_price']=$order['shipping_price'];
+        if($order['order_method']==0){
+            $result['order_method']='Credit Card';
+        }else{
+            $result['order_method']=$order->order_method()->first()->bank_name." - ".$order->order_method()->first()->iban;
+        }
+
+
+
+        $result['status']=$this->orderStatus[$order['status']];
+
+        return $result;
+    }
+
+    public function orderSummary(Request $request){
+
+        if ($request->isMethod('post')) {
+            if ($request->header('x-api-key') == $this->generateKey()) {
+                if(!empty($request['customer_id']) ){
+                    $customer =  Customer::where('customer_id','=',((!empty($request['customer_id']))?$request['customer_id']:0))->where('status','=',1)->first();
+                    $order= Order::with('cart_items.product')->where('customer_id','=',$customer['id'])
+                        ->where('order_code','=',((!empty($request['order_id']))?$request['order_id']:0))->first();
+
+                    if(!empty($customer['id']) && !empty($order['id'])&&  $order->cart_items()->count()>0){
+
+
+                        $returnArray['status']=true;
+                        $status_code=200;
+                        $returnArray['data'] =['order'=>$this->orderDetail($order) ];
+                        //$ch->activation_key=0;
+                        if(!empty($request['ip_address'])){
+                            $customer->ip_address=$request['ip_address'];
+                            $customer->save();
+                        }
+                    }else{
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'missing data'];
+                    }
+                }else{
+                    $returnArray['status']=false;
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
+                }
+            }else{
+                $returnArray['status']=false;
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
+            }
+
+        }else{
+            $returnArray['status'] = false;
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+        }
+        return response()->json($returnArray,$status_code);
+
+    }
+
+    public function orderHistory(Request $request){
+
+        if ($request->isMethod('post')) {
+            if ($request->header('x-api-key') == $this->generateKey()) {
+                if(!empty($request['customer_id']) ){
+                    $customer =  Customer::where('customer_id','=',((!empty($request['customer_id']))?$request['customer_id']:0))->where('status','=',1)->first();
+                    $orders= Order::with('cart_items.product')
+                        ->where('customer_id','=',$customer['id'])->orderBy('created_at','DESC')->get();
+
+
+                    if(!empty($customer['id'])  &&  $orders->count()>0){
+                        $result=array();
+                        $i=0;
+                        foreach ($orders as $order){
+                            $result[$i]=$this->orderDetail($order);
+                            $i++;
+                        }
+                        $returnArray['status']=true;
+                        $status_code=200;
+                        $returnArray['data'] =['orders'=>$result ];
+                        //$ch->activation_key=0;
+                        if(!empty($request['ip_address'])){
+                            $customer->ip_address=$request['ip_address'];
+                            $customer->save();
+                        }
+                    }else{
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'missing data'];
+                    }
+                }else{
+                    $returnArray['status']=false;
+                    $status_code=406;
+                    $returnArray['errors'] =['msg'=>'missing data'];
+                }
+            }else{
+                $returnArray['status']=false;
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
+            }
+
+        }else{
+            $returnArray['status'] = false;
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+        }
+        return response()->json($returnArray,$status_code);
+
+    }
+
+    private function ccPayment($ccno,$expires_at,$cvc,$amount){
         $mo = (int)$expires_at;
       //  return (int)date('Ym').":".$mo;
 
 
-        if($mo>(int)date('ym') && strlen($ccno)==16 && strlen($cvc)==3){
+        if($mo>(int)date('ym') && strlen($ccno)==16 && strlen($cvc)==3 && $amount>0){
         return true;
         }else{
             return  false;

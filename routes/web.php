@@ -49,7 +49,7 @@ Route::group(['prefix'=>'data','as'=>'data.'],function (){
    // Route::get('/check-imei/{model_id?}/{imei?}',[\App\Http\Controllers\DataController::class,'checkImei'])->name('check-imei');
     Route::get('/check-imei-server',[\App\Http\Controllers\DataController::class,'checkImeiServer'])->name('check-imei-server');
     Route::get('/imei-query/{model_id}/{imei}',[\App\Http\Controllers\DataController::class,'imeiQuery'])->name('imei-query');
-    Route::get('/check-imei/{model_id}/{imei}',[\App\Http\Controllers\DataController::class,'checkImei'])->name('check-imei');
+  ///  Route::get('/check-imei/{model_id}/{imei}',[\App\Http\Controllers\DataController::class,'checkImei'])->name('check-imei');
 });
 
 
@@ -347,6 +347,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/service-address-detail/{address_id}',[\App\Http\Controllers\CustomerController::class,'serviceAddressDetail'])->name('service-address-detail');
         Route::get('/bank-account-detail/{address_id}',[\App\Http\Controllers\CustomerController::class,'bankAccountDetail'])->name('bank-account-detail');
         Route::get('/order-update/{order_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'orderUpdate'])->name('order-update');
+        Route::get('/cargo-code-check/{cargo_code}/{order_id}',[\App\Http\Controllers\CustomerController::class,'cargoCodeCheck'])->name('cargo-code-check');
         Route::post('/order-update-post',[\App\Http\Controllers\CustomerController::class,'orderUpdatePost'])->name('order-update-post');
     });
 });

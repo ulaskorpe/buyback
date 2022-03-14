@@ -30,6 +30,28 @@ class ApiController extends Controller
 
     use ApiTrait;
 
+    private function makeHtml($header,$paragraphs){
+
+        $data='<div class="type-page hentry"><header class="entry-header"><div class="page-header-caption"><h1 class="entry-title">'.$header.'</h1><br /></div></header>
+                <div class="entry-content text-left"><div class="row accordion-block"><div class="text-boxes col-sm-12">';
+        $i=0;
+        foreach ($paragraphs as $paragraph) {
+            if($i%2==0){
+                $data.=($i==0)?'<div class="row first-row">':'<div class="row">';
+                $cl='pr-6';
+                $end='</div>';
+            }else{
+                $cl='pl-6';
+                $end='';
+            }
+            $data.='<div class="col-sm-6 '.$cl.'"><div class="text-block"><h3 class="highlight">'.$paragraph['title'].'</h3><p>'.$paragraph['p'].'</p></div></div>';
+            $data.=$end;
+            $i++;
+        }
+        $data.='</div></div></div></section></div></div>';
+        return $data;
+    }
+
     private function makeDate($date){
         $months  = ["","Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
         $dz = explode("-",$date);
@@ -100,12 +122,13 @@ class ApiController extends Controller
         return response()->json($resultArray,$status_code);
         // return json_encode($resultArray);
     }
-    public function getNews(Request $request,$page=0,$page_count=10)
+    public function getNews(Request $request,$page=0,$page_count=10,$keyword='')
     {
 
         if ($request->header('x-api-key') == $this->generateKey()) {
             $status_code = 200;
             $news = News::where('status','=',1)
+                ->where('title','like','%'.$keyword.'%')
                ->skip($page*$page_count)
                 ->limit($page_count)
                 ->orderBy('date','desc')->get() ;
@@ -323,29 +346,62 @@ class ApiController extends Controller
     }
 
 
-    public function getArticle(Request $request, $code = "")
+    public function getArticle(Request $request, $article_id =0)
     {
+        $status_code=200;
         if ($request->header('x-api-key') == $this->generateKey()) {
-            if (!empty($code)) {
+            if ($article_id>0) {
+                $article = Article::with('parts')->where('id', '=', $article_id)->first();
+                if(empty($article['id'])){
+                    $resultArray['status'] = false;
+                    $status_code= 404;
+                    $resultArray['errors'] = ['msg'=>'bulunamadı'];
+                    return response()->json($resultArray,$status_code);
+                }
+                //    ->where('status', '=', 1)
+                $parts=array();
+                $i=0;
+                foreach ($article->parts()->get() as $part){
+                    $parts[$i]=['title'=>$part['title'],'p'=>$part['paragraph']];
+                    $i++;
+                }
 
-                $resultArray = ["article" => Article::with('parts')->where('code', '=', $code)
-                    ->where('status', '=', 1)->first()];
-
+                $body = $this->makeHtml($article['title'],$parts);
+//                crumbs: [
+//                { url: '#', title: 'Hakkımızda' },
+//            ]
+                $resultArray['data'] = ["id" => $article['id'],'title'=>$article['title'],'body'=>$body,'crumbs'=>[['url'=>'#','title'=>$article['title']]] ];
+                $resultArray['status'] = true;
             } else {
-                $resultArray = ["articles" => Article::with('parts')
-                    ->where('status', '=', 1)->get()];
+
+                $articles = Article::with('parts')->where('status', '=', 1)->get();
+                $array = array();
+
+                foreach ($articles as $article){
+                    $parts=array();
+                    $i=0;
+                    foreach ($article->parts()->get() as $part){
+                        $parts[$i]=['title'=>$part['title'],'p'=>$part['paragraph']];
+                        $i++;
+                    }
+
+                $array[] = ["id" => $article['id'],'title'=>$article['title'],'code'=>$article['code'],'body'=>$this->makeHtml($article['title'],$parts)
+                    ,'crumbs'=>[['url'=>'#','title'=>$article['title']]]];
+                }
+                $resultArray['status'] = true;
+                $resultArray = ["data" =>$array ];
 
             }
 
 
         } else {
             $resultArray['status'] = false;
-            $resultArray['status_code'] = 406;
-            $resultArray['msg'] = 'hatalı anahtar';
+            $status_code= 406;
+            $resultArray['errors'] = ['msg'=>'hatalı anahtar'];
         }
 
 
-        return response()->json($resultArray);
+        return response()->json($resultArray,$status_code);
         // return json_encode($resultArray);
     }
 
@@ -482,8 +538,10 @@ class ApiController extends Controller
 
     public function superOffer(Request $request)
     {
+
+
         if ($request->header('x-api-key') == $this->generateKey()) {
-            if (true) {
+
 
                 $faker = Factory::create();
                 /***
@@ -515,7 +573,9 @@ class ApiController extends Controller
 
                 return $array;
 
-            }
+
+
+        }else{
 
         }
     }
@@ -687,6 +747,68 @@ class ApiController extends Controller
         }
         return $array;
     }
+
+    public function headerMenu(Request $request){
+//return response()->json('ok',200);
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+
+
+            $array = array();
+            $i=0;
+            $menus = MenuItem::with('sub_items','sub_items.menu_groups')
+                ->where('location','=',2)->where('status','=',1)
+                ->orderBy('order')->get();
+            foreach ($menus as $menu){
+                $array[$i]['id'] = $menu['id'];
+
+                if($menu->sub_items()->count()>0){
+                    $array[$i]['isDropdown'] = true;
+                    $array[$i]['title'] = $menu['title'];
+                    $array[$i]['url'] = (!empty($menu['link']))? $menu['link']:'#';
+
+                    $sub_menu = array();
+                    $j=0;
+                    foreach ($menu->sub_items()->get() as $sub){
+                        $sub_menu[$j]['id'] = $sub['id'];
+                        $sub_menu[$j]['isDropdown'] =false;
+                        $sub_menu[$j]['title'] =$sub['title'];
+                        $sub_menu[$j]['url'] =(!empty($sub['link']))? $sub['link']:'#';
+                        $j++;
+                    }
+                    $array[$i]['subItems'] = $sub_menu;
+
+                }else{
+                    $array[$i]['isDropdown'] = false;
+                    $array[$i]['title'] = $menu['title'];
+                    $array[$i]['url'] = (!empty($menu['link']))? $menu['link']:'#';
+                    $array[$i]['subItems'] =  array();
+                }
+
+                $i++;
+            }
+
+
+
+                $returnArray['status'] = true;
+                $status_code=200;
+                $returnArray['data'] =$array;//['product'=>$array] ;
+                $returnArray['errors'] =['msg'=>''] ;
+
+
+
+        } else {
+            $returnArray['status'] = false;
+
+            $status_code=498;
+
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
 
     public function footerMenu(Request $request)
     {

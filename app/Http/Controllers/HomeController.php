@@ -40,8 +40,9 @@ class HomeController extends Controller
 
 //return  Session::get('auth_array');
        // return view('react');
-        return view('index',['brands'=>ProductBrand::all()]);
-      //  return redirect(route('admin.index'));
+
+       return view('index',['brands'=>ProductBrand::all()]);
+    //   return redirect(route('admin.index'));
     }
     public function react(){
 

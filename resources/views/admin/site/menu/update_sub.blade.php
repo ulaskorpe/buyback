@@ -114,15 +114,15 @@
 
 
 
-        if ($('#link_sub').val() != '') {
-            if(!validURL($('#link_sub').val())){
-                $('#link_sub_error').html('<span style="color: red">Geçersiz URL</span>');
-                $('#link_sub').val('');
-                error = true;
-            }else{
-                $('#link_sub_error').html('');
-            }
-        }
+        // if ($('#link_sub').val() != '') {
+        //     if(!validURL($('#link_sub').val())){
+        //         $('#link_sub_error').html('<span style="color: red">Geçersiz URL</span>');
+        //         $('#link_sub').val('');
+        //         error = true;
+        //     }else{
+        //         $('#link_sub_error').html('');
+        //     }
+        // }
         if(error){
             return false;
         }else{

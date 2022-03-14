@@ -1102,7 +1102,7 @@ $file=$path."/".$i.".jpg";
 
     public function locateProduct($id){
         $p_locations = ProductLocation::where('product_id','=',$id)->pluck('location_id')->toArray();
-        $site_locations= SiteLocation::whereNotIn('id',$p_locations)->get();
+        $site_locations= SiteLocation::whereNotIn('id',$p_locations)->where('status','=',1)->get();
 
         $count_array = [];
         foreach (SiteLocation::all() as $location){

@@ -5,17 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Color;
 use App\Models\ColorModel;
+use App\Models\Customer;
+use App\Models\CustomerOffer;
+use App\Models\CustomerProductVote;
+use App\Models\ImeiQuery;
 use App\Models\Memory;
+use App\Models\ModelAnswer;
+use App\Models\ModelQuestion;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductColor;
 use App\Models\ProductImage;
+use App\Models\ProductLocation;
 use App\Models\ProductMemory;
 use App\Models\ProductModel;
 use App\Models\ProductVariantValue;
 use App\Models\VariantGroup;
 use Faker\Factory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Intervention\Image\Facades\Image;
 use phpDocumentor\Reflection\Types\Object_;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +32,7 @@ class ApiProductController extends Controller
 {
      use ApiTrait;
 
-    public function newArrivals(Request $request){
+    public function newProducts_x(Request $request){
 
         $products = new Object_();
         $products->title ='Son Eklenenler';
@@ -260,7 +268,8 @@ class ApiProductController extends Controller
 
                     //$array[$i]['url'] = '/urun-detay/'.$product['category_id'].'/'.str_replace(" ","-",$product['title'])."/".$product['id'];
                     $array[$i]['url'] = '/urun-detay/'.GeneralHelper::fixName($product['title'])."/".$product['id'];
-                    $array[$i]['imageUrl'] = url($product->firstImage()->first()->thumb);
+                    $array[$i]['imageUrl'] = url($product->firstImage()->first()->image);
+                    $array[$i]['thumb'] = url($product->firstImage()->first()->thumb);
                     $array[$i]['discount'] = $product['price']-$product['price_ex'];
                     $array[$i]['details'] =  $details;
                     $i++;
@@ -280,6 +289,129 @@ class ApiProductController extends Controller
         }
     }
 
+
+    private function getProductDetail($product_id){
+        $product = Product::with('firstImage','brand','model')->find($product_id);
+        $result=array();
+        $result['id']=$product['id'];
+        $result['title']=$product->brand()->first()->BrandName." ".$product->model()->first()->Modelname;
+        $result['listPrice']=$product['price'];
+        $result['price']=$product['price_ex'];
+        $result['url']='/urun-detay/'.$product['id'];
+        $result['imageUrl']=$product->firstImage()->first()->image;
+        $result['discount']=$product['price']-$product['price_ex'];
+        return $result;
+    }
+
+    public function bestSellers(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $product_id_array = ProductLocation::where('location_id','=',3)->orderBy('order')->pluck('product_id')->toArray();
+
+            // $products = Product::select('id')->whereIn('id',ProductLocation::where('location_id','=',3)->orderBy('order')->pluck('product_id')->toArray())->get();
+///   { id: 21, title: "Bluetooth on-ear PureBass Headphones", listPrice: "300.00", price: "500.00", url: "", imageUrl: "assets/images/products/7.jpg", discount: "150" },
+            $products = array();
+            $i=0;
+            foreach ($product_id_array as $p_id){
+
+                $products[$i]=$this->getProductDetail($p_id);
+                $i++;
+            }
+            $returnArray['status'] = true;
+            $status_code=200;
+            $returnArray['data'] =$products;
+
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+    public function weeklyDeals(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+          $product_id_array = ProductLocation::where('location_id','=',2)->orderBy('order')->pluck('product_id')->toArray();
+            $products = array();
+            $i=0;
+            foreach ($product_id_array as $p_id){
+
+                $products[$i]=$this->getProductDetail($p_id);
+                $i++;
+            }
+            $returnArray['status'] = true;
+            $status_code=200;
+            $returnArray['data'] =$products;
+
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+    public function newProducts(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+          $product_id_array = ProductLocation::where('location_id','=',4)->orderBy('order')->pluck('product_id')->toArray();
+            $products = array();
+            $i=0;
+            foreach ($product_id_array as $p_id){
+
+                $products[$i]=$this->getProductDetail($p_id);
+                $i++;
+            }
+            $returnArray['status'] = true;
+            $status_code=200;
+            $returnArray['data'] =$products;
+
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+    public function highestRated(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+
+          $product_id_array = Product::select('id','calculated_vote')->orderBy('calculated_vote','DESC')->limit((!empty($request['count'])?$request['count']:15))->get()->toArray();
+
+            $products = array();
+            $i=0;
+            foreach ($product_id_array as $p_id){
+
+                $products[$i]=$this->getProductDetail($p_id['id']);
+
+                $products[$i]=array_merge($products[$i],['rate'=> $p_id['calculated_vote']]);
+                $i++;
+            }
+            $returnArray['status'] = true;
+            $status_code=200;
+            $returnArray['data'] =$products;
+
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+
+
     public function productDetail(Request $request,$product_id){
 //return response()->json('ok',200);
 
@@ -292,7 +424,10 @@ class ApiProductController extends Controller
                     $faker= Factory::create();
                 $details  =array();
                 $j=0;
-            /*    $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
+
+
+if(true){ ///real details
+                $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
 
 
                 foreach ($variants as $variant){
@@ -300,7 +435,11 @@ class ApiProductController extends Controller
                     //$details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
                     $details[$j]=['name'=>$variant->value()->first()->variant()->first()->variant_name,'value'=>$variant->value()->first()->value];
                     $j++;
-                }*/
+                }
+
+}else{ ////random details
+
+
 
                 $vg = VariantGroup::all();
                 foreach ($vg as $g){
@@ -318,7 +457,7 @@ class ApiProductController extends Controller
                     $j++;
 
                 }
-
+}
                 $imageGallery=array();
                 $i=0;
                 foreach ($product->images()->get() as $img){
@@ -354,6 +493,7 @@ class ApiProductController extends Controller
 
                 $array['id'] = $product['id'];
                 $array['title'] = $product['title'];
+
                 $array['brand']['id'] = $product->brand()->first()->id ;
                 $array['brand']['title'] = $product->brand()->first()->BrandName ;
                 $array['brand']['imageUrl'] = $product->brand()->first()->ImageLarge ;
@@ -367,7 +507,10 @@ class ApiProductController extends Controller
                 $array['stockCode'] ='HKS'.rand(100000,999999);
                 $array['rating'] =1;
                 $array['imageGallery'] =$imageGallery;
+                $array['colors']=Color::select('id','color_name')->inRandomOrder()->limit(rand(2,4))->get()->toArray();
+                $array['memories']=Memory::select('id','memory_value')->inRandomOrder()->limit(rand(2,4))->get()->toArray();
                 $array['tabs'] =$tabs;
+
                 $array['crumbs'] =[
                     ['url'=>'/cat/phones','title'=>'Telefonlar'],
                     ['url'=>'#','title'=>$product->brand()->first()->BrandName." ".$product->model()->first()->Modelname],
@@ -538,20 +681,65 @@ class ApiProductController extends Controller
 
     public function productSeeder(Request $request){
 
-        die();
-        $products = Product::all();
+        for($i=1;$i<5;$i++){
+            $products = Product::select('id')->inRandomOrder()->limit(13)->get();
+
+            $j=1;
+            foreach ($products as $product){
+                $pl = new ProductLocation();
+                $pl->location_id= $i;
+                $pl->product_id = $product['id'];
+                $pl->order= $j;
+                $pl->save();
+                $j++;
+            }
+
+            echo $i;
+
+        }
+
+
+die();
+//        $customers = Customer::select('id')->get();
+//
+//        foreach ($customers as $customer){ }
+
+     $products = Product::all();
+      //  $products = Product::inRandomOrder()->limit(rand(10,20))->get();
         foreach ($products as $product){
          //   $colors = Color::inRandomOrder()->limit(rand(1,4))->get();
+           //$vote = rand(1,10);
+         //   echo $product['id'].":".$customer['id'].":".$vote." \n";
 
-            $memories = Memory::inRandomOrder()->limit(rand(1,3))->get();
+//            $cpv = new CustomerProductVote();
+//            $cpv->product_id = $product['id'];
+//            $cpv->customer_id = $customer['id'];
+//            $cpv->vote = $vote ;
+//            $cpv->save();
 
-            foreach ($memories as $memory){
-                $pm = new ProductMemory();
-                $pm->product_id = $product['id'];
-                $pm->memory_id= $memory['id'];
-               // $pm->save();
+
+            $count = CustomerProductVote::where('product_id','=',$product['id'])->count();
+
+            if($count>0){
+                $sum = CustomerProductVote::where('product_id','=',$product['id'])->sum('vote');
+           //echo $product['id'].":".$sum.":".$count.":".number_format(($sum/$count),2)."\n";
+            $product->calculated_vote = number_format(($sum/$count),2);
+            $product->save();
             }
+
+//            $memories = Memory::inRandomOrder()->limit(rand(1,3))->get();
+//
+//            foreach ($memories as $memory){
+//                $pm = new ProductMemory();
+//                $pm->product_id = $product['id'];
+//                $pm->memory_id= $memory['id'];
+//               // $pm->save();
+//            }
         }
+
+
+
+        die();
 
         die();
         $path ='images/products/';
@@ -620,6 +808,281 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
             $micro_id++;
         }
         return "ok";
+    }
+
+
+
+    public function imeiQuery(Request $request){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $url = "https://kayit.mcks.gov.tr/refurbished-devices/oauth/token";
+
+            $username="garantili";
+            $password="4r3e2w1q?";
+            $b_username="ede5e6da-fe83-11eb-af7c-3b68da59d087";
+            $b_password="R3furbi53D12.";
+
+            $payload = [
+                'username'		=> $username,
+                'password' 		=> $password,
+                'grant_type'    => 'password'
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_USERPWD, $b_username . ":" . $b_password);
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+            $output = curl_exec($ch);
+            curl_close($ch);
+            $arr_1 = json_decode($output, TRUE);
+            $token=$arr_1['access_token'];
+
+            if ($token && $request['imei_no']>0){
+                $imei=$request['imei_no'];
+                $url = "https://kayit.mcks.gov.tr/refurbished-devices/isSuitableForRefurbish/".$imei;
+                $payload = [
+                    'access_token'		=> $token
+                ];
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+                $output = curl_exec($ch);
+
+                curl_close($ch);
+
+                $arr = json_decode($output, TRUE);
+                $imei_btk=$arr['imei'];
+                $responseCode=$arr['responseCode'];
+                $responseMessage=$arr['responseMessage'];
+
+                $imei_query= new ImeiQuery();
+                $imei_query->imei = $request['imei_no'];
+                $imei_query->user_id = (!empty(Session::get('admin_id')))?Session::get('admin_id'):0;
+                $imei_query->model_id =(!empty($request['model_id']))?$request['model_id']:0;
+                $imei_query->result =$responseCode;
+                $imei_query->token = $arr_1['access_token'];
+                $imei_query->token_type = $arr_1['token_type'];
+                $imei_query->scope = $arr_1['scope'];
+                $imei_query->ip_address = $_SERVER['REMOTE_ADDR'];
+                $imei_query->save();
+
+
+                //0   return ($responseCode==1)?"ok":"no";
+
+                $status_code=200;
+                $returnArray['status']=true;
+                if($responseCode==1){
+                   // $resultArray=['ok', $imei_query['id']];
+                    $returnArray['data'] =['result'=>true,'msg'=>'geçerli IMEI'];
+                }else{
+                   // $resultArray=['none', $imei_query['id']];
+                    $returnArray['data'] =['result'=>false,'msg'=>'geçersiz IMEI'];
+                }
+             //   return json_encode($returnArray,$status_code);
+
+            }else{
+                $returnArray['status']=false;
+                $status_code=401;
+                $returnArray['errors'] =['msg'=>'unauthorized'];
+            }
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
+        }
+         return response()->json($returnArray,$status_code);
+
+        }
+
+    public function getBrands(Request $request){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+                $status_code=200;
+                $returnArray['status']=true;
+               $returnArray['data'] =ProductBrand::select('id','BrandName')->where('status','=',1)->orderBy('BrandName')->get();
+
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
+        }
+         return response()->json($returnArray,$status_code);
+
+        }
+
+    public function getModels(Request $request,$brand_id=0){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $models = ProductModel::select('id','Modelname')->where('Brandid','=',$brand_id)->where('status','=',1)->orderBy('Modelname')->get();
+                $status_code=200;
+                $returnArray['status']=true;
+               $returnArray['data'] = $models;
+
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
+        }
+         return response()->json($returnArray,$status_code);
+
+        }
+
+    public function getQuestions(Request $request,$model_id=0){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $model = ProductModel::select('id')->where('status','=',1)->find($model_id);
+            if(empty($model['id'])){
+
+                $status_code=404;
+                $returnArray['status']=false;
+                $returnArray['errors'] = ['msg'=>'Model bulunamadı'];
+
+            }else{
+
+                $questions=ModelQuestion::with('question.answers')->where('model_id','=',$model_id)->orderBy('count')->get();
+                $array = array();
+                $i=0;
+                foreach ($questions as $question){
+                    $array[$i]['question_id']=$question->question()->first()->id;
+                    $array[$i]['question']=$question->question()->first()->question;
+                    $answers = array();
+                    $j=0;
+                    foreach ($question->question()->first()->answers()->get() as $answer){
+                        $answers[$j]['answer_id']=$answer['id'];
+                        $answers[$j]['answer']=$answer['answer'];
+                        $answers[$j]['key']=$answer['key'];
+                        $j++;
+                    }
+                    $array[$i]['answers']=$answers;
+                    $i++;
+                }
+                $status_code=200;
+                $returnArray['status']=true;
+                $returnArray['data'] = $array;
+
+            }
+
+
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
+        }
+         return response()->json($returnArray,$status_code);
+
+        }
+
+
+        private function checkImei($imei){
+
+                    ////////checkimei
+            return true;
+        }
+
+    public function calculateAnswers(Request  $request){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            if(!empty($request['imei_no']) && $this->checkImei($request['imei_no'])){
+
+            $model = ProductModel::select('id','min_price','max_price')->where('status','=',1)->find($request['model_id']);
+            $customer = Customer::with('first_address')->select('id')
+                ->where('status','=',1)->where('customer_id','=',$request['customer_id'])->first();
+
+            if(empty($model['id']) || empty($customer['id'])){
+
+                $status_code=404;
+                $returnArray['status']=false;
+                $returnArray['errors'] = ['msg'=>'Model/Müşteri bulunamadı'];
+
+            }else{
+                $answer_array = explode(',',trim($request['answers']));
+                $questions=ModelQuestion::with('question.answers')->where('model_id','=',$model['id'])->orderBy('count')->get();
+                //if($answer_array->count())
+
+                $answered_question_count=0;
+                foreach ($questions as $q){
+                    $is_answered = false;
+                    foreach ($q->question()->first()->answers()->get() as $answer){
+                        $is_answered = (in_array($answer['id'],$answer_array)) ? true : false ;
+                        if($is_answered){
+                            $answered_question_count++;
+                   //    echo $q->question()->first()->id." -". $answer['id'].":";
+
+                        break;
+                        }
+                    }
+
+                    }
+
+
+
+               // if($questions->count()==count($answer_array) ){
+                if($questions->count()==$answered_question_count ){
+                    $discount = ModelAnswer::where('model_id','=',$model['id'])
+                        ->whereIn('answer_id',$answer_array)
+                        ->sum('value');
+                    $price_offer = (($model['max_price']-$discount) > $model['min_price']) ? ($model['max_price']-$discount) : $model['min_price'];
+                    $customer_offer= CustomerOffer::where('imei_no','=',$request['imei_no'])->where('customer_id','=',$customer['id'])->first();
+//                    return  $customer_offer;
+                    if(empty($customer_offer['id'])){
+                        $customer_offer= new CustomerOffer();
+                        $customer_offer->customer_id= $customer['id'];
+                        $customer_offer->imei_no=$request['imei_no'];
+                    }
+                    $customer_offer->model_id=$request['model_id'];
+                    $customer_offer->answers = $request['answers'];
+                    $customer_offer->discount=$discount;
+                    $customer_offer->price_offer=$price_offer;
+                    $customer_offer->date=date('Y-m-d');
+                    $customer_offer->save();
+
+
+
+
+
+                    $status_code=200;
+                    $returnArray['status']=true;
+                    $returnArray['data'] =['model'=>$model,'discount'=>$discount,'price_offer'=>$price_offer];
+                }else{
+                    $status_code=411;
+                    $returnArray['status']=true;
+                    $returnArray['errors'] =['msg'=>'Tüm soruları yanıtlayınız'];
+                }
+
+
+
+            }//model found
+
+            }else{ //// no imei / invalid imei
+
+                $returnArray['status']=false;
+                $status_code=406;
+                $returnArray['errors'] =['msg'=>'invalid IMEI'];
+
+            }
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
+        }
+        return response()->json($returnArray,$status_code);
     }
 
 

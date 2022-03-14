@@ -28,7 +28,9 @@ class Customer extends Model
     public function favorites(){
         return $this->hasMany(CustomerFavorite::class,'customer_id','id');
     }
-
+    public function first_address(){
+        return $this->hasMany(CustomerAddress::class,'customer_id','id')->where('first','=',1);
+    }
     public function cart_items(){
         return $this->hasMany(CartItem::class,'customer_id','id');
     }

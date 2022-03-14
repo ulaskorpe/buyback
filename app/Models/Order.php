@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use function Symfony\Component\Translation\t;
 
 class Order extends Model
 {
@@ -14,7 +15,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_code','name_surname','cargo_company_id','cargo_company_branch_id',
-        'payment_method','cargo_code','customer_id','customer_address_id','service_address_id','status'
+        'order_method','cargo_code','customer_id','customer_address_id','service_address_id','status'
     ];
 
     protected $hidden = [
@@ -47,6 +48,10 @@ class Order extends Model
     public function cart_items(){
        //return $this->hasManyThrough(CartItem::class,CartOrderPivot::class,'order_id','id');
         return $this->hasMany(CartItem::class,'order_id','id');
+    }
+
+    public function order_method(){
+        return $this->hasOne(BankAccount::class,'id','order_method');
     }
 
 }

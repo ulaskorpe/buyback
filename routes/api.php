@@ -41,7 +41,7 @@ Route::group(['prefix' => 'site'], function () {
     Route::get('/slider-list', [ \App\Http\Controllers\ApiController::class, 'sliderList'])->name('slider-list-api');
     Route::get('/brands-list', [ \App\Http\Controllers\ApiController::class, 'brandsList'])->name('brands-list-api');
     Route::get('/menu-list/{location?}', [ \App\Http\Controllers\ApiController::class, 'menuList'])->name('menu-list-api');
-    Route::get('/get-article/{code?}', [ \App\Http\Controllers\ApiController::class, 'getArticle'])->name('get-article-api');
+    Route::get('/get-article/{article_id?}', [ \App\Http\Controllers\ApiController::class, 'getArticle'])->name('get-article-api');
     Route::get('/get-area/{code?}', [ \App\Http\Controllers\ApiController::class, 'getArea'])->name('get-area-api');
     Route::get('/location/{keyword?}', [ \App\Http\Controllers\ApiController::class, 'locationList'])->name('location-products-api');
     Route::get('/banners', [ \App\Http\Controllers\ApiController::class, 'banners'])->name('banners-api');
@@ -50,23 +50,35 @@ Route::group(['prefix' => 'site'], function () {
     Route::get('/super-offer', [ \App\Http\Controllers\ApiController::class, 'superOffer'])->name('super-offer-api');
     Route::get('/left-menu', [ \App\Http\Controllers\ApiController::class, 'leftMenu'])->name('left-menu-api');
     Route::get('/top-menu', [ \App\Http\Controllers\ApiController::class, 'topMenu'])->name('top-menu-api');
+    Route::get('/header-menu', [ \App\Http\Controllers\ApiController::class, 'headerMenu'])->name('top-menu-api');
     Route::get('/footer-menu', [ \App\Http\Controllers\ApiController::class, 'footerMenu'])->name('footer-menu-api');
     Route::get('/mobile-menu', [ \App\Http\Controllers\ApiController::class, 'mobileMenu'])->name('mobile-menu-api');
     Route::get('/shoppage-menu', [ \App\Http\Controllers\ApiController::class, 'shoppageMenu'])->name('shoppage-menu-api');
     Route::get('/shoppage-header', [ \App\Http\Controllers\ApiController::class, 'shoppageHeader'])->name('shoppage-header-api');
     Route::get('/social-icons', [ \App\Http\Controllers\ApiController::class, 'socialIcons'])->name('social-icons-api');
-    Route::get('/news/{page?}/{page_count?}', [ \App\Http\Controllers\ApiController::class, 'getNews'])->name('get-news-api');
+    Route::get('/news/{page?}/{page_count?}/{keyword?}', [ \App\Http\Controllers\ApiController::class, 'getNews'])->name('get-news-api');
     Route::get('/news-detail/{id}', [ \App\Http\Controllers\ApiController::class, 'detailNews'])->name('detail-news-api');
     Route::get('/faq-list', [ \App\Http\Controllers\ApiController::class, 'faqList'])->name('faq-list-api');
 
+
 });
 Route::group(['prefix' => 'products'], function () {
-    Route::get('/new-arrivals', [ \App\Http\Controllers\ApiProductController::class, 'newArrivals'])->name('new-arrivals-api');
+
     Route::post('/all-products', [ \App\Http\Controllers\ApiProductController::class, 'allProducts'])->name('all-products-api');
+    Route::post('/best-sellers', [ \App\Http\Controllers\ApiProductController::class, 'bestSellers'])->name('best-sellers-api');
+    Route::post('/weekly-deals', [ \App\Http\Controllers\ApiProductController::class, 'weeklyDeals'])->name('weekly-deals-api');
+    Route::post('/new-products', [ \App\Http\Controllers\ApiProductController::class, 'newProducts'])->name('new-products-api');
+    Route::post('/highest-rated', [ \App\Http\Controllers\ApiProductController::class, 'highestRated'])->name('highest-rated-api');
     Route::post('/product-seeder', [ \App\Http\Controllers\ApiProductController::class, 'productSeeder'])->name('product-seeder-api');
     Route::get('/middle-products', [ \App\Http\Controllers\ApiProductController::class, 'middleProducts'])->name('middle-products-api');
     Route::get('/product-filters', [ \App\Http\Controllers\ApiProductController::class, 'productFilters'])->name('product-filters-api');
     Route::get('/product-detail/{product_id}', [ \App\Http\Controllers\ApiProductController::class, 'productDetail'])->name('product-detail-api');
+    Route::post('/imei-query',[\App\Http\Controllers\ApiProductController::class,'imeiQuery'])->name('api-imei-query');
+    Route::get('/product-detail/{product_id}', [ \App\Http\Controllers\ApiProductController::class, 'productDetail'])->name('product-detail-api');
+    Route::get('/get-brands', [ \App\Http\Controllers\ApiProductController::class, 'getBrands'])->name('get-brands-api');
+    Route::get('/get-models/{brand_id}', [ \App\Http\Controllers\ApiProductController::class, 'getModels'])->name('get-models-api');
+    Route::get('/get-questions/{model_id}', [ \App\Http\Controllers\ApiProductController::class, 'getQuestions'])->name('get-questions-api');
+    Route::post('/calculate-answers', [ \App\Http\Controllers\ApiProductController::class, 'calculateAnswers'])->name('calculate-answers-api');
 });
 Route::group(['prefix' => 'customers'], function () {
     Route::post('/create', [ \App\Http\Controllers\ApiCustomerController::class, 'create'])->name('create-customer-api');
@@ -77,12 +89,19 @@ Route::group(['prefix' => 'customers'], function () {
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'updateProfile'])->name('update-profile-api');
     Route::post('/update-password', [ \App\Http\Controllers\ApiCustomerController::class, 'updatePassword'])->name('update-password-api');
 
+
+    Route::group(['prefix' => 'buyback'], function () {
+
+    });
+
+
 Route::group(['prefix' => 'cart'], function () {
     Route::post('/show', [ \App\Http\Controllers\ApiCustomerController::class, 'showCart'])->name('show-cart-api');
     Route::post('/add', [ \App\Http\Controllers\ApiCustomerController::class, 'addToCart'])->name('add-to-cart-api');
     Route::post('/remove', [ \App\Http\Controllers\ApiCustomerController::class, 'removeFromCart'])->name('remove-cart-api');
     Route::post('/place-order', [ \App\Http\Controllers\ApiCustomerController::class, 'placeOrder'])->name('place-order-api');
-    Route::post('/show-order', [ \App\Http\Controllers\ApiCustomerController::class, 'showOrder'])->name('show-order-api');
+    Route::post('/order-summary', [ \App\Http\Controllers\ApiCustomerController::class, 'orderSummary'])->name('order-summary-api');
+    Route::post('/order-history', [ \App\Http\Controllers\ApiCustomerController::class, 'orderHistory'])->name('order-history-api');
 
 
 });

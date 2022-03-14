@@ -79,12 +79,12 @@
                                             {{$amount}}TL
                                             @endif
                                             <hr>
-                                            @if($order['payment_method'] > 0)
+                                            @if($order['order_method'] > 0)
                                                 <b>Havale</b><br>
-                                                {{$order->payment_method()->first()->bank_name}}/{{$order->payment_method()->first()->branch}}<br>
+                                                {{$order->order_method()->first()->bank_name}}/{{$order->order_method()->first()->branch}}<br>
 
-                                                {{$order->payment_method()->first()->name_surname}}
-                                                {{$order->payment_method()->first()->iban}}
+                                                {{$order->order_method()->first()->name_surname}}
+                                                {{$order->order_method()->first()->iban}}
                                             @else
                                                 KrediKartı Ödemesi
                                             @endif

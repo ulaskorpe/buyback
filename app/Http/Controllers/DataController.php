@@ -909,6 +909,8 @@ $url ='https://kayit.mcks.gov.tr/refurbished-devices/oauth/token';
     public function imeiQuery($model_id=0,$imei_no=0)
     {
 
+
+
         $url = "https://kayit.mcks.gov.tr/refurbished-devices/oauth/token";
 
         $username="garantili";
@@ -929,6 +931,7 @@ $url ='https://kayit.mcks.gov.tr/refurbished-devices/oauth/token';
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
         $output = curl_exec($ch);
+
 
         curl_close($ch);
 

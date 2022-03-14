@@ -222,10 +222,10 @@
                                     <div class="form-group row">
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Ödeme Yöntemi:</label>
                                         <div class="col-lg-4">
-                                            <select name="payment_method" id="payment_method"  class="form-control" onchange="showPayment(this.value)">
-                                                <option value="0" @if($order['payment_method']==0) selected @endif>Kredi Kartı Ödemesi</option>
+                                            <select name="order_method" id="order_method"  class="form-control" onchange="showPayment(this.value)">
+                                                <option value="0" @if($order['order_method']==0) selected @endif>Kredi Kartı Ödemesi</option>
                                                 @foreach($bank_accounts as $bank)
-                                                    <option value="{{$bank['id']}}" @if($order['payment_method']==$bank['id']) selected @endif>
+                                                    <option value="{{$bank['id']}}" @if($order['order_method']==$bank['id']) selected @endif>
                                                         {{$bank['bank_name']}}</option>
                                                 @endforeach
                                             </select>
@@ -311,11 +311,11 @@
             @if($order['service_address_id']>0)
             serviceAddress({{$order['service_address_id']}});
             @endif
-            @if($order['payment_method']>0)
-            showPayment({{$order['payment_method']}});
+            @if($order['order_method']>0)
+            showPayment({{$order['order_method']}});
             @endif
         });
-        function selectCargo(cargo_id,selected=0){
+        function selectCargo(cargo_id,selected){
             $('#branch_info').html('');
             $.get("{{url('admin/customers/cargo-branches')}}/"+cargo_id+"/"+selected , function (data) {
 
@@ -348,6 +348,7 @@
         }
 
         function showPayment(bank_id){
+
             $.get("{{url('admin/customers/bank-account-detail')}}/"+bank_id  , function (data) {
                 $('#bank_detail').html(data.bank);
             });
@@ -370,21 +371,37 @@
                 $('#cargo_code_error').html('<span style="color: red">Lütfen kargo kodu giriniz</span>');
                 error = true;
             } else {
-                $('#cargo_code_error').html('');
-            }
-
-            if ($('#service_address_id').val() == 0) {
-                $('#service_address_id_error').html('<span style="color: red">Lütfen çıkış adresi seçiniz</span>');
-                error = true;
-            } else {
-                $('#service_address_id_error').html('');
-            }
+                $.get("{{url('admin/customers/cargo-code-check/')}}/"+$('#cargo_code').val()+"/{{$order['id']}}"  , function (data) {
+                      if(data=="ok"){
+                          $('#cargo_code_error').html('');
 
 
-            if (error) {
-                return false;
+                          if ($('#service_address_id').val() == 0) {
+                              $('#service_address_id_error').html('<span style="color: red">Lütfen çıkış adresi seçiniz</span>');
+                              error = true;
+                          } else {
+                              $('#service_address_id_error').html('');
+                          }
+
+
+                          if (error) {
+                              return false;
+                          }
+
+
+                         save(formData, '{{route('customer.order-update-post')}}', '', 'btn-1', '');
+
+                      }else{
+                          $('#cargo_code_error').html('<span style="color: red">Lütfen kargo kodunu kontrol ediniz</span>');
+
+                      }
+                });
+
+
+
             }
-            save(formData, '{{route('customer.order-update-post')}}', '', 'btn-1', '');
+
+
 
         });
     </script>

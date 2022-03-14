@@ -41,9 +41,10 @@ class CustomerController extends Controller
             'customer'=>Customer::find($customer_id),'customer_id'=>$customer_id,
             'selected'=>$selected,
             'addresses'=>CustomerAddress::with('neighborhood','district','town','city')->where('customer_id','=',$customer_id)->get(),
-            'cart_items'=>CartItem::with('product','product.model','product.brand','color','memory')
+            'cart_items'=>CartItem::with('product','product.model','product.brand','color','memory')->where('status','=',0)
                 ->where('customer_id','=',$customer_id)->orderBy('created_at')->get(),
-            'status_array'=>[0=>'Giriş',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı']
+            'status_array'=>[0=>'Giriş',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı'],
+            'orders'=>Order::with('cart_items')->where('customer_id','=',$customer_id)->orderBy('created_at','DESC')->get()
 
         ]);
 
@@ -219,7 +220,7 @@ class CustomerController extends Controller
 
     public function orders(){
 
-            $orders = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','payment_method'
+            $orders = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','order_method'
                 ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
              //   ->where('id','=',1)
                 ->orderBy('id','DESC')
@@ -230,7 +231,7 @@ class CustomerController extends Controller
     }
 
     public function orderUpdate($order_id,$selected=0){
-        $order = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','payment_method'
+        $order = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','order_method'
             ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
                ->where('id','=',$order_id)
             ->orderBy('id','DESC')
@@ -253,7 +254,7 @@ class CustomerController extends Controller
                     $order->cargo_company_id=$request['cargo_company_id'];
                     $order->cargo_company_branch_id=$request['cargo_branch_id'];
                     $order->service_address_id=$request['service_address_id'];
-                    $order->payment_method=$request['payment_method'];
+                    $order->order_method=$request['order_method'];
                     $order->cargo_code=$request['cargo_code'];
                     $order->status=$request['status'];
                     $order->save();
@@ -375,6 +376,13 @@ if($address_id>0){
             $txt.="IBAN:".$bank['branch'];
         }
         return response()->json(['bank'=>$txt]);
+
+    }
+
+    public function cargoCodeCheck($cargo_code,$order_id ){
+
+         $ch = Order::select('id')->where('cargo_code','=',$cargo_code)->where('id','<>',$order_id)->first();
+         return (empty($ch['id']))?"ok":"no";
 
     }
 }

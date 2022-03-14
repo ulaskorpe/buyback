@@ -171,12 +171,11 @@
                             <li><a href="{{route('site.menu-list')}}">Menu Bağlantıları</a></li>
                             @if(!empty($menu_type))
                                 <li><a href="{{route('site.menu-list',$menu_type)}}">Menu Bağlantıları</a></li>
-                                @endif
+                            @endif
                             <li style="display: none"><a href="{{route('site.create-menu')}}"></a></li>
                             @if(!empty($menu_id))
                                 <li style="display: none"><a href="{{route('site.update-menu',$menu_id)}}"></a></li>
                             @endif
-
                             <li><a href="{{route('site.area-list')}}">Alan Listesi</a></li>
                             <li style="display: none"><a href="{{route('site.create-area')}}"></a></li>
                             @if(!empty($area_id))
