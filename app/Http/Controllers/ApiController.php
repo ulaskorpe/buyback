@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MenuLocations;
+use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Area;
 use App\Models\Article;
 use App\Models\Banner;
 use App\Models\City;
 use App\Models\District;
 use App\Models\Faq;
+use App\Models\HumanResource;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
 use App\Models\MenuSubItemLink;
@@ -21,6 +23,7 @@ use App\Models\SiteSetting;
 use App\Models\Slider;
 use App\Models\Town;
 use Carbon\Carbon;
+use Faker\Core\File;
 use Faker\Factory;
 use Illuminate\Http\Request;
 use phpDocumentor\Reflection\Types\Object_;
@@ -100,9 +103,9 @@ class ApiController extends Controller
                 $array['nextContent']['title']=$next['title'];
                 $array['nextContent']['url']=$next['url'];
                 $array['nextContent']['id']=$next['id'];
-            $status_code = 200;
-            $resultArray['status'] = true;
-            $resultArray['data'] =$array;
+                $status_code = 200;
+                $resultArray['status'] = true;
+                $resultArray['data'] =$array;
             }else{
                 $resultArray['status'] = false;
 
@@ -122,6 +125,7 @@ class ApiController extends Controller
         return response()->json($resultArray,$status_code);
         // return json_encode($resultArray);
     }
+
     public function getNews(Request $request,$page=0,$page_count=10,$keyword='')
     {
 
@@ -129,10 +133,11 @@ class ApiController extends Controller
             $status_code = 200;
             $news = News::where('status','=',1)
                 ->where('title','like','%'.$keyword.'%')
-               ->skip($page*$page_count)
+                ->skip($page*$page_count)
                 ->limit($page_count)
-                ->orderBy('date','desc')->get() ;
-        //    $date = Carbon::now();//parse("27.06.2016")->format('Y-m-d');
+                //->orderBy('date','desc')->get() ;
+                ->orderBy('id')->get();
+            //    $date = Carbon::now();//parse("27.06.2016")->format('Y-m-d');
             $array=array();
             $i=0;
             foreach($news as $n){
@@ -201,7 +206,7 @@ class ApiController extends Controller
 
         } else {
             $resultArray['status'] = false;
-           // $resultArray['status_code'] = 406;
+            // $resultArray['status_code'] = 406;
             $status_code=406;
             $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
         }
@@ -258,7 +263,7 @@ class ApiController extends Controller
             $resultArray = $array;
         } else {
             $resultArray['status'] = false;
-         //   $resultArray['status_code'] = 406;
+            //   $resultArray['status_code'] = 406;
             $status_code = 406;
             $resultArray['msg'] = 'hatalı anahtar';
         }
@@ -272,8 +277,8 @@ class ApiController extends Controller
     {
 
 
-    //    if ($request->header('x-api-key') == $this->generateKey()) {
-            if(true){
+        //    if ($request->header('x-api-key') == $this->generateKey()) {
+        if(true){
 
             $banners = Banner::where('status', '=', 1)->orderBy('order')->get();
             $array = [];
@@ -385,8 +390,8 @@ class ApiController extends Controller
                         $i++;
                     }
 
-                $array[] = ["id" => $article['id'],'title'=>$article['title'],'code'=>$article['code'],'body'=>$this->makeHtml($article['title'],$parts)
-                    ,'crumbs'=>[['url'=>'#','title'=>$article['title']]]];
+                    $array[] = ["id" => $article['id'],'title'=>$article['title'],'code'=>$article['code'],'body'=>$this->makeHtml($article['title'],$parts)
+                        ,'crumbs'=>[['url'=>'#','title'=>$article['title']]]];
                 }
                 $resultArray['status'] = true;
                 $resultArray = ["data" =>$array ];
@@ -543,35 +548,35 @@ class ApiController extends Controller
         if ($request->header('x-api-key') == $this->generateKey()) {
 
 
-                $faker = Factory::create();
-                /***
-                 * dealItem = [
-                 * { id: 1, title: 'Ta555blet Red EliteBook Revolve',
-                 * listPrice: '₺304,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/1.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
-                 * { id: 2, title: 'Tablet Red EliteBook Revolve', listPrice: '₺424,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/2.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
-                 * ]
-                 */
+            $faker = Factory::create();
+            /***
+             * dealItem = [
+             * { id: 1, title: 'Ta555blet Red EliteBook Revolve',
+             * listPrice: '₺304,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/1.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
+             * { id: 2, title: 'Tablet Red EliteBook Revolve', listPrice: '₺424,00', price: '₺543,00', win: '₺120', imageUrl: 'assets/images/products/2.jpg', stockItem: 1000, soldItem: 300, seconds: 28800 },
+             * ]
+             */
 
-                $array = [];
-                //    foreach ($banners as $banner){
-                for ($i = 0; $i < 2; $i++) {
+            $array = [];
+            //    foreach ($banners as $banner){
+            for ($i = 0; $i < 2; $i++) {
 
-                    $price = rand(2, 10) * 100;
-                    $dis = rand(1, 3) * 30;
-                    $array[$i]['id'] = $i + 1;
-                    $array[$i]['title'] = $faker->sentence;
-                    $array[$i]['listPrice'] = $price;
-                    $array[$i]['price'] = $price + $dis;
+                $price = rand(2, 10) * 100;
+                $dis = rand(1, 3) * 30;
+                $array[$i]['id'] = $i + 1;
+                $array[$i]['title'] = $faker->sentence;
+                $array[$i]['listPrice'] = $price;
+                $array[$i]['price'] = $price + $dis;
 
-                    $array[$i]['imageUrl'] = url('images/products/' . rand(1, 16) . ".jpg");
-                    $array[$i]['win'] = $dis;
-                    $array[$i]['stockItem'] = rand(10, 1000);
-                    $array[$i]['soldItem'] = rand(10, 1000);
-                    $array[$i]['seconds'] = 28800;;
+                $array[$i]['imageUrl'] = url('images/products/' . rand(1, 16) . ".jpg");
+                $array[$i]['win'] = $dis;
+                $array[$i]['stockItem'] = rand(10, 1000);
+                $array[$i]['soldItem'] = rand(10, 1000);
+                $array[$i]['seconds'] = 28800;;
 
-                }
+            }
 
-                return $array;
+            return $array;
 
 
 
@@ -583,17 +588,17 @@ class ApiController extends Controller
     public function leftMenu(Request $request)
     {
         $i=1;
-       // $array = ['Süper Teklif','Haftanın Fırsatları','Çok Satanlar','Yeni Ürünler','En Yüksek Puanlı'];
-    /**    $array = ['Telefonlar'];
+        // $array = ['Süper Teklif','Haftanın Fırsatları','Çok Satanlar','Yeni Ürünler','En Yüksek Puanlı'];
+        /**    $array = ['Telefonlar'];
         foreach($array as $item){
-            $m = new MenuItem();
-            $m->title = $item;
-            $m->link = '#';
-            $m->location = 3;
-            $m->order = $i;
-            $m->status =1;
-            $m->save();
-            $i++;
+        $m = new MenuItem();
+        $m->title = $item;
+        $m->link = '#';
+        $m->location = 3;
+        $m->order = $i;
+        $m->status =1;
+        $m->save();
+        $i++;
 
         }
 
@@ -609,21 +614,21 @@ class ApiController extends Controller
 
 
 
-          $subs = ['iPhone 11','iPhone 12','iPhone 13','Galaxy S Serisi','Galaxy Note Serisi'
-              ,'Galaxy A Serisi','Huawei P Serisi','Huawei Mate Serisi','Huawei Nova Serisi',
-              'Huawei Y Serisi','Xiaomi RedMi 9C','Xiaomi Redmi Note 10','Xiaom POCO X3 Pro','Xiaomi 11T 10','Xiaomi 11T Lite'
-          ];
-          $i=1;
-          foreach ($subs as $s){
-              $item = new MenuSubItemLink();
-              $item->menu_sub_item_id = $sub['id'];
-              $item->title = $s;
-              $item->link='#';
-              $item->order= $i;
-              $item->status =1;
-              $item->save();
-              $i++;
-          }**/
+        $subs = ['iPhone 11','iPhone 12','iPhone 13','Galaxy S Serisi','Galaxy Note Serisi'
+        ,'Galaxy A Serisi','Huawei P Serisi','Huawei Mate Serisi','Huawei Nova Serisi',
+        'Huawei Y Serisi','Xiaomi RedMi 9C','Xiaomi Redmi Note 10','Xiaom POCO X3 Pro','Xiaomi 11T 10','Xiaomi 11T Lite'
+        ];
+        $i=1;
+        foreach ($subs as $s){
+        $item = new MenuSubItemLink();
+        $item->menu_sub_item_id = $sub['id'];
+        $item->title = $s;
+        $item->link='#';
+        $item->order= $i;
+        $item->status =1;
+        $item->save();
+        $i++;
+        }**/
 
         $array = array();
         $i=0;
@@ -670,8 +675,8 @@ class ApiController extends Controller
 
 
 
-               //  $array[$i]['subMenu']=(object)$array_sub;
-             //   $array[$i]['subMenu'] = array();
+                //  $array[$i]['subMenu']=(object)$array_sub;
+                //   $array[$i]['subMenu'] = array();
                 $array[$i]['subMenu'] =  $array_sub;
             }else{
                 $array[$i]['subMenu'] =  array();
@@ -712,7 +717,7 @@ class ApiController extends Controller
          *
          */
 
-   $array = array();
+        $array = array();
         $i=0;
         $menus = MenuItem::with('sub_items','sub_items.menu_groups')
             ->where('location','=',1)->where('status','=',1)
@@ -791,10 +796,10 @@ class ApiController extends Controller
 
 
 
-                $returnArray['status'] = true;
-                $status_code=200;
-                $returnArray['data'] =$array;//['product'=>$array] ;
-                $returnArray['errors'] =['msg'=>''] ;
+            $returnArray['status'] = true;
+            $status_code=200;
+            $returnArray['data'] =$array;//['product'=>$array] ;
+            $returnArray['errors'] =['msg'=>''] ;
 
 
 
@@ -887,7 +892,7 @@ class ApiController extends Controller
             $j=0;
             $subItems = MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->get();
             foreach ($subItems as $subItem){
-           //foreach ($menu->sub_items()->orderBy('order')->get() as $item){
+                //foreach ($menu->sub_items()->orderBy('order')->get() as $item){
                 $items[$j]=['title'=>(!empty($subItem['title']))?$subItem['title']:'x','url'=>(!empty($subItem['link']))?$subItem['link']:''];
                 $j++;
             }
@@ -939,20 +944,20 @@ class ApiController extends Controller
             $mobileNav[$i]['title']=$menu['title'];
             $mobileNav[$i]['url']=(!empty($menu['link']))?$menu['link']:'#';
             if(MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->count()>0){
-            $items=array();
-            $j=0;
-            $subItems = MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->get();
-            foreach ($subItems as $subItem){
+                $items=array();
+                $j=0;
+                $subItems = MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->get();
+                foreach ($subItems as $subItem){
 
-                $items[$j]=['title'=>(!empty($subItem['title']))?$subItem['title']:'','url'=>(!empty($subItem['link']))?$subItem['link']:''];
-                $j++;
-            }
-            $mobileNav[$i]['items']=$items;
+                    $items[$j]=['title'=>(!empty($subItem['title']))?$subItem['title']:'','url'=>(!empty($subItem['link']))?$subItem['link']:''];
+                    $j++;
                 }
+                $mobileNav[$i]['items']=$items;
+            }
             $i++;
         }
 
-      return  response()->json( $mobileNav);
+        return  response()->json( $mobileNav);
 
     }
 
@@ -970,20 +975,20 @@ class ApiController extends Controller
             $mobileNav[$i]['title']=$menu['title'];
             $mobileNav[$i]['url']=(!empty($menu['link']))?$menu['link']:'#';
             if(MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->count()>0){
-            $items=array();
-            $j=0;
-            $subItems = MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->get();
-            foreach ($subItems as $subItem){
+                $items=array();
+                $j=0;
+                $subItems = MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')->get();
+                foreach ($subItems as $subItem){
 
-                $items[$j]=['title'=>(!empty($subItem['title']))?$subItem['title']:'','url'=>(!empty($subItem['link']))?$subItem['link']:''];
-                $j++;
-            }
-            $mobileNav[$i]['items']=$items;
+                    $items[$j]=['title'=>(!empty($subItem['title']))?$subItem['title']:'','url'=>(!empty($subItem['link']))?$subItem['link']:''];
+                    $j++;
                 }
+                $mobileNav[$i]['items']=$items;
+            }
             $i++;
         }
 
-      return  response()->json( $mobileNav);
+        return  response()->json( $mobileNav);
 
     }
 
@@ -991,12 +996,12 @@ class ApiController extends Controller
 
 
         $return_array = [
-             ['id'=>1,'url'=>'https://facebook.com','icon'=>'fa fa-facebook'],
-             ['id'=>2,'url'=>'https://twitter.com','icon'=>'fa fa-twitter'],
-             ['id'=>3,'url'=>'https://instagram.com','icon'=>'fa fa-instagram'],
-             ['id'=>4,'url'=>'https://linkedin.com','icon'=>'fa fa-linkedin'],
-             ['id'=>4,'url'=>'https://youtube.com','icon'=>'fa fa-youtube-play']
-            ];
+            ['id'=>1,'url'=>'https://facebook.com','icon'=>'fa fa-facebook'],
+            ['id'=>2,'url'=>'https://twitter.com','icon'=>'fa fa-twitter'],
+            ['id'=>3,'url'=>'https://instagram.com','icon'=>'fa fa-instagram'],
+            ['id'=>4,'url'=>'https://linkedin.com','icon'=>'fa fa-linkedin'],
+            ['id'=>4,'url'=>'https://youtube.com','icon'=>'fa fa-youtube-play']
+        ];
 
         return $return_array;
     }
@@ -1045,5 +1050,84 @@ class ApiController extends Controller
             $neighborhoods = Neighborhood::select('id','name')->where('district_id','=',$district_id)->orderBy('name')->get();
             return  response()->json( $neighborhoods);
         }
+    }
+
+    public function humanResourcePost(Request $request)
+    {
+
+
+        if ($request->isMethod('post')) {
+            $status_code =201;
+            if ($request->header('x-api-key') == $this->generateKey()) {
+
+                $ext = GeneralHelper::findExtension($request->file('cv_file')->getClientOriginalName());
+
+                if (!empty($request['name']) && !empty($request['surname'])  && in_array($ext,['doc','docx','pdf']))  {
+
+                    $c = new HumanResource();
+                    $c->name=$request['name'];
+                    $c->surname=$request['surname'];
+                    $c->expectation=$request['expectation'];
+                    $c->department=$request['department'];
+
+
+                    $filenameWithExt = $request->file('cv_file')->getClientOriginalName();
+
+                    $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+
+                    $extension = $request->file('cv_file')->getClientOriginalExtension();
+
+                 //   $fileNameToStore = $filename.'-'.time().'.'.$extension;
+
+
+
+
+
+
+                    $fileNameToStore = GeneralHelper::fixName($request['name'].$request['surname']) . "_"
+                        . date('YmdHis') . "." . GeneralHelper::findExtension($request->file('cv_file')->getClientOriginalName());
+                    $path =  "images/human_resources" ;
+               //     $path = $request->file('cv_file')->storeAs($path, $fileNameToStore);
+                    $request->file('cv_file')->move($path,$fileNameToStore);
+                    $c->cv_file=$path."/".$fileNameToStore;
+                  $c->save();
+
+                    //return  response()->json( $c);
+                    $returnArray['status'] = true;
+                    // $returnArray['status_code'] = 201;
+
+                    $returnArray['data'] =['application'=>$c];
+
+
+                } else {
+                    $returnArray['status'] = false;
+                    //$returnArray['status_code'] = 406;
+                    $status_code=406;
+                    //$returnArray['msg'] = 'missing data';
+                    $returnArray['errors'] =['msg'=>'missing data'] ;
+                }
+
+
+            } else {
+                $returnArray['status'] = false;
+                //  $returnArray['status_code'] = 498;
+                $status_code=498;
+                //   $returnArray['msg'] = 'invalid key';
+                $returnArray['errors'] =['msg'=>'invalid key'] ;
+            }
+
+
+
+        }else{
+            $returnArray['status'] = false;
+            //$returnArray['status_code'] = 405;
+            $status_code=405;
+
+            //      $returnArray['msg'] ='method_not_allowed';
+            $returnArray['errors'] =['msg'=>'method_not_allowed'] ;
+        }
+
+
+        return response()->json($returnArray,$status_code);
     }
 }

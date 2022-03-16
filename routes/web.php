@@ -86,6 +86,13 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
 
     Route::group(['middleware'=>\App\Http\Middleware\siteAuth::class,'prefix'=>'site','as'=>'site.'],function (){
+
+        Route::group(['prefix'=>'hr'],function (){
+            Route::get('/list',[\App\Http\Controllers\SiteController::class,'hrList'])->name('hr-list');
+            Route::get('/delete/{hr_id}',[\App\Http\Controllers\SiteController::class,'hrDelete'])->name('hr-delete');
+
+        });
+
         Route::group(['prefix'=>'slider'],function (){
             Route::get('/list',[\App\Http\Controllers\SiteController::class,'sliderList'])->name('slider-list');
             Route::get('/create',[\App\Http\Controllers\SiteController::class,'createSlider'])->name('create-slider');

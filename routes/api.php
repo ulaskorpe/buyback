@@ -59,9 +59,11 @@ Route::group(['prefix' => 'site'], function () {
     Route::get('/news/{page?}/{page_count?}/{keyword?}', [ \App\Http\Controllers\ApiController::class, 'getNews'])->name('get-news-api');
     Route::get('/news-detail/{id}', [ \App\Http\Controllers\ApiController::class, 'detailNews'])->name('detail-news-api');
     Route::get('/faq-list', [ \App\Http\Controllers\ApiController::class, 'faqList'])->name('faq-list-api');
+    Route::post('/human-resource-post', [ \App\Http\Controllers\ApiController::class, 'humanResourcePost'])->name('human-resource-post');
 
 
 });
+
 Route::group(['prefix' => 'products'], function () {
 
     Route::post('/all-products', [ \App\Http\Controllers\ApiProductController::class, 'allProducts'])->name('all-products-api');
@@ -69,6 +71,8 @@ Route::group(['prefix' => 'products'], function () {
     Route::post('/weekly-deals', [ \App\Http\Controllers\ApiProductController::class, 'weeklyDeals'])->name('weekly-deals-api');
     Route::post('/new-products', [ \App\Http\Controllers\ApiProductController::class, 'newProducts'])->name('new-products-api');
     Route::post('/highest-rated', [ \App\Http\Controllers\ApiProductController::class, 'highestRated'])->name('highest-rated-api');
+    Route::post('/color-filter', [ \App\Http\Controllers\ApiProductController::class, 'colorFilter'])->name('color-filter-api');
+    Route::post('/memory-filter', [ \App\Http\Controllers\ApiProductController::class, 'memoryFilter'])->name('memory-filter-api');
     Route::post('/product-seeder', [ \App\Http\Controllers\ApiProductController::class, 'productSeeder'])->name('product-seeder-api');
     Route::get('/middle-products', [ \App\Http\Controllers\ApiProductController::class, 'middleProducts'])->name('middle-products-api');
     Route::get('/product-filters', [ \App\Http\Controllers\ApiProductController::class, 'productFilters'])->name('product-filters-api');
@@ -80,7 +84,9 @@ Route::group(['prefix' => 'products'], function () {
     Route::get('/get-questions/{model_id}', [ \App\Http\Controllers\ApiProductController::class, 'getQuestions'])->name('get-questions-api');
     Route::post('/calculate-answers', [ \App\Http\Controllers\ApiProductController::class, 'calculateAnswers'])->name('calculate-answers-api');
 });
+
 Route::group(['prefix' => 'customers'], function () {
+
     Route::post('/create', [ \App\Http\Controllers\ApiCustomerController::class, 'create'])->name('create-customer-api');
     Route::post('/login', [ \App\Http\Controllers\ApiCustomerController::class, 'login'])->name('login-customer-api');
     Route::post('/activate', [ \App\Http\Controllers\ApiCustomerController::class, 'activate'])->name('activate-customer-api');

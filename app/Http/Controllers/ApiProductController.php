@@ -14,6 +14,7 @@ use App\Models\ModelAnswer;
 use App\Models\ModelQuestion;
 use App\Models\Product;
 use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use App\Models\ProductColor;
 use App\Models\ProductImage;
 use App\Models\ProductLocation;
@@ -290,8 +291,8 @@ class ApiProductController extends Controller
     }
 
 
-    private function getProductDetail($product_id){
-        $product = Product::with('firstImage','brand','model')->find($product_id);
+    private function getProductDetail($product){
+      //  $product = Product::with('firstImage','brand','model')->find($product_id);
         $result=array();
         $result['id']=$product['id'];
         $result['title']=$product->brand()->first()->BrandName." ".$product->model()->first()->Modelname;
@@ -307,15 +308,15 @@ class ApiProductController extends Controller
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-            $product_id_array = ProductLocation::where('location_id','=',3)->orderBy('order')->pluck('product_id')->toArray();
 
+            $product_id_array = ProductLocation::with('product')->where('location_id','=',3)->orderBy('order')->get();
             // $products = Product::select('id')->whereIn('id',ProductLocation::where('location_id','=',3)->orderBy('order')->pluck('product_id')->toArray())->get();
 ///   { id: 21, title: "Bluetooth on-ear PureBass Headphones", listPrice: "300.00", price: "500.00", url: "", imageUrl: "assets/images/products/7.jpg", discount: "150" },
             $products = array();
             $i=0;
             foreach ($product_id_array as $p_id){
 
-                $products[$i]=$this->getProductDetail($p_id);
+                $products[$i]=$this->getProductDetail($p_id->product()->first());
                 $i++;
             }
             $returnArray['status'] = true;
@@ -335,12 +336,12 @@ class ApiProductController extends Controller
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-          $product_id_array = ProductLocation::where('location_id','=',2)->orderBy('order')->pluck('product_id')->toArray();
+            $product_id_array = ProductLocation::with('product')->where('location_id','=',2)->orderBy('order')->get();
             $products = array();
             $i=0;
             foreach ($product_id_array as $p_id){
 
-                $products[$i]=$this->getProductDetail($p_id);
+                $products[$i]=$this->getProductDetail($p_id->product()->first());
                 $i++;
             }
             $returnArray['status'] = true;
@@ -360,17 +361,35 @@ class ApiProductController extends Controller
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-          $product_id_array = ProductLocation::where('location_id','=',4)->orderBy('order')->pluck('product_id')->toArray();
+
+
+        if($request['category_id']>0){
+            $product_id_array = ProductLocation::with('product')->where('location_id','=',4)
+                ->where('category_id','=',$request['category_id'])
+                ->orderBy('order')->get();
+        }else{
+            $product_id_array = ProductLocation::with('product')->where('location_id','=',4)->orderBy('order')->get();
+        }
             $products = array();
             $i=0;
-            foreach ($product_id_array as $p_id){
+            foreach ($product_id_array as $p_id ){
 
-                $products[$i]=$this->getProductDetail($p_id);
+                $products[$i]=$this->getProductDetail($p_id->product()->first());
                 $i++;
             }
+
+
+            $cats = ProductCategory::orderBy('id')->get();
+            $categories = array();
+$i=0;
+            foreach ($cats as $cat){
+                $categories[$i]=['id'=>$cat['id'],'title'=>$cat['category_name'],'value'=>$cat['id']];
+                $i++;
+            }
+
             $returnArray['status'] = true;
             $status_code=200;
-            $returnArray['data'] =$products;
+            $returnArray['data'] =['items'=>$products,'categories'=>$categories];
 
         } else {
             $returnArray['status'] = false;
@@ -386,13 +405,13 @@ class ApiProductController extends Controller
         if ($request->header('x-api-key') == $this->generateKey()) {
 
 
-          $product_id_array = Product::select('id','calculated_vote')->orderBy('calculated_vote','DESC')->limit((!empty($request['count'])?$request['count']:15))->get()->toArray();
+          $product_id_array = Product::orderBy('calculated_vote','DESC')->limit((!empty($request['count'])?$request['count']:15))->get();
 
             $products = array();
             $i=0;
             foreach ($product_id_array as $p_id){
 
-                $products[$i]=$this->getProductDetail($p_id['id']);
+                $products[$i]=$this->getProductDetail($p_id);
 
                 $products[$i]=array_merge($products[$i],['rate'=> $p_id['calculated_vote']]);
                 $i++;
@@ -400,6 +419,67 @@ class ApiProductController extends Controller
             $returnArray['status'] = true;
             $status_code=200;
             $returnArray['data'] =$products;
+
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+    public function colorFilter(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+
+            $product = Product::find($request['product_id']);
+            if(!empty($product['id'])){
+
+                $returnArray['status'] = true;
+                $status_code=200;
+                $returnArray['data'] =Color::select('id','color_name')->inRandomOrder()->limit(rand(1,5))->get();
+
+            }else{
+
+                $returnArray['status'] = false;
+                $status_code=404;
+                $returnArray['errors'] =['msg'=>'not found'] ;
+
+            }
+
+
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+    public function memoryFilter(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+
+            $product = Product::find($request['product_id']);
+            $color = Color::find($request['color_id']);
+            if(!empty($product['id']) && !empty($color['id'])){
+
+                $returnArray['status'] = true;
+                $status_code=200;
+                $returnArray['data'] =Memory::select('id','memory_value')->inRandomOrder()->limit(rand(1,7))->get();
+
+            }else{
+
+                $returnArray['status'] = false;
+                $status_code=404;
+                $returnArray['errors'] =['msg'=>'not found'] ;
+
+            }
+
 
         } else {
             $returnArray['status'] = false;

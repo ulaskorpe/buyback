@@ -8,6 +8,7 @@ use App\Models\Area;
 use App\Models\Banner;
 use App\Models\Color;
 use App\Models\Faq;
+use App\Models\HumanResource;
 use App\Models\MenuItem;
 use App\Models\MenuSubItem;
 use App\Models\MenuSubItemLink;
@@ -30,6 +31,16 @@ use Intervention\Image\Facades\Image;
 class SiteController extends Controller
 {
     use ApiTrait;
+
+    public function hrList ()  {
+        return view('admin.site.hr_list',['hrs'=>HumanResource::all()]);
+    }
+
+    public function hrDelete($hr_id){
+        HumanResource::where('id','=',$hr_id)->delete();
+        return "Başvuru silindi";
+    }
+
     //////////////SLIDER/////////////////////////////////////
     public  function sliderList(){
 
@@ -1148,12 +1159,13 @@ $file=$path."/".$i.".jpg";
             ];
             $this->validate($request, $rules, $messages);
             $resultArray = DB::transaction(function () use ($request) {
-
+                    $p = Product::select('category_id')->find( $request['product_id']);
 
                 $location = new ProductLocation();
                 $location->location_id = $request['location_id'];
                 $location->product_id = $request['product_id'];
                 $location->order = $request['location_order'];
+                $location->category_id = $p['category_id'];
                 $location->save();
 
                 ProductLocation::where('location_id','=',$request['location_id'])

@@ -222,7 +222,7 @@
 
                             @endif
 
-
+                            <li><a href="{{route('site.hr-list')}}">İnsan Kaynakları</a></li>
                         </ul>
                     </li>
                     @endif
