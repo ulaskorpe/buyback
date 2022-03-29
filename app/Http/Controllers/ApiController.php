@@ -6,6 +6,7 @@ use App\Enums\MenuLocations;
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Area;
 use App\Models\Article;
+use App\Models\Bank;
 use App\Models\Banner;
 use App\Models\City;
 use App\Models\District;
@@ -545,6 +546,8 @@ class ApiController extends Controller
     {
 
 
+
+
         if ($request->header('x-api-key') == $this->generateKey()) {
 
 
@@ -1005,8 +1008,62 @@ class ApiController extends Controller
 
         return $return_array;
     }
+    public function contactInfo(Request $request){
 
 
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $result=array();
+            $result['title']='İletişim';
+            $result['subtitle']="Nunc ac porta est. Aenean eget elit vitae arcu commodo consectetur. Etiam id aliquam neque, ullamcorper dapibus diam. Ut congue, arcu non aliquam interdum, risus libero ultricies felis, quis blandit mauris sem in felis.";
+            $result['coordinates']['latitude']=41.03095714596805;
+            $result['coordinates']['longitude']=28.81474066545636;
+
+                        $returnArray['status']=true;
+                        $status_code=200;
+                        $returnArray['data'] =['orders'=>$result  ];
+                        //$ch->activation_key=0;
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+        }
+        return response()->json($returnArray,$status_code);
+
+    }
+
+    public function banksPurchases(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+           $banks = Bank::with('purchases')->get();
+$array = array();
+$i=0;
+foreach ($banks as $bank){
+    $array[$i]['bank_name']=$bank['bank_name'];
+    $array[$i]['bank_id']=$bank['bank_id'];
+    if($bank->purchases()->count() >0 ){
+        $p_array=array();
+        $j=0;
+        foreach($bank->purchases()->get() as $p){
+            $p_array[$j]['comission']=$p['commission'];
+            $p_array[$j]['purchase_count']=$p['purchase'];
+            $j++;
+        }
+
+
+        $array[$i]['purchases']=$p_array;
+    }
+
+    $i++;
+}
+
+
+            return  response()->json( $array);
+
+        }
+    }
     /////////////ADDRESS
     public function getCities(Request $request)
     {

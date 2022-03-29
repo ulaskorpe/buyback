@@ -1171,7 +1171,12 @@ $file=$path."/".$i.".jpg";
                 ProductLocation::where('location_id','=',$request['location_id'])
                     ->where('id','<>',$location['id'])->where('order','>=',$request['location_order'])->increment('order');
 
-                return ['ürün yeni konuma eklendi', 'success', route('site.locate-product',[$request['product_id']]), '', ''];
+                if(empty($request['product_page'])){
+                    return ['ürün yeni konuma eklendi', 'success', route('site.locate-product',[$request['product_id']]), '', ''];
+                }else{
+                    return ['ürün yeni konuma eklendi', 'success', route('products.product-update',[$request['product_id'],4]), '', ''];
+                }
+
             });
             return json_encode($resultArray);
 

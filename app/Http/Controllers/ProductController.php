@@ -36,13 +36,58 @@ class ProductController extends Controller
     use ApiTrait;
     public  function productList($brand_id=0,$model_id=0){
 
-
+//        for($i=1;$i<5;$i++){
+//            $products = Product::select('id')->inRandomOrder()->where('fake','=',0)->limit(13)->get();
+//
+//            $j=1;
+//            foreach ($products as $product){
+//                $pl = new ProductLocation();
+//                $pl->location_id= $i;
+//                $pl->product_id = $product['id'];
+//                $pl->order= $j;
+//                $pl->save();
+//                $j++;
+//            }
+//
+//            echo $i;
+//
+//        }
+     //   $path ='images/products/';
+//        $products = Product::select('id')->where('fake','=',0)->get();
+//        foreach ($products as $product){
+//            $r = rand(0,1000)/100;
+//            echo $r."<br>";
+//            $product->calculated_vote = $r;
+//            $product->save();
+////            $img = new ProductImage();
+////            $img->product_id = $product['id'];
+////            $img->thumb = $path."THL".$r.".jpg";
+////            $img->image = $path."L".$r.".jpg";
+////            $img->order =1;
+////            $img->first =1;
+////            $img->status =1;
+////                 $img->save();
+////            $model= ProductModel::find($product['model_id']);
+////            if(empty($model['id'])){
+////                echo $product['model_id']."<br>";
+////            }
+//
+//        }
+//
+//
+//        die();
         if($model_id>0  ){
-            $products=Product::with('images','firstImage')->where('model_id','=',$model_id)->get();
+            $products=Product::with('images','firstImage')->where('model_id','=',$model_id)
+                ->where('fake','=',0)
+                ->get();
         }elseif($brand_id>0 && $model_id==0){
-            $products=Product::with('images','firstImage')->where('brand_id','=',$brand_id)->get();
+            $products=Product::with('images','firstImage')->where('brand_id','=',$brand_id)
+                ->where('fake','=',0)
+                ->get();
         }else{
-            $products=Product::with('images','firstImage')->get();
+            $products=Product::with('images','firstImage')
+                ->where('fake','=',0)
+                ->get();
         }
 
         return view('admin.products.list',['products'=>$products,'model_id'=>$model_id,'brand_id'=>$brand_id]);
@@ -137,7 +182,14 @@ class ProductController extends Controller
     }
 
     public function productUpdate($id,$selected=0,$brand_id=0,$model_id=0){
+        $p_locations = ProductLocation::where('product_id','=',$id)->pluck('location_id')->toArray();
+        $site_locations= SiteLocation::whereNotIn('id',$p_locations)->where('status','=',1)->get();
 
+        $count_array = [];
+        foreach (SiteLocation::all() as $location){
+            $count_array[$location['id']] = ProductLocation::where('location_id','=',$location['id'])->count();
+        }
+        $locations = ProductLocation::with('location')->where('product_id','=',$id)->get();
 
 
         $p_colors=ProductColor::where('product_id','=',$id)->pluck('color_id')->toArray();
@@ -171,6 +223,7 @@ class ProductController extends Controller
             ,'p_brand_id'=>$brand_id,'p_model_id'=>$model_id,'variant_groups'=>VariantGroup::with('variants','variants.values')->orderBy('order')->get()
             ,'stock_movements'=>ProductStockMovement::with('color','memory')
                 ->where('product_id','=',$id)->orderBy('created_at','DESC')->get()
+            ,'locations'=>$locations,'count_locations'=>$count_array,'site_locations'=>$site_locations
         ]);
     }
 

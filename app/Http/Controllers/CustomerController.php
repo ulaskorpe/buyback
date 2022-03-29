@@ -10,8 +10,12 @@ use App\Models\CargoCompany;
 use App\Models\CargoCompanyBranch;
 use App\Models\CartItem;
 use App\Models\City;
+use App\Models\Contact;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
+use App\Models\Guest;
+use App\Models\GuestCartItem;
+use App\Models\NewsLetter;
 use App\Models\Order;
 use App\Models\ServiceAddress;
 use App\Models\User;
@@ -44,9 +48,16 @@ class CustomerController extends Controller
             'cart_items'=>CartItem::with('product','product.model','product.brand','color','memory')->where('status','=',0)
                 ->where('customer_id','=',$customer_id)->orderBy('created_at')->get(),
             'status_array'=>[0=>'Giriş',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı'],
-            'orders'=>Order::with('cart_items')->where('customer_id','=',$customer_id)->orderBy('created_at','DESC')->get()
 
+            'orders'=>Order::with('cart_items')->where('customer_id','=',$customer_id)->orderBy('created_at','DESC')->get()
+,'order_status'=>$this->order_status_array
         ]);
+
+    }
+
+    public function deleteCartItem($cart_item_id){
+        CartItem::where('id','=',$cart_item_id)->delete();
+            return "Ürün sepetten silindi";
 
     }
 
@@ -228,6 +239,44 @@ class CustomerController extends Controller
 
  //  return $orders;
        return view('admin.customer.orders',['orders'=>$orders,'order_status'=>$this->order_status_array]);
+    }
+
+    public function guests(){
+
+       return view('admin.customer.guests',['guests'=>Guest::with('cart_items')->orderBy('created_at','DESC')->get()]);
+    }
+
+    public function newsletter(){
+
+        return view('admin.customer.newsletter',['newsletters'=>NewsLetter::with('customer')->orderBy('created_at','DESC')->get()]);
+    }
+
+    public function contacts(){
+
+        return view('admin.customer.contacts',['contacts'=>Contact::with('customer')->orderBy('created_at','DESC')->get()]);
+    }
+
+    public function contactDetail($id){
+
+        return view('admin.customer.contact_detail',['contact'=>Contact::with('customer')->find($id)]);
+    }
+
+    public function deleteGuest($guid){
+        GuestCartItem::where('guid','=',$guid)->delete();
+        Guest::where('id','=',$guid)->delete();
+
+        return "Ziyaretçi silindi";
+    }
+
+    public function deleteNewsletter($id){
+            NewsLetter::where('id','=',$id)->delete();
+            return "Abone Silindi";
+    }
+
+    public function deleteContact($id){
+
+        Contact::where('id','=',$id)->delete();
+        return "İleti silindi";
     }
 
     public function orderUpdate($order_id,$selected=0){

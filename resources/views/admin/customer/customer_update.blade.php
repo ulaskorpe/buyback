@@ -275,119 +275,7 @@
                     </div>
                     <div class="tab-pane fade @if($selected==2) active show @endif" id="order_cart" role="tabpanel"
                          aria-labelledby="variant-tab">
-
-                        <div class="row">
-                            <div class="col-12">
-                                <p class="h2">Sepetindeki Ürünler</p>
-                                <table id="datatable-responsive-2" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
-                                    <thead>
-                                    <tr>
-                                        <th>Ürün</th>
-                                        <th>Durum</th>
-                                        <th>Sipariş</th>
-
-                                        <th class="text-center">İşlemler</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach($cart_items as $cart_item)
-                                        <tr>
-                                            <td>
-                                                {{$cart_item->product()->first()->title}}<br>
-                                                {{$cart_item->product()->first()->brand()->first()->BrandName}}
-                                                &gt;
-                                                {{$cart_item->product()->first()->model()->first()->Modelname}}
-                                                @if($cart_item['memory_id']>0)
-                                                    <br>
-                                                    {{$cart_item->memory()->first()->memory_value}} GB
-                                                @endif
-                                                @if($cart_item['color_id']>0)
-                                                    <br>
-                                                    {{$cart_item->color()->first()->color_name}}
-                                                @endif
-                                            </td>
-                                            <td>{{$status_array[$cart_item['status']]}}</td>
-                                            <td>
-                                                @if($cart_item['order_id']>0)
-                                                    {{$cart_item['order_id']}}
-
-                                                @endif
-                                            </td>
-                                            <td>
-
-                                                <button class="btn btn-primary"  onclick="update_address({{$cart_item['id']}})">GÜNCELLE</button>
-
-                                            </td>
-
-                                        </tr>
-                                    @endforeach
-                                    </tbody>
-                                </table>
-
-
-
-                            </div>
-                        </div>
-
-
-                        <div class="row">
-                            <div class="col-12">
-                                <p class="h2">Alışveriş Geçmişi</p>
-                                <table id="datatable-responsive-2" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
-                                    <thead>
-                                    <tr>
-                                        <th>Ürün</th>
-                                        <th>Durum</th>
-                                        <th>Sipariş</th>
-
-                                        <th class="text-center">İşlemler</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach($cart_items as $cart_item)
-                                        <tr>
-                                            <td>
-                                                {{$cart_item->product()->first()->title}}<br>
-                                                {{$cart_item->product()->first()->brand()->first()->BrandName}}
-                                                &gt;
-                                                {{$cart_item->product()->first()->model()->first()->Modelname}}
-                                                @if($cart_item['memory_id']>0)
-                                                    <br>
-                                                    {{$cart_item->memory()->first()->memory_value}} GB
-                                                    @endif
-                                                @if($cart_item['color_id']>0)
-                                                    <br>
-                                                    {{$cart_item->color()->first()->color_name}}
-                                                @endif
-                                            </td>
-                                            <td>{{$status_array[$cart_item['status']]}}</td>
-                                            <td>
-                                                @if($cart_item['order_id']>0)
-                                                {{$cart_item['order_id']}}
-
-                                                    @endif
-                                            </td>
-                                            <td>
-
-                                                <button class="btn btn-primary"  onclick="update_address({{$cart_item['id']}})">GÜNCELLE</button>
-
-                                            </td>
-
-                                        </tr>
-                                    @endforeach
-                                    </tbody>
-                                </table>
-
-
-
-                            </div>
-                        </div>
-
-
-
-
-
-
+                            @include("admin.customer.customer_orders")
                     </div>
                     <div class="tab-pane fade @if($selected==3) active show @endif" id="messages" role="tabpanel"
                          aria-labelledby="stock-tab">
@@ -431,6 +319,8 @@
        //     init_DataTables();
             $('#datatable-responsive-1').DataTable();
             $('#datatable-responsive-2').DataTable();
+            $('#datatable-responsive-3').DataTable();
+            $('#datatable-responsive-4').DataTable();
 
             if ($("input.flat")[0]) {
                 $(document).ready(function () {
@@ -441,6 +331,55 @@
                 });
             }
         });
+
+
+        function delete_cart_item(cart_id){
+
+                swal("Ürün sepetten silinecek, Emin misiniz?", {
+                    buttons: ["İptal", "Evet"],
+                    dangerMode: true,
+                }).then((value) => {
+                    if (value) {
+
+                        $.get("{{url('admin/customers/delete-cart-item')}}/" + cart_id, function (data) {
+                            swal(data + "");
+                            setTimeout(function () {
+                               location.reload();
+                            }, 1500)
+
+                            //   console.log(user_id+":"+follower_id);
+
+
+                        });
+
+
+                    }
+                })
+
+        }
+
+        function cartSwitch(){
+
+           // var isDisabled = $('#cart_header').prop('disabled');
+
+            if( $('#cart_header').prop('disabled')  ){
+
+                $('#cart_items_table').hide();
+                $('#orders_table').show();
+                $('#cart_header').prop('disabled',false);
+                $('#order_header').prop('disabled',true);
+            }else{
+                $('#cart_header').prop('disabled',true);
+                $('#order_header').prop('disabled',false);
+
+                $('#cart_items_table').show();
+                $('#orders_table').hide();
+
+
+            }
+
+        }
+
         function update_address(address_id){
             $('#modal_btn').click();
             $.get("{{url('admin/customers/address-update')}}/{{$customer['id']}}/"+address_id , function (data) {

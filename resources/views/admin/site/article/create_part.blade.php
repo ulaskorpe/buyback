@@ -341,12 +341,12 @@
         var formData = new FormData(this);
         var error = false;
 
-        if ($('#title2').val() == '') {
-            $('#title2_error').html('<span style="color: red">Lütfen giriniz</span>');
-            error = true;
-        } else {
-            $('#title2_error').html('');
-        }
+//        if ($('#title2').val() == '') {
+//            $('#title2_error').html('<span style="color: red">Lütfen giriniz</span>');
+//            error = true;
+//        } else {
+//            $('#title2_error').html('');
+//        }
 
         if ($('#descr').val() == '' && $('#image').val() =='') {
             $('#image_error').html('<span style="color: red">Lütfen dosya seçiniz ya da metin giriniz</span>');

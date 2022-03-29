@@ -11,7 +11,7 @@ class ProductBrand extends Model
     protected $table = 'product_brands';
 
     protected $fillable = [
-        'BrandName','ImageLarge','Imagethumb','IconPath','Seotitle','Seodesc','description','Status'
+     'micro_id',  'BrandName','ImageLarge','Imagethumb','IconPath','Seotitle','Seodesc','description','Status'
     ];
 
     protected $hidden = [

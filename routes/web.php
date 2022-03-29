@@ -19,6 +19,14 @@ Route::get('/', function () {
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
 Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('home');
+Route::get('/get-products',[\App\Http\Controllers\HomeController::class,'getProducts'])->name('get-products-ekspar');
+Route::get('/get-brands',[\App\Http\Controllers\HomeController::class,'getBrands'])->name('get-brands-ekspar');
+Route::get('/get-models',[\App\Http\Controllers\HomeController::class,'getModels'])->name('get-models-ekspar');
+Route::get('/get-colors',[\App\Http\Controllers\HomeController::class,'getColors'])->name('get-colors-ekspar');
+Route::get('/get-memories',[\App\Http\Controllers\HomeController::class,'getMemories'])->name('get-memories-ekspar');
+Route::get('/cc-payment',[\App\Http\Controllers\HomeController::class,'ccPayment'])->name('cc-payment');
+Route::get('/banks-list',[\App\Http\Controllers\HomeController::class,'banksList'])->name('banks-list');
+Route::get('/bank-purchases',[\App\Http\Controllers\HomeController::class,'bankPurchases'])->name('bank-purchases');
 
 
 Route::get('/logs',[\App\Http\Controllers\HomeController::class,'logs'])->name('logs');
@@ -342,12 +350,20 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
     Route::group(['middleware'=>\App\Http\Middleware\customerAuth::class,'prefix'=>'customers','as'=>'customer.'],function (){
         Route::get('/',[\App\Http\Controllers\CustomerController::class,'customerList'])->name('customer-list');
         Route::get('/update/{customer_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'customerUpdate'])->name('customer-update');
+        Route::get('/delete-cart-item/{cart_item_id}',[\App\Http\Controllers\CustomerController::class,'deleteCartItem'])->name('delete-cart-item');
         Route::post('/update-post',[\App\Http\Controllers\CustomerController::class,'customerUpdatePost'])->name('customer-update-post');
         Route::post('/update-pw',[\App\Http\Controllers\CustomerController::class,'customerUpdatePW'])->name('customer-update-pw');
         Route::get('/check-email/{email}/{customer_id}',[\App\Http\Controllers\CustomerController::class,'checkEmail'])->name('customer-check-email');
         Route::get('/address-update/{customer_id}/{address_id}',[\App\Http\Controllers\CustomerController::class,'addressUpdate'])->name('customer-address-update');
         Route::post('/update-address-post',[\App\Http\Controllers\CustomerController::class,'customerUpdateAddress'])->name('customer-update-address');
         Route::get('/orders',[\App\Http\Controllers\CustomerController::class,'orders'])->name('orders');
+        Route::get('/guests',[\App\Http\Controllers\CustomerController::class,'guests'])->name('guests');
+        Route::get('/newsletter',[\App\Http\Controllers\CustomerController::class,'newsletter'])->name('newsletter');
+        Route::get('/contacts',[\App\Http\Controllers\CustomerController::class,'contacts'])->name('contacts');
+        Route::get('/contact-detail/{id}',[\App\Http\Controllers\CustomerController::class,'contactDetail'])->name('contact-detail');
+        Route::get('/delete-guest/{guid}',[\App\Http\Controllers\CustomerController::class,'deleteGuest'])->name('delete-guest');
+        Route::get('/delete-newsletter/{id}',[\App\Http\Controllers\CustomerController::class,'deleteNewsletter'])->name('delete-newsletter');
+        Route::get('/delete-contact/{id}',[\App\Http\Controllers\CustomerController::class,'deleteContact'])->name('delete-contact');
         Route::get('/cargo-branches/{cc_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'cargoBranchSelect'])->name('cargo-branch-select');
         Route::get('/branch-detail/{branch_id}',[\App\Http\Controllers\CustomerController::class,'branchDetail'])->name('branch-detail');
         Route::get('/customer-address-detail/{address_id}',[\App\Http\Controllers\CustomerController::class,'customerAddressDetail'])->name('customer-address-detail');

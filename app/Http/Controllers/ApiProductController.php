@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\DB;
 
 class ApiProductController extends Controller
 {
-     use ApiTrait;
+    use ApiTrait;
 
     public function newProducts_x(Request $request){
 
@@ -111,7 +111,7 @@ class ApiProductController extends Controller
         }
         ]
         }
-        */
+         */
         $products = new Object_();
 
 
@@ -156,143 +156,7 @@ class ApiProductController extends Controller
         return    response()->json(  $products );
         //return ['products'=>$products];//response()->json(['products' => $products ]);
     }
-
-    public function allProducts(Request $request)
-    {
-
-        if ($request->header('x-api-key') == $this->generateKey()) {
-            $array = [];
-            $min_price = (!empty($request['min_price']))?$request['min_price']:0;
-            $max_price = (!empty($request['max_price']))?$request['max_price']:1000000;
-            $order = (!empty($request['order']))?$request['order']:'created_at';
-            $desc = (!empty($request['desc']))?$request['desc']:'DESC';
-            if(!empty($request['brands'])){
-                $brands = explode(",",trim($request['brands']));
-            }else{
-                $brands = ProductBrand::pluck('id')->toArray();
-
-            }
-            $page = (!empty($request['page']))?($request['page']-1):0;
-            $page = ($page<0)?0:$page;
-            $page_count = (!empty($request['page_count']))?$request['page_count']:20;
-
-            if(!empty($request['colors'])){
-                $colors = explode(",",trim($request['colors']));
-            }else{
-                $colors = Color::pluck('id')->toArray();
-            }
-
-            if(!empty($request['memories'])){
-                $memories = explode(",",trim($request['memories']));
-            }else{
-                $memories = Memory::pluck('id')->toArray();
-
-            }
-            $a1 = ProductColor::whereIn('color_id',$colors)->pluck('product_id')->toArray();
-            $a2 =  ProductMemory::whereIn('memory_id',$memories)->pluck('product_id')->toArray();
-            //return $memories;
-            // $products=Product::with('colors')->orderBy('id')->limit(30)->get();
-            //return $products;
-
-            //  return ProductColor::whereIn('color_id',$colors)->where('product_id','=',4)->count();
-
-            $products = Product::with('brand','firstImage','colors','memories')->whereIn('brand_id',$brands)
-                ->where('price','>=',$min_price)
-                ->whereIn('id',array_intersect($a1,$a2))
-                ->where('price','<=',$max_price)
-                ->skip($page*$page_count)
-                ->limit($page_count)
-                ->orderBy($order,$desc) ;
-            $product_count = Product::whereIn('brand_id',$brands)
-                ->where('price','>=',$min_price)
-                ->whereIn('id',array_intersect($a1,$a2))
-                ->where('price','<=',$max_price)->count();
-
-
-                //$products->count();
-            //   return $product_count;
-
-            $products = $products->get();
-
-
-
-            //$faker = Factory::create();
-            $i=0;
-            $array=array();
-
-
-
-
-
-            foreach ($products as $product){
-                $show = true;
-                /*    if(!empty($request['colors'])) {
-                        $show = false;
-                        $color_array = ProductColor::where('product_id', '=', $product['id'])->pluck('color_id')->toArray();
-                        foreach ($color_array as $item){
-                            if(in_array($item,$colors)){
-                                $show = true;
-                                break;
-                            }
-                        }
-                    }///colors
-
-                    if(!empty($request['memories'])) {
-                        $show = false;
-                        $memory_array = ProductMemory::where('product_id', '=', $product['id'])->pluck('')->toArray();
-                        foreach ($memory_array as $item){
-                            if(in_array($item,$memories)){
-                                $show = true;
-                                break;
-                            }
-                        }
-                    }///*/
-
-                if($show){
-                    $details  =array();
-                    $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
-                    $j=0;
-                    foreach ($variants as $variant){
-
-                        $details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
-                        $j++;
-                    }
-
-
-                    $array[$i]['id'] = $product['id'];
-                    //      $array[$i]['filterData'] = array(['filterType'=>'brand',"value"=> $product->brand()->first()->BrandName],['filterType'=>'color','value'=>'red']);
-                    $array[$i]['title'] = $product['title'];
-                    $array[$i]['listPrice'] = $product['price'];
-                    $array[$i]['price'] = $product['price_ex'];
-                    $array[$i]['brand'] = $product->brand()->first()->BrandName;
-                    $array[$i]['model'] = $product->model()->first()->Modelname;
-
-                    //$array[$i]['url'] = '/urun-detay/'.$product['category_id'].'/'.str_replace(" ","-",$product['title'])."/".$product['id'];
-                    $array[$i]['url'] = '/urun-detay/'.GeneralHelper::fixName($product['title'])."/".$product['id'];
-                    $array[$i]['imageUrl'] = url($product->firstImage()->first()->image);
-                    $array[$i]['thumb'] = url($product->firstImage()->first()->thumb);
-                    $array[$i]['discount'] = $product['price']-$product['price_ex'];
-                    $array[$i]['details'] =  $details;
-                    $i++;
-                }///show ??
-            }
-
-            $count = (count($array)>0)?true:false;
-            $resultArray['status'] = ($count)?true:false;
-            $resultArray['data'] = $array;//['products'=>$array];
-            $resultArray['errors'] = ['msg'=>($count)?'':'Not Found'];
-            $resultArray['item_count'] =$product_count;
-
-            $status_code  = ($count)?200:404;
-
-            return response()->json($resultArray,$status_code);
-            // return $array;
-        }
-    }
-
-
-    private function getProductDetail($product){
-      //  $product = Product::with('firstImage','brand','model')->find($product_id);
+    private function getProductDetailMini($product){
         $result=array();
         $result['id']=$product['id'];
         $result['title']=$product->brand()->first()->BrandName." ".$product->model()->first()->Modelname;
@@ -304,24 +168,207 @@ class ApiProductController extends Controller
         return $result;
     }
 
-    public function bestSellers(Request $request)
+
+    private function searchProduct($brands_array=null,$memory_array=null,$color_array=null,$category_id=0,$keyword=null,$min_price=0,$max_price=0){
+
+
+        if(!empty($brands_array)){
+            $brands = explode(",",trim($brands_array));
+        }else{
+            $brands = ProductBrand::pluck('id')->toArray();
+
+        }
+
+        if(!empty($memory_array)){
+            $memories = explode(",",trim($memory_array));
+        }else{
+            $memories = Memory::pluck('id')->toArray();
+
+        }
+
+        if(!empty($color_array)){
+            $colors = explode(",",trim($color_array));
+        }else{
+            $colors = Color::pluck('id')->toArray();
+
+        }
+
+        $product_memory_array =  ProductMemory::whereIn('memory_id',$memories)->pluck('product_id')->toArray();
+        $model_color_array=ColorModel::whereIn('color_id',$colors)->pluck('model_id')->toArray();
+
+        if($category_id>0){
+            $cat_array = [$category_id];
+        }else{
+            $cat_array = ProductCategory::pluck('id')->toArray();
+        }
+
+        if(!empty($keyword)){
+            $keyword=trim($keyword);
+            $model_array = ProductModel::where('status','=',1)
+                ->where('Modelname','LIKE','%'.$keyword.'%')
+                ->pluck('id')->toArray();
+
+            if( count($model_array)==0) {
+                $model_array = $model_color_array;//ProductModel::where('status','=',1)->pluck('id')->toArray();
+            }else{
+                $model_array = array_intersect($model_array,$model_color_array);
+            }
+
+            $brand_array = ProductBrand::where('status','=',1)
+                ->where('BrandName','LIKE','%'.$keyword.'%')
+                ->pluck('id')->toArray();
+            if( count($brand_array)==0) {
+                $brand_array = $brands;//ProductBrand::where('status','=',1)->pluck('id')->toArray();
+            }else{
+                $brand_array = array_intersect($brand_array,$brands);
+            }
+
+        }else{
+            $keyword="";
+            $model_array = $model_color_array;//ProductModel::where('status','=',1)->pluck('id')->toArray();
+            $brand_array =$brands; //ProductBrand::where('status','=',1)->pluck('id')->toArray();
+        }
+
+        $min_price= ($min_price>0)?$min_price:0;
+        $max_price=($max_price>0)?$max_price:100000000;
+
+        $product_array = Product::where('fake','=',0)
+            ->where('price','>=',$min_price)
+            ->where('price','<=',$max_price)
+            ->where('status','=',1)
+            ->where('title','LIKE','%'.$keyword.'%')
+            ->whereIn('id',$product_memory_array)
+            ->whereIn('category_id',$cat_array)
+            ->whereIn('model_id',$model_array)
+            ->whereIn('brand_id',$brand_array)
+            ->pluck('id')->toArray();
+
+
+
+        return  $product_array;
+
+    }
+
+
+    private function productLocations($location_id,$search,$page=0,$page_count=20){
+        $page = ($page>0)?($page-1):0;
+         $product_locations = ProductLocation::with('product')->where('location_id','=',$location_id)
+            ->whereIn('product_id',$search)
+            ->skip($page*$page_count)
+            ->limit($page_count)
+            ->orderBy('order')
+            ->get();
+
+        $products = array();
+        $i=0;
+        foreach ($product_locations as $p_id){
+            $products[$i]=$this->getProductDetail($p_id->product()->first());
+            $i++;
+        }
+
+        return ['products'=> $products,'count'=> ProductLocation::where('location_id','=',$location_id)
+            ->whereIn('product_id',$search)->count()];
+    }
+
+    public function allProducts(Request $request)
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $order = (!empty($request['order']))?$request['order']:'created_at';
+            $desc = (!empty($request['desc']))?$request['desc']:'DESC';
+            $page = (!empty($request['page']))?($request['page']-1):0;
+            $page = ($page<0)?0:$page;
+            $page_count = (!empty($request['page_count']))?$request['page_count']:20;
+$search = $this->searchProduct($request['brands'],$request['memories'],$request['colors'],$request['category_id'],$request['keyword'],$request['min_price'],$request['max_price']);
+
+
+
+            $products = Product::with('brand','firstImage','colors','memories')
+
+
+                ->whereIn('id',$search )
+                ->skip($page*$page_count)
+                ->limit($page_count)
+                ->orderBy($order,$desc)->get() ;
+
+
+            $i=0;
+            $array=array();
+           foreach ($products as $product){
+                    $array[$i]=$this->getProductDetail($product);
+                    $i++;
+            }
+
+            $count = (count($array)>0)?true:false;
+            $resultArray['status'] = ($count)?true:false;
+            $resultArray['data'] = $array;//['products'=>$array];
+            $resultArray['errors'] = ['msg'=>($count)?'':'Not Found'];
+            $resultArray['item_count'] =count($search);
+
+            $status_code  = ($count)?200:404;
+
+            return response()->json($resultArray,$status_code);
+            // return $array;
+        }
+    }
+
+    private function getProductDetail($product){
+
+
+        $result=array();
+        $details  =array();
+        $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
+        $j=0;
+        foreach ($variants as $variant){
+
+            $details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
+            $j++;
+        }
+
+
+        $result['id'] = $product['id'];
+        //      $array[$i]['filterData'] = array(['filterType'=>'brand',"value"=> $product->brand()->first()->BrandName],['filterType'=>'color','value'=>'red']);
+        $result['title'] = $product['title'];
+        $result['listPrice'] = $product['price'];
+        $result['price'] = $product['price_ex'];
+        $result['brand'] = $product->brand()->first()->BrandName;
+
+        $result['model'] = $product->model()->first()->Modelname;
+
+        //$array[$i]['url'] = '/urun-detay/'.$product['category_id'].'/'.str_replace(" ","-",$product['title'])."/".$product['id'];
+        $result['url'] = '/urun-detay/'.GeneralHelper::fixName($product['title'])."/".$product['id'];
+        $result['imageUrl'] = url($product->firstImage()->first()->image);
+        $result['thumb'] = url($product->firstImage()->first()->thumb);
+        $result['discount'] = $product['price']-$product['price_ex'];
+        $result['details'] =  $details;
+
+
+        return $result;
+    }
+
+    public function superOffer(Request $request)
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
 
 
-            $product_id_array = ProductLocation::with('product')->where('location_id','=',3)->orderBy('order')->get();
-            // $products = Product::select('id')->whereIn('id',ProductLocation::where('location_id','=',3)->orderBy('order')->pluck('product_id')->toArray())->get();
-///   { id: 21, title: "Bluetooth on-ear PureBass Headphones", listPrice: "300.00", price: "500.00", url: "", imageUrl: "assets/images/products/7.jpg", discount: "150" },
-            $products = array();
+            $search = $this->searchProduct($request['brands'],$request['memories'],$request['colors'],$request['category_id'],$request['keyword']);
+            $cats = ProductCategory::orderBy('id')->get();
+            $categories = array();
             $i=0;
-            foreach ($product_id_array as $p_id){
-
-                $products[$i]=$this->getProductDetail($p_id->product()->first());
+            foreach ($cats as $cat){
+                $categories[$i]=['id'=>$cat['id'],'title'=>$cat['category_name'],'value'=>$cat['id']];
                 $i++;
             }
+
             $returnArray['status'] = true;
             $status_code=200;
-            $returnArray['data'] =$products;
+
+
+            $result = $this->productLocations(1,$search,$request['page'],$request['page_count']);
+            $returnArray['data'] =['products'=>$result['products'],'item_count'=>$result['count'],'categories'=>$categories];
+
 
         } else {
             $returnArray['status'] = false;
@@ -334,20 +381,33 @@ class ApiProductController extends Controller
 
     public function weeklyDeals(Request $request)
     {
+
+
         if ($request->header('x-api-key') == $this->generateKey()) {
-
-            $product_id_array = ProductLocation::with('product')->where('location_id','=',2)->orderBy('order')->get();
-            $products = array();
-            $i=0;
-            foreach ($product_id_array as $p_id){
-
-                $products[$i]=$this->getProductDetail($p_id->product()->first());
-                $i++;
-            }
+            $search = $this->searchProduct($request['brands'],$request['memories'],$request['colors'],$request['category_id'],$request['keyword']);
             $returnArray['status'] = true;
             $status_code=200;
-            $returnArray['data'] =$products;
+            $result = $this->productLocations(2,$search,$request['page'],$request['page_count']);
+            $returnArray['data'] =['products'=>$result['products'],'item_count'=>$result['count']];
 
+        } else {
+            $returnArray['status'] = false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'] ;
+        }
+
+        return response()->json($returnArray,$status_code);
+    }
+
+    public function bestSellers(Request $request)
+    {
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $search = $this->searchProduct($request['brands'],$request['memories'],$request['colors'],$request['category_id'],$request['keyword']);
+            $returnArray['status'] = true;
+            $status_code=200;
+
+            $result = $this->productLocations(3,$search,$request['page'],$request['page_count']);
+            $returnArray['data'] =['products'=>$result['products'],'item_count'=>$result['count']];
         } else {
             $returnArray['status'] = false;
             $status_code=498;
@@ -361,27 +421,11 @@ class ApiProductController extends Controller
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-
-
-        if($request['category_id']>0){
-            $product_id_array = ProductLocation::with('product')->where('location_id','=',4)
-                ->where('category_id','=',$request['category_id'])
-                ->orderBy('order')->get();
-        }else{
-            $product_id_array = ProductLocation::with('product')->where('location_id','=',4)->orderBy('order')->get();
-        }
-            $products = array();
-            $i=0;
-            foreach ($product_id_array as $p_id ){
-
-                $products[$i]=$this->getProductDetail($p_id->product()->first());
-                $i++;
-            }
-
+            $search = $this->searchProduct($request['brands'],$request['memories'],$request['colors'],$request['category_id'],$request['keyword']);
 
             $cats = ProductCategory::orderBy('id')->get();
             $categories = array();
-$i=0;
+            $i=0;
             foreach ($cats as $cat){
                 $categories[$i]=['id'=>$cat['id'],'title'=>$cat['category_name'],'value'=>$cat['id']];
                 $i++;
@@ -389,7 +433,13 @@ $i=0;
 
             $returnArray['status'] = true;
             $status_code=200;
-            $returnArray['data'] =['items'=>$products,'categories'=>$categories];
+
+            $result = $this->productLocations(4,$search,$request['page'],$request['page_count']);
+            $returnArray['data'] =['products'=>$result['products'],'item_count'=>$result['count']  ,'categories'=>$categories];
+
+
+
+
 
         } else {
             $returnArray['status'] = false;
@@ -400,12 +450,19 @@ $i=0;
         return response()->json($returnArray,$status_code);
     }
 
+
+
     public function highestRated(Request $request)
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
-
-
-          $product_id_array = Product::orderBy('calculated_vote','DESC')->limit((!empty($request['count'])?$request['count']:15))->get();
+            $page = (!empty($request['page']))?($request['page']-1):0;
+            $page = ($page<0)?0:$page;
+            $page_count = (!empty($request['page_count']))?$request['page_count']:20;
+            $item_count = Product::select('id')->count();
+            $product_id_array = Product::orderBy('calculated_vote','DESC')->where('fake','=',0)
+                ->skip($page*$page_count)
+                ->limit($page_count)
+                ->get();
 
             $products = array();
             $i=0;
@@ -418,7 +475,7 @@ $i=0;
             }
             $returnArray['status'] = true;
             $status_code=200;
-            $returnArray['data'] =$products;
+            $returnArray['data'] =['products'=>$products,'item_count'=>$item_count];
 
         } else {
             $returnArray['status'] = false;
@@ -428,6 +485,9 @@ $i=0;
 
         return response()->json($returnArray,$status_code);
     }
+
+
+
 
     public function colorFilter(Request $request)
     {
@@ -501,58 +561,59 @@ $i=0;
 
             if(!empty($product['id'])) {
 
-                    $faker= Factory::create();
+                $faker= Factory::create();
                 $details  =array();
                 $j=0;
 
 
-if(true){ ///real details
-                $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
+                if(false){ ///real details
+                    $variants = ProductVariantValue::with( 'value.variant')->where('product_id','=',$product['id'])->get();
 
 
-                foreach ($variants as $variant){
+                    foreach ($variants as $variant){
 
-                    //$details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
-                    $details[$j]=['name'=>$variant->value()->first()->variant()->first()->variant_name,'value'=>$variant->value()->first()->value];
-                    $j++;
-                }
-
-}else{ ////random details
-
-
-
-                $vg = VariantGroup::all();
-                foreach ($vg as $g){
-                    $values = array();
-                    for($h=0;$h<rand(2,5);$h++){
-                        $values[$h]['id']=$h+2;
-                        $values[$h]['name']=$faker->word;
-                        $values[$h]['value']=$faker->words(2,3);
+                        //$details[$j]=$variant->value()->first()->variant()->first()->variant_name.":".$variant->value()->first()->value;
+                        $details[$j]=['name'=>$variant->value()->first()->variant()->first()->variant_name,'value'=>$variant->value()->first()->value];
+                        $j++;
                     }
 
-                    $details[$j]['id']=$g['id'];
-                    $details[$j]['title']=$g['group_name'];
-                    $details[$j]['items']=$values;
+                }else{ ////random details
 
-                    $j++;
 
+
+                    $vg = VariantGroup::all();
+                    foreach ($vg as $g){
+                        $values = array();
+                        for($h=0;$h<rand(2,5);$h++){
+                            $values[$h]['id']=$h+2;
+                            $values[$h]['name']=$faker->word;
+                            $values[$h]['value']=$faker->words(2,3);
+                        }
+
+                        $details[$j]['id']=$g['id'];
+                        $details[$j]['title']=$g['group_name'];
+                        $details[$j]['items']=$values;
+
+                        $j++;
+
+                    }
                 }
-}
                 $imageGallery=array();
                 $i=0;
                 foreach ($product->images()->get() as $img){
                     $imageGallery[$i]['id']=$img['id'];
-                    $imageGallery[$i]['imageUrl']=$img['thumb'];
+                    $imageGallery[$i]['imageUrl']=url($img['thumb']);
                     $i++;
                 }
 
+                ///////yorumlar faker ile hazırlanıyor
                 $content="";
                 for($i=0;$i<5;$i++) {
-                $content.="<p>".$faker->sentence."</p>";
+                    $content.="<p>".$faker->sentence."</p>";
                 }
-               $reviews=array();
+                $reviews=array();
                 for($i=0;$i<5;$i++){
-                  $reviews[$i] = ['name'=>$faker->name,'comment'=>$faker->sentence,'date'=>'22/02/2022','rating'=>rand(1,10)];
+                    $reviews[$i] = ['name'=>$faker->name,'comment'=>$faker->sentence,'date'=>'22/02/2022','rating'=>rand(1,10)];
 
                 }
 
@@ -561,9 +622,12 @@ if(true){ ///real details
                 $i=0;
                 foreach ($together as $t){
                     $item_array[$i] = ['id'=>$t['id'],'title'=>$t->brand()->first()->BrandName." ".$t->model()->first()->Modelname
-                        ,'imageUrl'=>$t->firstImage()->first()->thumb,'listPrice'=>$t['price'],'price'=>$t['price_ex']];
+                        ,'imageUrl'=>url($t->firstImage()->first()->thumb),'listPrice'=>$t['price'],'price'=>$t['price_ex']];
                     $i++;
                 }
+
+                $product_memory_array= ProductMemory::where('product_id','=',$product['id'])->pluck('memory_id')->toArray();
+
 
                 $tabs=array();
                 $tabs[0] = ['id'=>2,'title'=>'Ürün Bilgisi','name'=>'tab-description','type'=>'html','content'=>$content];
@@ -588,7 +652,7 @@ if(true){ ///real details
                 $array['rating'] =1;
                 $array['imageGallery'] =$imageGallery;
                 $array['colors']=Color::select('id','color_name')->inRandomOrder()->limit(rand(2,4))->get()->toArray();
-                $array['memories']=Memory::select('id','memory_value')->inRandomOrder()->limit(rand(2,4))->get()->toArray();
+                $array['memories']=Memory::select('id','memory_value')->whereIn('id',$product_memory_array)->get()->toArray();
                 $array['tabs'] =$tabs;
 
                 $array['crumbs'] =[
@@ -596,15 +660,43 @@ if(true){ ///real details
                     ['url'=>'#','title'=>$product->brand()->first()->BrandName." ".$product->model()->first()->Modelname],
 
                 ];
+                $similar =array();
+                $sproducts = Product::with('brand','model','firstImage')->where('brand_id','=',$product['brand_id'])
+                    ->where('fake','=',0)
+                    ->where('status','=',1)
+                    ->inRandomOrder()->limit(4)->orderBy('calculated_vote','DESC')->get();
+                $j=0;
+                foreach ($sproducts as $p){
+                    $mem=ProductMemory::with('memory')->where('product_id','=',$p['id'])->inRandomOrder()->limit(1)->first();
 
-/*
+                    $color = Color::where('status','=',1)->inRandomOrder()->limit(1)->first();
 
-                $array['model'] = $product->model()->first()->Modelname;
-                $array['url'] = '/urun-detay/'.str_replace(" ","-",$product['title'])."/".$product['id'];
-                $array['imageUrl'] = url($product->firstImage()->first()->thumb);
+                    $similar[$j]['id']=$p['id'];
+                    $similar[$j]['title']=$p['title'];
+                    $similar[$j]['brand']=$p->brand()->first()->BrandName;
+                    $similar[$j]['brand_d']=$p['brand_id'];
+                    $similar[$j]['model']=$p->model()->first()->Modelname;
+                    $similar[$j]['model_id']=$p['model_id'];
+                    $similar[$j]['price']=$p['price'];
+                    $similar[$j]['imageUrl']=url($p->firstImage()->first()->thumb);
+                    $similar[$j]['color']=$color['color_name'];
+                    $similar[$j]['color_id']=$color['id'];
+                    $similar[$j]['memory']=$mem->memory()->first()->memory_value;
+                    $similar[$j]['memory_id']=$mem->memory()->first()->id;
 
-                $array['details'] =  $details;
-*/
+                    $j++;
+                }
+
+                $array['similar_products']=$similar ;
+
+                /*
+
+                                $array['model'] = $product->model()->first()->Modelname;
+                                $array['url'] = '/urun-detay/'.str_replace(" ","-",$product['title'])."/".$product['id'];
+                                $array['imageUrl'] = url($product->firstImage()->first()->thumb);
+
+                                $array['details'] =  $details;
+                */
                 $returnArray['status'] = true;
                 $status_code=200;
                 $returnArray['data'] =$array;//['product'=>$array] ;
@@ -632,7 +724,7 @@ if(true){ ///real details
         /***
          * const data = [
         { id: 1, filterData: [{ filterType: 'brand', value: 'samsung' }, { filterType: 'color', value: 'black' }],
-         title: "Samsung Galaxy M52 5G 128 GB (Samsung Türkiye Garantili) ",
+        title: "Samsung Galaxy M52 5G 128 GB (Samsung Türkiye Garantili) ",
          * listPrice: "5799.00", price: "5299.00",
          * url: "/urun-detay/samsung-m2-1", imageUrl: "/assets/images/products/L1.jpg",
          * discount: "300.000",
@@ -726,7 +818,7 @@ if(true){ ///real details
 
             $array[0] =['id'=>1,'title'=>'Markalar','filterName'=>'brands','items'=>$items];
 
-          $colors = Color::select('id','color_name','filter_name')->get();
+            $colors = Color::select('id','color_name','filter_name')->where('status','=',1)->get();
             $items = array();
             $i=0;
             foreach ($colors as $color){
@@ -736,7 +828,7 @@ if(true){ ///real details
 
             $array[1] =['id'=>2,'title'=>'Renkler','filterName'=>'colors','items'=>$items];
 
-            $memories = Memory::select('id','memory_value')->get();
+            $memories = Memory::select('id','memory_value')->where('status','=',1)->get();
             $items = array();
             $i=0;
             foreach ($memories as $memory){
@@ -744,13 +836,13 @@ if(true){ ///real details
                 $i++;
             }
             $array[2] =['id'=>3,'title'=>'Hafızalar','filterName'=>'memories','items'=>$items];
-        //    return $array;
+            //    return $array;
 
             $count = (count($array)>0)?true:false;
             $resultArray['status'] = ($count)?true:false;
             $resultArray['data'] = $array;//['products'=>$array];
             $resultArray['errors'] = ['msg'=>($count)?'':'Not Found'];
-         //   $resultArray['item_count'] = ['msg'=>($count)?'':'Not Found'];
+            //   $resultArray['item_count'] = ['msg'=>($count)?'':'Not Found'];
 
             $status_code  = ($count)?200:404;
             return response()->json($resultArray,$status_code);
@@ -761,35 +853,35 @@ if(true){ ///real details
 
     public function productSeeder(Request $request){
 
-        for($i=1;$i<5;$i++){
-            $products = Product::select('id')->inRandomOrder()->limit(13)->get();
+//        for($i=1;$i<5;$i++){
+//            $products = Product::select('id')->inRandomOrder()->where('fake','=',0)->limit(13)->get();
+//
+//            $j=1;
+//            foreach ($products as $product){
+//                $pl = new ProductLocation();
+//                $pl->location_id= $i;
+//                $pl->product_id = $product['id'];
+//                $pl->order= $j;
+//                $pl->save();
+//                $j++;
+//            }
+//
+//            echo $i;
+//
+//        }
 
-            $j=1;
-            foreach ($products as $product){
-                $pl = new ProductLocation();
-                $pl->location_id= $i;
-                $pl->product_id = $product['id'];
-                $pl->order= $j;
-                $pl->save();
-                $j++;
-            }
 
-            echo $i;
-
-        }
-
-
-die();
+        die();
 //        $customers = Customer::select('id')->get();
 //
 //        foreach ($customers as $customer){ }
 
-     $products = Product::all();
-      //  $products = Product::inRandomOrder()->limit(rand(10,20))->get();
+        $products = Product::all();
+        //  $products = Product::inRandomOrder()->limit(rand(10,20))->get();
         foreach ($products as $product){
-         //   $colors = Color::inRandomOrder()->limit(rand(1,4))->get();
-           //$vote = rand(1,10);
-         //   echo $product['id'].":".$customer['id'].":".$vote." \n";
+            //   $colors = Color::inRandomOrder()->limit(rand(1,4))->get();
+            //$vote = rand(1,10);
+            //   echo $product['id'].":".$customer['id'].":".$vote." \n";
 
 //            $cpv = new CustomerProductVote();
 //            $cpv->product_id = $product['id'];
@@ -802,9 +894,9 @@ die();
 
             if($count>0){
                 $sum = CustomerProductVote::where('product_id','=',$product['id'])->sum('vote');
-           //echo $product['id'].":".$sum.":".$count.":".number_format(($sum/$count),2)."\n";
-            $product->calculated_vote = number_format(($sum/$count),2);
-            $product->save();
+                //echo $product['id'].":".$sum.":".$count.":".number_format(($sum/$count),2)."\n";
+                $product->calculated_vote = number_format(($sum/$count),2);
+                $product->save();
             }
 
 //            $memories = Memory::inRandomOrder()->limit(rand(1,3))->get();
@@ -833,7 +925,7 @@ die();
             $img->order =1;
             $img->first =1;
             $img->status =1;
-      //      $img->save();
+            //      $img->save();
 
         }
 
@@ -848,7 +940,7 @@ die();
 
             $file = $path."/".$filename;//$request->file('image');
             $img = Image::make($file);
-         //   $img->save($path . '/' . $filename);
+            //   $img->save($path . '/' . $filename);
             $img->resize(150, 150, function ($constraint) {
                 $constraint->aspectRatio();
             })->save($path . '/' . $th);
@@ -864,27 +956,27 @@ die();
             $m_id =0;
 
             while($m_id==0){
-            $b_id = $brands[rand(0,32)] ;
+                $b_id = $brands[rand(0,32)] ;
 
-            $model = ProductModel::where('Brandid','=',$b_id)->inRandomOrder()->first();
-            $m_id=(!empty($model['id']))?$model['id']:0;
+                $model = ProductModel::where('Brandid','=',$b_id)->inRandomOrder()->first();
+                $m_id=(!empty($model['id']))?$model['id']:0;
             }
             //return $model;
             $price = rand(1,10)*500;
             $price_ex = $price - (rand(1,10)*20);
-        $product= new Product();
-        $product->title = $faker->sentence;
-        $product->micro_id =$micro_id;
-        $product->brand_id = $b_id;
-        $product->model_id = $model['id'];
+            $product= new Product();
+            $product->title = $faker->sentence;
+            $product->micro_id =$micro_id;
+            $product->brand_id = $b_id;
+            $product->model_id = $model['id'];
 
-        $product->category_id = 2;
-        $product->description =$faker->sentence(30,2);
-        $product->price = $price;
-        $product->price_ex =$price_ex;
-echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
-        $product->status =1;
-      $product->save();
+            $product->category_id = 2;
+            $product->description =$faker->sentence(30,2);
+            $product->price = $price;
+            $product->price_ex =$price_ex;
+            echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
+            $product->status =1;
+            $product->save();
             $micro_id++;
         }
         return "ok";
@@ -956,13 +1048,13 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
                 $status_code=200;
                 $returnArray['status']=true;
                 if($responseCode==1){
-                   // $resultArray=['ok', $imei_query['id']];
+                    // $resultArray=['ok', $imei_query['id']];
                     $returnArray['data'] =['result'=>true,'msg'=>'geçerli IMEI'];
                 }else{
-                   // $resultArray=['none', $imei_query['id']];
+                    // $resultArray=['none', $imei_query['id']];
                     $returnArray['data'] =['result'=>false,'msg'=>'geçersiz IMEI'];
                 }
-             //   return json_encode($returnArray,$status_code);
+                //   return json_encode($returnArray,$status_code);
 
             }else{
                 $returnArray['status']=false;
@@ -975,17 +1067,17 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
             $returnArray['errors'] =['msg'=>'invalid key'];
 
         }
-         return response()->json($returnArray,$status_code);
+        return response()->json($returnArray,$status_code);
 
-        }
+    }
 
     public function getBrands(Request $request){
 
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-                $status_code=200;
-                $returnArray['status']=true;
-               $returnArray['data'] =ProductBrand::select('id','BrandName')->where('status','=',1)->orderBy('BrandName')->get();
+            $status_code=200;
+            $returnArray['status']=true;
+            $returnArray['data'] =ProductBrand::select('id','BrandName')->where('status','=',1)->orderBy('BrandName')->get();
 
 
         }else{
@@ -994,18 +1086,56 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
             $returnArray['errors'] =['msg'=>'invalid key'];
 
         }
-         return response()->json($returnArray,$status_code);
+        return response()->json($returnArray,$status_code);
+
+    }
+
+    public function getMemories(Request $request){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $status_code=200;
+            $returnArray['status']=true;
+            $returnArray['data'] =Memory::select('id','memory_value')->where('status','=',1)->orderBy('memory_value')->get();
+
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
 
         }
+        return response()->json($returnArray,$status_code);
+
+    }
+
+    public function getColors(Request $request){
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $status_code=200;
+            $returnArray['status']=true;
+            $returnArray['data'] =Color::select('id','color_name')->where('status','=',1)->orderBy('color_name')->get();
+
+
+        }else{
+            $returnArray['status']=false;
+            $status_code=498;
+            $returnArray['errors'] =['msg'=>'invalid key'];
+
+        }
+        return response()->json($returnArray,$status_code);
+
+    }
 
     public function getModels(Request $request,$brand_id=0){
 
         if ($request->header('x-api-key') == $this->generateKey()) {
 
             $models = ProductModel::select('id','Modelname')->where('Brandid','=',$brand_id)->where('status','=',1)->orderBy('Modelname')->get();
-                $status_code=200;
-                $returnArray['status']=true;
-               $returnArray['data'] = $models;
+            $status_code=200;
+            $returnArray['status']=true;
+            $returnArray['data'] = $models;
 
 
         }else{
@@ -1014,9 +1144,9 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
             $returnArray['errors'] =['msg'=>'invalid key'];
 
         }
-         return response()->json($returnArray,$status_code);
+        return response()->json($returnArray,$status_code);
 
-        }
+    }
 
     public function getQuestions(Request $request,$model_id=0){
 
@@ -1062,16 +1192,16 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
             $returnArray['errors'] =['msg'=>'invalid key'];
 
         }
-         return response()->json($returnArray,$status_code);
+        return response()->json($returnArray,$status_code);
 
-        }
+    }
 
 
-        private function checkImei($imei){
+    private function checkImei($imei){
 
-                    ////////checkimei
-            return true;
-        }
+        ////////checkimei
+        return true;
+    }
 
     public function calculateAnswers(Request  $request){
 
@@ -1079,74 +1209,74 @@ echo $price.":".$price_ex.":".$b_id.":".$model['id']."\n";
 
             if(!empty($request['imei_no']) && $this->checkImei($request['imei_no'])){
 
-            $model = ProductModel::select('id','min_price','max_price')->where('status','=',1)->find($request['model_id']);
-            $customer = Customer::with('first_address')->select('id')
-                ->where('status','=',1)->where('customer_id','=',$request['customer_id'])->first();
+                $model = ProductModel::select('id','min_price','max_price')->where('status','=',1)->find($request['model_id']);
+                $customer = Customer::with('first_address')->select('id')
+                    ->where('status','=',1)->where('customer_id','=',$request['customer_id'])->first();
 
-            if(empty($model['id']) || empty($customer['id'])){
+                if(empty($model['id']) || empty($customer['id'])){
 
-                $status_code=404;
-                $returnArray['status']=false;
-                $returnArray['errors'] = ['msg'=>'Model/Müşteri bulunamadı'];
+                    $status_code=404;
+                    $returnArray['status']=false;
+                    $returnArray['errors'] = ['msg'=>'Model/Müşteri bulunamadı'];
 
-            }else{
-                $answer_array = explode(',',trim($request['answers']));
-                $questions=ModelQuestion::with('question.answers')->where('model_id','=',$model['id'])->orderBy('count')->get();
-                //if($answer_array->count())
-
-                $answered_question_count=0;
-                foreach ($questions as $q){
-                    $is_answered = false;
-                    foreach ($q->question()->first()->answers()->get() as $answer){
-                        $is_answered = (in_array($answer['id'],$answer_array)) ? true : false ;
-                        if($is_answered){
-                            $answered_question_count++;
-                   //    echo $q->question()->first()->id." -". $answer['id'].":";
-
-                        break;
-                        }
-                    }
-
-                    }
-
-
-
-               // if($questions->count()==count($answer_array) ){
-                if($questions->count()==$answered_question_count ){
-                    $discount = ModelAnswer::where('model_id','=',$model['id'])
-                        ->whereIn('answer_id',$answer_array)
-                        ->sum('value');
-                    $price_offer = (($model['max_price']-$discount) > $model['min_price']) ? ($model['max_price']-$discount) : $model['min_price'];
-                    $customer_offer= CustomerOffer::where('imei_no','=',$request['imei_no'])->where('customer_id','=',$customer['id'])->first();
-//                    return  $customer_offer;
-                    if(empty($customer_offer['id'])){
-                        $customer_offer= new CustomerOffer();
-                        $customer_offer->customer_id= $customer['id'];
-                        $customer_offer->imei_no=$request['imei_no'];
-                    }
-                    $customer_offer->model_id=$request['model_id'];
-                    $customer_offer->answers = $request['answers'];
-                    $customer_offer->discount=$discount;
-                    $customer_offer->price_offer=$price_offer;
-                    $customer_offer->date=date('Y-m-d');
-                    $customer_offer->save();
-
-
-
-
-
-                    $status_code=200;
-                    $returnArray['status']=true;
-                    $returnArray['data'] =['model'=>$model,'discount'=>$discount,'price_offer'=>$price_offer];
                 }else{
-                    $status_code=411;
-                    $returnArray['status']=true;
-                    $returnArray['errors'] =['msg'=>'Tüm soruları yanıtlayınız'];
-                }
+                    $answer_array = explode(',',trim($request['answers']));
+                    $questions=ModelQuestion::with('question.answers')->where('model_id','=',$model['id'])->orderBy('count')->get();
+                    //if($answer_array->count())
+
+                    $answered_question_count=0;
+                    foreach ($questions as $q){
+                        $is_answered = false;
+                        foreach ($q->question()->first()->answers()->get() as $answer){
+                            $is_answered = (in_array($answer['id'],$answer_array)) ? true : false ;
+                            if($is_answered){
+                                $answered_question_count++;
+                                //    echo $q->question()->first()->id." -". $answer['id'].":";
+
+                                break;
+                            }
+                        }
+
+                    }
 
 
 
-            }//model found
+                    // if($questions->count()==count($answer_array) ){
+                    if($questions->count()==$answered_question_count ){
+                        $discount = ModelAnswer::where('model_id','=',$model['id'])
+                            ->whereIn('answer_id',$answer_array)
+                            ->sum('value');
+                        $price_offer = (($model['max_price']-$discount) > $model['min_price']) ? ($model['max_price']-$discount) : $model['min_price'];
+                        $customer_offer= CustomerOffer::where('imei_no','=',$request['imei_no'])->where('customer_id','=',$customer['id'])->first();
+//                    return  $customer_offer;
+                        if(empty($customer_offer['id'])){
+                            $customer_offer= new CustomerOffer();
+                            $customer_offer->customer_id= $customer['id'];
+                            $customer_offer->imei_no=$request['imei_no'];
+                        }
+                        $customer_offer->model_id=$request['model_id'];
+                        $customer_offer->answers = $request['answers'];
+                        $customer_offer->discount=$discount;
+                        $customer_offer->price_offer=$price_offer;
+                        $customer_offer->date=date('Y-m-d');
+                        $customer_offer->save();
+
+
+
+
+
+                        $status_code=200;
+                        $returnArray['status']=true;
+                        $returnArray['data'] =['model'=>$model,'discount'=>$discount,'price_offer'=>$price_offer];
+                    }else{
+                        $status_code=411;
+                        $returnArray['status']=true;
+                        $returnArray['errors'] =['msg'=>'Tüm soruları yanıtlayınız'];
+                    }
+
+
+
+                }//model found
 
             }else{ //// no imei / invalid imei
 

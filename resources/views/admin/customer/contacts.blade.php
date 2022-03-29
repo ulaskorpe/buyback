@@ -15,72 +15,50 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center">
-                            <a href="{{route("products.create-product")}}"  class="btn btn-primary">Yeni Ürün Ekle</a>
+                            <button type="button" style="display: none"  data-toggle="modal" data-target=".bs-example-modal-lg" id="modal_btn"></button>
                         </div>
                     </div>
                     <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>
                         <tr>
-                            <th>Ürün ID</th>
-                            <th>Resim</th>
-                            <th>Marka-Model</th>
-                            <th>Başlık</th>
-                            <th>Fiyat</th>
-                            <th>Durum</th>
+                            <th>Adı Soyadı</th>
+                            <th>Müşteri</th>
+                            <th>Konu</th>
+                            <th>Tarih</th>
                             <th class="text-center">İşlemler</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($products as $product)
+                        @foreach($contacts as $contact)
                             <tr>
-                                <td>{{$product['micro_id']}}</td>
-                                <td width="10%">
-
-                                    @if(!empty($product->firstImage()->first()->thumb))
-                                        <img src="{{url($product->firstImage()->first()->thumb)}}">
-                                    @endif
-                                </td>
-                                <td width="30%">
-                                    <a href="{{route('products.product-list',[$product['brand_id'],0])}}"><b>{{$product->brand()->first()->BrandName}}</b></a> ->
-
-                                    @if($product['model_id']>0)
-                                    <a href="{{route('products.product-list',[$product['brand_id'],$product['model_id']])}}">{{$product->model()->first()->Modelname}}</a>
-                                        @else
-                                    {{$product['model_id']}}
-                                    @endif
-
+                                <td>
+                                    {{$contact['name']}}    {{$contact['surname']}}<br>
+                                    {{$contact['email']}}<br>
+                                    {{$contact['phone_number']}}
                                 </td>
                                 <td>
-                                    {{$product['title']}}
-
-                                </td>
-
-
-                                <td>{{$product['price']}} TL
-                                    @if($product['price_ex']>0)
-                                        <br>
-                                        ({{$product['price_ex']}}) TL
+                                    @if($contact['customer_id']>0)
+                                        {{$contact->customer()->first()->name}}
+                                        {{$contact->customer()->first()->surname}}
+                                        {{$contact->customer()->first()->email}}
                                     @endif
                                 </td>
                                 <td>
-                                    @if($product['status']==1)
-                                        <span class="badge badge-success">Aktif</span>
-                                    @else
-                                        <span class="badge badge-danger">Pasif</span>
-                                    @endif</td>
-                                <td class="text-center">
-                                    <div class="list-icons">
+                                    {{$contact['subject']}}
+                                </td>
 
-                                        <a href="{{route("products.product-update",$product['id'])}}"
-                                           class="btn btn-primary"><i class="fa fa-pencil"></i> Güncelle</a>
-                                        <!--
-                                        <a href="" class="list-icons-item text-violet-800"><i class="icon-eye"></i></a>
-                                        -->
-                                    </div>
+
+
+                                <td>{{\Carbon\Carbon::parse($contact['created_at'])->format('d.m.Y H:i')}}</td>
+                                <td>
+                                    <button class="btn btn-primary"  onclick="viewContact({{$contact['id']}})">Görüntüle</button>
+                                    <button class="btn btn-danger" onclick="deletecontact({{$contact['id']}})"><i class="fa fa-close"></i></button>
+
                                 </td>
 
                             </tr>
                         @endforeach
+
                         </tbody>
                     </table>
                 </div>
@@ -89,8 +67,7 @@
             <!-- Inline form modal -->
         </div>
     </div>
-
-
+    <!-- /content area -->
 @endsection
 @section('scripts')
 
@@ -112,6 +89,42 @@
         $(document).ready(function () {
             init_DataTables();
         });
+
+
+        function deletecontact(guid) {
+            swal("İleti silinecek, Emin misiniz?", {
+                buttons: ["İptal", "Evet"],
+                dangerMode: true,
+            }).then((value) => {
+                if (value) {
+
+                    $.get("{{url('admin/customers/delete-contact')}}/" + guid, function (data) {
+                        swal("" + data);
+                        setTimeout(function () {
+                            location.reload()
+
+                        }, 2000);
+
+                        //   console.log(user_id+":"+follower_id);
+
+
+                    });
+
+
+                }
+            })
+        }
+        function viewContact(id){
+            $('#modal_btn').click();
+            $.get("{{url('admin/customers/contact-detail')}}/"+id , function (data) {
+                $('#lg-modal-title').html('İleti Detay');
+                $('#lg-modal-body').html(data);
+
+
+
+            });
+        }
+
     </script>
 
 @endsection

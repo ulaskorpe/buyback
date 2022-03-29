@@ -6,21 +6,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProductImage extends Model
+
+class NewsLetter extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table = 'product_images';
+    protected $table = 'newsletters';
 
     protected $fillable = [
-        'product_id','thumb','image','order','first','status'
+        'customer_id','guid','email','status'
+
     ];
 
     protected $hidden = [
         'created_at','updated_at','deleted_at'
     ];
+    public function customer(){
+        return $this->hasOne(Customer::class,'customer_id','customer_id');
+    }
 
-    public function product(){
-        return $this->hasOne(Product::class,'product_id','id');
+    public function guest(){
+        return $this->hasOne(Guest::class,'guid','guid');
     }
 }

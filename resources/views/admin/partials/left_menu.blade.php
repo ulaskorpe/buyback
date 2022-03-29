@@ -71,6 +71,9 @@
                                 @endif
                                 @endif
                                 <li><a href="{{route('customer.orders')}}">Siparişler</a></li>
+                                <li><a href="{{route('customer.guests')}}">Ziyaretçiler</a></li>
+                                <li><a href="{{route('customer.newsletter')}}">Bülten Üyeleri</a></li>
+                                <li><a href="{{route('customer.contacts')}}">İletişim</a></li>
 
                                 @if(!empty($order_id))
                                     <li style="display: none"><a href="{{route('customer.order-update',$order_id)}}"></a></li>

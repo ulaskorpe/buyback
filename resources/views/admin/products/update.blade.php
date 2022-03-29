@@ -75,6 +75,19 @@
                                    aria-controls="contact" aria-selected="false">Stok Hareketleri</a>
                             </li>
                         @endif
+
+
+                        @if($selected==4)
+                            <li class="nav-item">
+                                <a class="nav-link active" id="location-tab" data-toggle="tab" href="#locations" role="tab"
+                                   aria-controls="contact" aria-selected="true">Ürün Konumları</a>
+                            </li>
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link" id="location-tab" data-toggle="tab" href="#locations" role="tab"
+                                   aria-controls="contact" aria-selected="false">Ürün Konumları</a>
+                            </li>
+                        @endif
                 </ul>
                 <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade  @if($selected==0) active show @endif" id="home" role="tabpanel"
@@ -516,6 +529,12 @@
 
 
                         @include('admin.products.stock_movements')
+
+                    </div>
+                    <div class="tab-pane fade @if($selected==4) active show @endif" id="locations" role="tabpanel"
+                         aria-labelledby="stock-tab">
+                        @include('admin.products.product_locations')
+
 
                     </div>
                 </div>
@@ -1020,7 +1039,80 @@ if(formData.get('status')=='out'){
 
                 }
             });
+//////////////////////locations
 
+        function get_location_order(location_id) {
+            //    console.log("{{url('admin/site/product/get-location-order')}}/{{$product['id']}}/"+location_id );
+
+            $.get("{{url('admin/site/product/get-location-order')}}/{{$product['id']}}/"+location_id   , function (data) {
+                if(data=='no'){
+                    swal("Bu ürün ilgili alana konumlandırılmış");
+                }else{
+                    $('#location_order').prop('disabled',false);
+                    $('#location_order').html(data);
+                }
+
+            });
+        }
+
+
+        function deleteLocation(location_id) {
+            swal("Ürün konumdan silinecek, Emin misiniz?", {
+                buttons: ["İptal", "Evet"],
+                dangerMode: true,
+            }).then((value) => {
+                if (value) {
+
+                    $.get("{{url('admin/site/product/delete-product-location')}}/" + location_id, function (data) {
+                        swal(data + "");
+                        setTimeout(function () {
+                            window.open('{{url('admin/products/update/'.$product['id'].'/4')}}', '_self')
+                        }, 1500)
+
+                        //   console.log(user_id+":"+follower_id);
+
+
+                    });
+
+
+                }
+            })
+        }
+
+
+
+        function changeLocationOrder(location_id, new_order){
+            $.get("{{url('admin/site/product/change-product-location-order')}}/"  + location_id+"/"+new_order, function (data) {
+                swal(data + "");
+                setTimeout(function () {
+                    window.open('{{url('admin/products/update/'.$product['id'].'/4')}}', '_self')
+                }, 1500)
+
+            });
+        }
+
+
+
+        $('#add-location').submit(function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            var error = false;
+
+            if ($('#location_id').val() == 0) {
+                $('#location_id_error').html('<span style="color: red">Lütfen konum seçiniz</span>');
+                error = true;
+            } else {
+                $('#location_id_error').html('');
+            }
+
+
+            if (error) {
+                return false;
+            } else {
+                save(formData, '{{route('site.add-product-location-post')}}', '', '', '');
+            }
+        });
 
     </script>
 @endsection

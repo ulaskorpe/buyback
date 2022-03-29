@@ -22,5 +22,6 @@ class DatabaseSeeder extends Seeder
     //$this->call(BankAccountSeeder::class);
 //    $this->call(FaqSeeder::class);
 //    $this->call(NewsSeeder::class);
+        $this->call(ReturnProblemSeeder::class);
     }
 }

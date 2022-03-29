@@ -32,7 +32,11 @@ Route::get('/get-towns/{city_id}', [ \App\Http\Controllers\ApiController::class,
 Route::get('/get-districts/{town_id}', [ \App\Http\Controllers\ApiController::class, 'getDistricts'])->name('get-districts-api');
 Route::get('/get-neighborhoods/{district_id}', [ \App\Http\Controllers\ApiController::class, 'getNeighborhoods'])->name('get-neighborhoods-api');
 Route::get('/service-addresses', [ \App\Http\Controllers\DataController::class, 'serviceAddresses'])->name('service-addresses-api');
+Route::get('/return-problems', [ \App\Http\Controllers\DataController::class, 'returnProblems'])->name('return-problems-api');
 Route::get('/cargo-companies', [ \App\Http\Controllers\DataController::class, 'cargoCompanies'])->name('cargo-companies-api');
+Route::get('/bank-accounts', [ \App\Http\Controllers\DataController::class, 'bankAccounts'])->name('bank-accounts-api');
+Route::get('/contact-info', [ \App\Http\Controllers\DataController::class, 'contactInfo'])->name('contact-info-api');
+Route::get('/get-banks-purchases', [ \App\Http\Controllers\ApiController::class, 'banksPurchases'])->name('banks-purchases-api');
 
 
 
@@ -56,6 +60,7 @@ Route::group(['prefix' => 'site'], function () {
     Route::get('/shoppage-menu', [ \App\Http\Controllers\ApiController::class, 'shoppageMenu'])->name('shoppage-menu-api');
     Route::get('/shoppage-header', [ \App\Http\Controllers\ApiController::class, 'shoppageHeader'])->name('shoppage-header-api');
     Route::get('/social-icons', [ \App\Http\Controllers\ApiController::class, 'socialIcons'])->name('social-icons-api');
+    Route::get('/contact-info', [ \App\Http\Controllers\ApiController::class, 'contactInfo'])->name('contact-info-api');
     Route::get('/news/{page?}/{page_count?}/{keyword?}', [ \App\Http\Controllers\ApiController::class, 'getNews'])->name('get-news-api');
     Route::get('/news-detail/{id}', [ \App\Http\Controllers\ApiController::class, 'detailNews'])->name('detail-news-api');
     Route::get('/faq-list', [ \App\Http\Controllers\ApiController::class, 'faqList'])->name('faq-list-api');
@@ -71,6 +76,7 @@ Route::group(['prefix' => 'products'], function () {
     Route::post('/weekly-deals', [ \App\Http\Controllers\ApiProductController::class, 'weeklyDeals'])->name('weekly-deals-api');
     Route::post('/new-products', [ \App\Http\Controllers\ApiProductController::class, 'newProducts'])->name('new-products-api');
     Route::post('/highest-rated', [ \App\Http\Controllers\ApiProductController::class, 'highestRated'])->name('highest-rated-api');
+    Route::post('/super-offer', [ \App\Http\Controllers\ApiProductController::class, 'superOffer'])->name('super-offer-api');
     Route::post('/color-filter', [ \App\Http\Controllers\ApiProductController::class, 'colorFilter'])->name('color-filter-api');
     Route::post('/memory-filter', [ \App\Http\Controllers\ApiProductController::class, 'memoryFilter'])->name('memory-filter-api');
     Route::post('/product-seeder', [ \App\Http\Controllers\ApiProductController::class, 'productSeeder'])->name('product-seeder-api');
@@ -80,6 +86,8 @@ Route::group(['prefix' => 'products'], function () {
     Route::post('/imei-query',[\App\Http\Controllers\ApiProductController::class,'imeiQuery'])->name('api-imei-query');
     Route::get('/product-detail/{product_id}', [ \App\Http\Controllers\ApiProductController::class, 'productDetail'])->name('product-detail-api');
     Route::get('/get-brands', [ \App\Http\Controllers\ApiProductController::class, 'getBrands'])->name('get-brands-api');
+    Route::get('/get-colors', [ \App\Http\Controllers\ApiProductController::class, 'getColors'])->name('get-colors-api');
+    Route::get('/get-memories', [ \App\Http\Controllers\ApiProductController::class, 'getMemories'])->name('get-memories-api');
     Route::get('/get-models/{brand_id}', [ \App\Http\Controllers\ApiProductController::class, 'getModels'])->name('get-models-api');
     Route::get('/get-questions/{model_id}', [ \App\Http\Controllers\ApiProductController::class, 'getQuestions'])->name('get-questions-api');
     Route::post('/calculate-answers', [ \App\Http\Controllers\ApiProductController::class, 'calculateAnswers'])->name('calculate-answers-api');
@@ -94,6 +102,8 @@ Route::group(['prefix' => 'customers'], function () {
     Route::post('/forget-password', [ \App\Http\Controllers\ApiCustomerController::class, 'forgetPassword'])->name('forget-pw-api');
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'updateProfile'])->name('update-profile-api');
     Route::post('/update-password', [ \App\Http\Controllers\ApiCustomerController::class, 'updatePassword'])->name('update-password-api');
+    Route::post('/newsletter', [ \App\Http\Controllers\ApiCustomerController::class, 'newsletterPost'])->name('newsletter-post-api');
+    Route::post('/contact-post', [ \App\Http\Controllers\ApiCustomerController::class, 'contactPost'])->name('contact-post-api');
 
 
     Route::group(['prefix' => 'buyback'], function () {
@@ -105,6 +115,7 @@ Route::group(['prefix' => 'cart'], function () {
     Route::post('/show', [ \App\Http\Controllers\ApiCustomerController::class, 'showCart'])->name('show-cart-api');
     Route::post('/add', [ \App\Http\Controllers\ApiCustomerController::class, 'addToCart'])->name('add-to-cart-api');
     Route::post('/remove', [ \App\Http\Controllers\ApiCustomerController::class, 'removeFromCart'])->name('remove-cart-api');
+    Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'UpdateCart'])->name('update-cart-api');
     Route::post('/place-order', [ \App\Http\Controllers\ApiCustomerController::class, 'placeOrder'])->name('place-order-api');
     Route::post('/order-summary', [ \App\Http\Controllers\ApiCustomerController::class, 'orderSummary'])->name('order-summary-api');
     Route::post('/order-history', [ \App\Http\Controllers\ApiCustomerController::class, 'orderHistory'])->name('order-history-api');
@@ -119,6 +130,7 @@ Route::group(['prefix' => 'favorites'], function () {
 });
 
 Route::group(['prefix' => 'address'], function () {
+    Route::post('/get', [ \App\Http\Controllers\ApiCustomerController::class, 'getAddress'])->name('get-address-api');
     Route::post('/show', [ \App\Http\Controllers\ApiCustomerController::class, 'showAddresses'])->name('show-addresses-api');
     Route::post('/add', [ \App\Http\Controllers\ApiCustomerController::class, 'addAddress'])->name('add-address-api');
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'updateAddress'])->name('update-address-api');

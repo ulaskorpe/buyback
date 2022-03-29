@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Answer;
+use App\Models\Bank;
+use App\Models\BankPurchase;
 use App\Models\BuyBack;
 use App\Models\BuyBackAnswer;
 use App\Models\BuyBackUser;
@@ -13,9 +15,13 @@ use App\Models\Color;
 use App\Models\ColorModel;
 use App\Models\Country;
 use App\Models\Log;
+use App\Models\Memory;
 use App\Models\ModelAnswer;
+use App\Models\Product;
 use App\Models\ProductBrand;
+use App\Models\ProductMemory;
 use App\Models\ProductModel;
+use App\Models\ProductImage;
 use App\Models\Town;
 use App\Models\User;
 use App\Models\UserGroup;
@@ -51,6 +57,571 @@ class HomeController extends Controller
 
     }
 
+
+    private  function checkModelsTable(){
+        $models = ProductModel::all();
+        foreach ($models as $model){
+            if($model['micro_id']>0){
+                $ch = ProductModel::where('micro_id','=',$model['micro_id'])->where('id','<>',$model['id'])->first();
+                if(!empty($ch['id'])){
+                    echo $model['id']."--". $model['Modelname'].":".$model['micro_id']."<br>";
+                    echo $ch['id']."--". $ch['Modelname'].":".$ch['micro_id']."<br>";
+
+                        Product::where('model_id','=',$ch['id'])->update(['model_id'=>$model['id']]);
+                     $ch->delete();
+                    echo "<hr>";
+                }
+            }
+
+
+            $ch = ProductModel::where('Modelname','=',$model['Modelname'])->where('id','<>',$model['id'])->first();
+            if(!empty($ch['id'])){
+                echo $model['id']."--". $model['Modelname'].":".$model['micro_id']."<br>";
+                echo $ch['id']."--". $ch['Modelname'].":".$ch['micro_id']."<br>";
+
+                    Product::where('model_id','=',$ch['id'])->update(['model_id'=>$model['id']]);
+                 $ch->delete();
+                echo "<hr>";
+            }
+
+        }
+
+    }
+
+    private function getRandomArray($n=5){
+        $rands = array();
+        for($i=0; $i<$n;$i++) {
+            $ok = true;
+            while($ok) {
+                $x=rand(1,19);//mt_rand(0,$n-1);
+
+                $ok = (in_array($x,$rands)) ? true : false;//!in_array($x, $rands) && $x != $i;
+            }
+            $rands[$i]=$x;
+        }
+
+        return $rands;
+    }
+
+    public function getProducts(){
+
+        $products = Product::where('fake','=',0)->get();
+
+        foreach ($products as $product){
+//           foreach ($this->getRandomArray(rand(2,7)) as $color_id ){
+//               $cm = new ColorModel();
+//               $cm->model_id=$product['model_id'];
+//               $cm->color_id= $color_id;
+//            ///   $cm->save();
+//               echo $color_id."<br>";
+//           };
+
+//            $model = ProductModel::where('id','=',$product['model_id'])->first();
+//            if(empty($model['id'])){
+//
+//
+//            echo "PRODUCTID". $product['model_id']."<br>";
+//            echo "<hr>";
+//            }
+
+            $mem = ProductMemory::where('product_id','=',$product['id'])->first();
+            if(empty($mem['id'])){
+                $mem = new ProductMemory();
+                $mem->product_id = $product['id'];
+                $mem->memory_id = rand(5,7);
+                $mem->save();
+                            echo "PRODUCTID". $product['id']."<br>";
+            echo "<hr>";
+            }
+
+//            $img = ProductImage::where('product_id','=',$product['id'])->first();
+//            if(empty($img['id'])){
+//                $r = rand(1,10);
+//                $img = new ProductImage();
+//                $img->product_id = $product['id'];
+//                $img->thumb = 'images/products/THL'.$r.'.jpg';
+//                $img->image = 'images/products/L'.$r.'.jpg';
+//                $img->order=1;
+//                $img->first=1;
+//                $img->status=1;
+//                $img->save();
+//
+//            echo "PRODUCTID". $product['id']."<br>";
+//            echo "<hr>";
+//            }
+        }
+die();
+
+
+
+  //      $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-markalar");
+      //$url = curl_init("https://garantili.com.tr/eticaret/api.php");
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'ilandakiler'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+$uid="";
+        foreach ($arr_1 as $item){
+
+           $brand = ProductBrand::where('BrandName','=',$item['marka_id'])->first();
+                   if(empty( $brand['id'])){
+                       echo "MARKA" .$item['marka']."YOK";
+                   }else {
+
+                       //       echo $item['marka'].":".$brand['BrandName'].":".$item['marka_id']."<br>";
+
+
+                       $model = ProductModel::where('micro_id', '=', $item['model_id'])->first();
+                       if (empty($model['id'])) {
+                           $model = ProductModel::where('Modelname', '=', $item['model'])->first();
+                           if (empty($model['id'])) {
+                               echo "MODEL" . $item['model'] . "YOK";
+
+
+                               $model = new ProductModel();
+                               $model->Modelname = $item['model'];
+                               $model->Brandid = $brand['id'];
+                               $model->Catid = 2;
+                               $model->micro_id = $item['model_id'];
+                               //   $model->micro_id = $item['model_id'];
+                            ///   $model->save();
+                           } else {
+                           //    echo "MODEL" . $item['model'] . "VAR ::::" . $model['micro_id'] . ":" . $item['model_id'] . "ZZZ";
+                               $model->micro_id = $item['model_id'];
+                               //   $model->micro_id = $item['model_id'];
+                            //   $model->save();
+
+                           }
+
+
+                       } elseif ($model['Modelname'] != $item['model']) {
+                           echo $model['Modelname'] . "!=" . $item['model'];
+                           $model->Modelname = $item['model'];
+                          // $model->save();
+                       }else{
+
+                           $product = Product::where('micro_id','=',$item['urun_id'])->first();
+                           if(empty($product['id'])){
+                               $uid.=$item['urun_id'].",";
+                               echo $item['model']." YOK!".$item['marka']." ".$item['model']."UID".$item['urun_id'];
+                       $product= new Product();
+                       $product->title = $item['marka']." ".$item['model'];
+                       $product->micro_id =$item['urun_id'];
+                       $product->brand_id = $brand['id'];
+                       $product->model_id = $model['id'];
+
+                       $product->category_id = 2;
+                       $product->description ="";
+                       $product->price = 0;
+                       $product->price_ex =0;
+
+                       $product->status =1;
+                    $product->save();
+
+                     $mem_array = explode("/", str_replace("-","",trim($item['hafiza'])));
+             //        var_dump($mem_array);
+                       foreach ($mem_array as $mem) {
+                           if (!empty($mem)) {
+                               $m = Memory::where('memory_value', '=', (int)$mem)->first();
+                               //       echo $mem.":::".$m['memory_value']."/".$m['id']."<br>";
+
+                               $pm = new ProductMemory();
+                               $pm->memory_id = $m['id'];
+                               $pm->product_id = $product['id'];
+                              $pm->save();
+                           }
+
+                       }
+                               echo "<hr>";
+                           }else{
+                           //    echo $product['title']." VAR!";
+                           }
+
+                       }////model
+
+                   }///brand
+
+
+        }
+        //return $arr_1;
+        //fclose($fp);
+        echo $uid;
+    }
+
+    public function getBrands(){
+
+
+        $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-markalar");
+      //$url = curl_init("https://garantili.com.tr/eticaret/api.php");
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-markalar'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+
+
+
+        foreach ($arr_1 as $item){
+            $pb = ProductBrand::where('BrandName','=',$item['marka'])->first();
+            if(!empty($pb['id'])){
+                echo $item['marka']."<br>";
+                echo $item['marka_id']."<br>";
+//                $pb->micro_id = $item['marka_id'];
+                //      $pb->save();
+
+            }else{
+//                $brand = new ProductBrand();
+//                $brand->micro_id= $item['marka_id'];
+//                $brand->BrandName = $item['marka'];
+                //   $brand->save();
+                echo $item['marka']." Eklendi<br>";
+                echo $item['marka_id']." Eklendi<br>";
+                echo "<hr>";
+            }
+       //   var_dump($item);
+          echo "<hr>";
+        }
+        //return $arr_1;
+        //fclose($fp);
+    }
+
+    public function getModels(){
+
+//        $models= ProductModel::all();
+//        foreach ($models as $model){
+//            $ch = ProductModel::where('Modelname','=',$model['Modelname'])->where('id','<>',$model['id'])->first();
+//            if(!empty($ch['id'])){
+//                echo $ch['id'].":".$model['id'].".::.".$model['Modelname']."<hR>";
+//            }
+//        }
+//
+//        die();
+
+
+    //    $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-modeller");
+
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-modeller'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+        //echo count($arr_1);
+        foreach ($arr_1 as $item){
+            $model = ProductModel::where('Modelname','=',trim($item['model']))->first();
+            if(!empty($model['id'])){
+
+                if($model['micro_id']!=$item['model_id']){
+//                    $model->micro_id = $item['model_id'];
+//                    $model->save();
+                 echo $model['Modelname'].":".$item['model'].":MID : ".$model['micro_id'].":".$item['model_id']."<br>";
+                }
+          //      echo $model['Modelname'].":".$item['model'].":MID : ".$model['micro_id'].":".$item['model_id']."<br>";
+                //echo $model['micro_id']."<br>";
+            }else{
+                $brand = ProductBrand::where('micro_id','=',$item['marka_id'])->first();
+                $pm = new ProductModel();
+                $pm->Modelname = $item['model'];
+                $pm->micro_id=$item['model_id'];
+                $pm->Brandid = $brand['id'];
+                $pm->Catid=2;
+                $pm->status = 1;
+                //$pm->save();
+
+
+                echo $item['model']." YOK!". ":".$brand['BrandName']."-".$brand['id'].":".$brand['micro_id'].":".$item['marka_id']."<br>";
+            }
+
+         //   var_dump($item)."<hr>";
+        }
+        die();
+        $c=0;
+        foreach ($arr_1 as $item){
+
+
+            $model = ProductModel::where('Modelname','=',$item['model'])->first();
+            if(!empty($model['id'])){
+                echo $model['Modelname'].":".$item['model']."<hr>";
+                $model->micro_id=$item['model_id'];
+             //   $model->save();
+
+            }else{
+
+                $brand = ProductBrand::where('micro_id','=',$item['marka_id'])->first();
+                if(empty($brand['id'])){
+                    echo $item['model'].":".$item['model_id'].":".$item['marka']."<hr>";
+                }else{
+
+
+                    $model = new ProductModel();
+                    $model->Brandid= $brand['id'];
+                    $model->Catid=2;
+                    $model->micro_id = $item['model_id'];
+                    $model->Modelname = $item['model'];
+                    $model->memory_id = 2;
+
+                    $model->save();
+                }
+
+
+
+             /*   $brand = ProductBrand::where('micro_id','=',$item['marka_id'])->first();
+                if(!empty($brand['id'])){
+              //     echo $item['marka'].":".$brand['BrandName']."<hr>";
+
+
+
+
+
+             //   var_dump($item);
+               // echo "<hr>";
+
+                }else{
+
+               //     echo  $item['marka'].":".$item['marka_id']." marka !!<hr>";
+
+                    $brand= ProductBrand::where('BrandName','=',$item['marka'])->first();
+                    if(empty($brand['id'])){
+                        $brand = new ProductBrand();
+                        $brand->BrandName = $item['marka'];
+                        $brand->micro_id= $item['marka_id'];
+                  //      $brand->save();
+                     //   echo  $item['marka'].":".$item['marka_id']."YOK!!<hr>";
+                       // $c++;
+                    }
+
+                }*/
+            }
+        }
+        echo $c;
+        //return $arr_1;
+        //fclose($fp);
+    }
+
+    public function getMemories(){
+
+
+    //    $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-modeller");
+
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-hafizalar'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+        $c=0;
+        foreach ($arr_1 as $item){
+
+if($item['hafiza']!='Tanımsız'){
+            $memory = new Memory();
+            $memory->id =(int)$item['hafiza_id'];
+            $memory->memory_value =(int)$item['hafiza'];
+            $memory->status = 1;
+       //     $memory->save();
+}
+
+
+                var_dump($item);
+                echo "<hr>";
+                $c++;
+
+        }
+        echo $c;
+        //return $arr_1;
+        //fclose($fp);
+    }
+    
+    public function getColors(){
+
+
+    //    $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-modeller");
+
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-renkler'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+        $c=0;
+        foreach ($arr_1 as $item){
+
+            $color = new Color();
+            $color->color_name = $item['renk'];
+            $color->filter_name = GeneralHelper::fixName($item['renk']);
+            $color->status =1;
+            //$color->save();
+
+
+
+                var_dump($item);
+                echo "<hr>";
+                $c++;
+
+        }
+        echo $c;
+        //return $arr_1;
+        //fclose($fp);
+    }
+
+    public function banksList(){
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-bankalar'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+        curl_close($ch);
+
+        $arr_1 = json_decode($output, TRUE);
+        $c=0;
+        foreach ($arr_1 as $item){
+            $b= new Bank();
+                $b->bank_name=$item['banka'];
+                $b->bank_id=$item['id'];
+             ///   $b->save();
+
+
+            echo $item['banka']."<br>";
+            echo $item['id']."<br>";
+            echo "<hr>";
+        }
+        return null;
+    }
+
+    public function bankPurchases(){
+        $payload = [
+            'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-taksitlendirme'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+        curl_close($ch);
+//'bank_id','purchase_id','commission','purchase','payment_plan_id','description_id'
+        $arr_1 = json_decode($output, TRUE);
+        $c=0;
+        foreach ($arr_1 as $item){
+            $b= new BankPurchase();
+            $b->bank_id=$item['banka'];
+            $b->purchase_id = $item['id'];
+            $b->purchase = $item['taksit'];
+            $b->commission = $item['komisyon'];
+            $b->payment_plan_id = $item['odeme_plani'];
+            $b->description_id = $item['taksit_yazi'];
+                // $b->save();
+
+
+            echo $item['banka']."<br>";
+            echo $item['id']."<br>";
+            echo $item['komisyon']."<br>";
+            echo $item['taksit_yazi']."<br>";
+            echo "<hr>";
+        }
+        return null;
+    }
+
+    public function ccPayment(){
+
+
+    //    $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-modeller");
+
+        $payload = [
+        'uyeno'		=> 2033,
+            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
+            'call'    => 'eticaret-renkler'
+        ];
+
+        $ch = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=taksitlendirme");
+
+        //curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+      //  curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        $output = curl_exec($ch);
+
+
+        curl_close($ch);
+
+        return $output;
+        //return $arr_1;
+        //fclose($fp);
+    }
 
     public function site(){
 

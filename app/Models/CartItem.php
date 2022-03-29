@@ -13,7 +13,7 @@ class CartItem extends Model
     protected $table = 'cart_items';
 
     protected $fillable = [
-       'item_code', 'customer_id','product_id','memory_id','color_id','order_id','status','quantity','price'
+        'item_code', 'customer_id','product_id','memory_id','color_id','order_id','status','quantity','price'
     ];
 
     protected $hidden = [

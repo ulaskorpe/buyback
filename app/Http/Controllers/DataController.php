@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Answer;
+use App\Models\BankAccount;
 use App\Models\BuyBack;
 use App\Models\CargoCompany;
 use App\Models\CargoCompanyBranch;
@@ -11,6 +12,7 @@ use App\Models\City;
 use App\Models\Color;
 use App\Models\ColorModel;
 use App\Models\District;
+use App\Models\ReturnProblem;
 use App\Models\ImeiQuery;
 use App\Models\Memory;
 use App\Models\ModelAnswer;
@@ -1249,6 +1251,128 @@ if($responseCode==1){
             $status_code = 200;
             $resultArray['status'] = true;
             $resultArray['data']= ['cargo_companies'=>CargoCompany::where('status','=',1)->get()];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+    public function bankAccounts(Request $request )
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $status_code = 200;
+            $resultArray['status'] = true;
+            $resultArray['data']= ['bank_accounts'=>BankAccount::where('status','=',1)->get()];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+    public function contactInfo(Request $request )
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $status_code = 200;
+            $resultArray['status'] = true;
+            $resultArray['data']= ['title'=>'İletişim'
+                ,'description'=>'Nunc ac porta est. Aenean eget elit vitae arcu commodo consectetur. Etiam id aliquam neque, ullamcorper dapibus diam. Ut congue, arcu non aliquam interdum, risus libero ultricies felis, quis blandit mauris sem in felis. '
+                ,'mapUrl'=>'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3009.7331136664284!2d28.812489415824608!3d41.03109452596853!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14caa51308b0340f%3A0x942e31ece339b666!2sGarantili%20Teknoloji%20Cep%20Telefonu%20Yenileme%20Merkezi!5e0!3m2!1str!2str!4v1645373990418!5m2!1str!2str'
+                ,'corp'=>[
+                    'address'=>'Nur Yıldız Plaza, 15 Temmuz Mah. Gülbahar Cad. B Blok. No:7 Kapı No 21 <br /> Bağcılar / İSTANBUL'
+                    ,'contact'=>[
+                        'email'=>'info@garantili.com.tr',
+                        'tel'=>'0 (212) 485 28 29',
+                    ]
+                ]
+                ,'workHours'=>[
+                    ['day'=>'Pazartesi','str'=>'09.00 - 18.00'],
+                    ['day'=>'Salı','str'=>'09.00 - 18.00'],
+                    ['day'=>'Çarşamba','str'=>'09.00 - 18.00'],
+                    ['day'=>'Perşembe','str'=>'09.00 - 18.00'],
+                    ['day'=>'Cuma','str'=>'09.00 - 18.00'],
+                    ['day'=>'Cumartesi','str'=>'09.00 - 18.00'],
+                    ['day'=>'Pazar','str'=>'Kapalı'],
+
+                ]
+                ];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+    public function serviceAddresses(Request $request )
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $array = array();
+            $addresses = ServiceAddress::where('active','=',1)->get();
+            $i=0;
+            foreach ($addresses as $address){
+                $array[$i]=$this->makeAddress($address);
+                $i++;
+            }
+
+            $status_code = 200;
+            $resultArray['status'] = true;
+
+            $resultArray['data']= ['service_addresses'=>$array];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+
+    public function returnProblems(Request $request ){
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $problems = ReturnProblem::select('id','description')->where('status','=',1)->get();
+
+
+            $status_code = 200;
+            $resultArray['status'] = true;
+
+            $resultArray['data']= ['problems'=>$problems];
 
 
         } else {

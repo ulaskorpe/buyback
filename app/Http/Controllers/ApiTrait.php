@@ -63,6 +63,47 @@ private $menu_locations = [ 1=>'Üst Menu',2=>'Başlık Menü',3=>'Sol Menü',4=
         return $this->isDigits($telephone, $minDigits, $maxDigits);
     }
 
+    private function makeAddress($address){
+        $txt = "";
+        $zip= "";
+        $array=array();
+        $array['id']=$address['id'];
+        $array['address_name']=$address['title'];
+        $txt.=$address['title'].",";
+
+        $array['contact_person']=$address['name_surname'];
+        $txt.=$address['name_surname'].",";
+        $array['address']=$address['address'];
+        $txt.=$address['address'].",";
+
+        if($address['neighborhood_id']>0){
+            $array['neighborhood']=$address->neighborhood()->first()->name;
+            $array['neighborhood_id']=$address['neighborhood_id'];
+            $array['postal_code']=(int)$address->neighborhood()->first()->zipcode;
+            $zip=$address->neighborhood()->first()->zipcode;
+            $txt.=$address->neighborhood()->first()->name.",";
+        }
+        if($address['district_id']>0){
+            $array['district']=$address->district()->first()->name;
+            $array['district_id']=$address['district_id'];
+            $txt.=$address->district()->first()->name.",";
+        }
+        if($address['town_id']>0){
+            $array['town']=$address->town()->first()->name;
+            $array['town_id']=$address['town_id'];
+            $txt.=$address->town()->first()->name.",";
+        }
+        $array['city']=$address->city()->first()->name;
+        $array['city_id']=$address['city_id'];
+        $txt.=$address->city()->first()->name." ".$zip;
+
+        $array['phone_1']=(!empty($address['phone_number']))?$address['phone_number']:null;
+        $array['phone_2']=(!empty($address['phone_number_2']))?$address['phone_number_2']:null;
+        $array['combined_address']=$txt;
+        $array['first']=$address['first'];
+
+        return $array;
+    }
 
     private function validate_phone_number($phone,$country_code=90)
     {

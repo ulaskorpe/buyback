@@ -12,7 +12,7 @@ class ProductModel extends Model
     protected $table = 'product_models';
 
     protected $fillable = [
-        'Brandid','Catid','Modelname','memory_id','Imagelarge','Imagethumb','Seotitle','Seodesc','Status','min_price','max_price'
+        'Brandid','Catid','micro_id','Modelname','memory_id','Imagelarge','Imagethumb','Seotitle','Seodesc','Status','min_price','max_price'
     ];
 
     protected $hidden = [

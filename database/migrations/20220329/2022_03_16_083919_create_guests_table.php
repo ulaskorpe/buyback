@@ -13,14 +13,14 @@ class CreateGuestsTable extends Migration
      */
     public function up()
     {
-        Schema::create('guests', function (Blueprint $table) {
-            $table->id();
-            $table->string('ip')->nullable()->default(null);
-            $table->string('guid')->nullable()->default(null);
-            $table->date('expires_at');
-            $table->softDeletes();
-            $table->timestamps();
-        });
+//        Schema::create('guests', function (Blueprint $table) {
+//            $table->id();
+//            $table->string('ip')->nullable()->default(null);
+//            $table->string('guid')->nullable()->default(null);
+//            $table->date('expires_at');
+//            $table->softDeletes();
+//            $table->timestamps();
+//        });
     }
 
     /**
@@ -30,6 +30,6 @@ class CreateGuestsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('guests');
+      //  Schema::dropIfExists('guests');
     }
 }
