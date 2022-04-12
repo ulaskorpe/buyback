@@ -15,7 +15,7 @@ class UpdateOrdersTable extends Migration
     {
 //        Schema::table('orders', function (Blueprint $table) {
 //
-//            $table->integer('billing_address_id')->default(0)->after('customer_address_id');
+//            $table->integer('invoice_address_id')->default(0)->after('customer_address_id');
 //
 //        });
     }
@@ -29,7 +29,7 @@ class UpdateOrdersTable extends Migration
     {
 //        Schema::table('orders', function (Blueprint $table) {
 //
-//            $table->dropColumn('billing_address_id');
+//            $table->dropColumn('invoice_address_id');
 //        });
     }
 }

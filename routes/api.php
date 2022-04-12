@@ -124,8 +124,8 @@ Route::group(['prefix' => 'cart'], function () {
     Route::post('/place-order', [ \App\Http\Controllers\ApiCustomerController::class, 'placeOrder'])->name('place-order-api');
     Route::post('/get-order-code', [ \App\Http\Controllers\ApiCustomerController::class, 'getOrderCode'])->name('get-order-code');
 
-    Route::post('/add-order-address', [ \App\Http\Controllers\ApiCustomerController::class, 'addOrderAddress'])->name('add-order-addressi');
-    Route::post('/payment-result', [ \App\Http\Controllers\ApiCustomerController::class, 'paymentResult'])->name('payment-result-api');
+    Route::post('/add-order-address', [ \App\Http\Controllers\ApiCustomerController::class, 'addOrderAddress'])->name('add-order-address');
+    Route::post('/payment-confirm', [ \App\Http\Controllers\ApiCustomerController::class, 'paymentConfirm'])->name('payment-confirm-api');
     Route::post('/cancel-order', [ \App\Http\Controllers\ApiCustomerController::class, 'cancelOrder'])->name('cancel-order-api');
     Route::post('/order-summary', [ \App\Http\Controllers\ApiCustomerController::class, 'orderSummary'])->name('order-summary-api');
     Route::post('/order-history', [ \App\Http\Controllers\ApiCustomerController::class, 'orderHistory'])->name('order-history-api');

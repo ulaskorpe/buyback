@@ -41,10 +41,10 @@ class OrderObserver
 
     public function updated(Order $order){
 
-        $tmp = new Tmp();
-        $tmp->title  = $order['id'];
-        $tmp->data  = $order['cargo_code'].": ".$order['status'].":".$order->customer()->first()->email;
-        $tmp->save();
+//        $tmp = new Tmp();
+//        $tmp->title  = $order['id'];
+//        $tmp->data  = $order['cargo_code'].": ".$order['status'].":".$order->customer()->first()->email;
+//        $tmp->save();
 
         if($order['status']==CartItemStatus::canceled){
 

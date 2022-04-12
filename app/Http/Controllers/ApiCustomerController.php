@@ -24,6 +24,7 @@ use App\Models\GuestCartItem;
 use App\Models\Neighborhood;
 use App\Models\NewsLetter;
 use App\Models\Order;
+use App\Models\OrderAddress;
 use App\Models\Product;
 use App\Models\ProductMemory;
 use App\Models\Tmp;
@@ -1909,7 +1910,7 @@ class ApiCustomerController extends Controller
         $item_array=array();
         $item_array['item_code']=$cart_item['item_code'];
         $item_array['price']=$cart_item['price'];
-        $item_array['quantity']=$cart_item['quantity'];
+     //   $item_array['quantity']=$cart_item['quantity'];
         $item_array['created_at']=$cart_item['created_at'];
         $item_array['product']=$cart_item->product()->first()->title;
         $item_array['description']=$cart_item->product()->first()->description;
@@ -1918,12 +1919,12 @@ class ApiCustomerController extends Controller
         $item_array['category']=$cart_item->product()->first()->category()->first()->category_name;
         $item_array['imageUrl']=url($cart_item->product()->first()->firstImage()->first()->image);
         $item_array['thumb']=url($cart_item->product()->first()->firstImage()->first()->thumb);
-        if($cart_item['color_id']>0){
-            $item_array['color']=$cart_item->color()->first()->color_name;
-        }
-        if($cart_item['memory_id']>0){
-            $item_array['memory']=$cart_item->memory()->first()->memory_value." GB";
-        }
+//        if($cart_item['color_id']>0){
+//            $item_array['color']=$cart_item->color()->first()->color_name;
+//        }
+//        if($cart_item['memory_id']>0){
+//            $item_array['memory']=$cart_item->memory()->first()->memory_value." GB";
+//        }
         return $item_array;
     }
 
@@ -2088,7 +2089,7 @@ class ApiCustomerController extends Controller
                         $order->customer_id= $customer_id;
                         $order->guid= $guid;
                         $order->customer_address_id = 0;
-                        $order->billing_address_id = 0;
+                        $order->invoice_address_id = 0;
                         $order->order_method =0;
                         $order->status = CartItemStatus::init;
                         $order->amount =0;
@@ -2133,7 +2134,26 @@ class ApiCustomerController extends Controller
                         $ch= Customer::where('status','=',CustomerStatus::active)->where('customer_id','=',$request['customer_id'])->first();
                         $customer_id=(!empty($ch['id']))? $ch['id']:0;
                         $guid=0;
+
+                    $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
+
+                    if($address_id == 0){
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'address not found'];
+                        return response()->json($returnArray,$status_code);
+                    }else{
+                        $invoice_address_id = $this->addressCheck($ch['id'],(!empty($request['invoice_address_id'])?$request['invoice_address_id']:0));
+                        $invoice_address_id = ($invoice_address_id==0)?$address_id:$invoice_address_id;
+
+                    }
+                    $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$ch['name']." ".$ch['surname'];
+                    $ch->ip_address=$request->ip();
+                    $ch->save();
+
                 }else{
+                    $address_id=0;
+                    $invoice_address_id=0;
                     $guest = Guest::where('guid','=',$request['guid'])->first();
                     if(empty($guest['id'])){
                         $guest = new Guest();
@@ -2144,44 +2164,35 @@ class ApiCustomerController extends Controller
                     }
                     $customer_id=0;
                     $guid=$guest['id'];
-
+                    $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$request['guid'];
                 }
 
+                $order = Order::where('customer_id','=',$customer_id)->where('guid','=',$guid)
+                    ->where('order_code','=',$request['order_code'])->first();
 
-                if($customer_id + $guid ==0){
+
+
+                if($customer_id + $guid ==0 || empty($order['id'])){
                     $returnArray['status']=false;
                     $status_code=404;
                     $returnArray['errors'] =['msg'=>'missing data'];
                     return response()->json($returnArray,$status_code);
                 }
 
-                    if(!empty($ch['id']) && !empty($request['cargo_company_id'])  ){
 
-                        $order_status=CartItemStatus::init; //// havale ?
 
-                        $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
-
-                        if($address_id == 0){
-                            $returnArray['status']=false;
-                            $status_code=406;
-                            $returnArray['errors'] =['msg'=>'address not found'];
-                            return response()->json($returnArray,$status_code);
-                        }else{
-                            $billing_address_id = $this->addressCheck($ch['id'],(!empty($request['billing_address_id'])?$request['billing_address_id']:0));
-                            $billing_address_id = ($billing_address_id==0)?$address_id:$billing_address_id;
-
-                        }
-
-                        if(!empty($request['item_array'])){
-                            $item_array= explode(',',$request['item_array']);
+                if($customer_id>0){
                             $items = CartItem::with('product.firstImage','memory','color')
-                                ->where('status','=',0)
-                                ->where('customer_id','=',$ch['id'])->whereIn('item_code',$item_array)->get();
-                        }else{
-                            $items = CartItem::with('product.firstImage','memory','color')
-                                ->where('status','=',0)
-                                ->where('customer_id','=',$ch['id'])->get();
-                        }
+                                ->where('status','=',CartItemStatus::init)
+                                ->where('customer_id','=',$customer_id)->get();
+
+                }else{
+                    $items = GuestCartItem::with('product.firstImage','memory','color')
+                        ->where('status','=',CartItemStatus::init)
+                        ->where('guid','=',$guid)->get();
+                }
+
+                ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
 
                         if($items->count()==0){
                             $returnArray['status']=false;
@@ -2189,7 +2200,8 @@ class ApiCustomerController extends Controller
                             $returnArray['errors'] =['msg'=>'no item found'];
                             return response()->json($returnArray,$status_code);
                         }
-                        $price = 0 ;
+
+                $price = 0 ;
                         $delete_item_array = array();
                         foreach ($items as $item){
                             ///     echo $item['price']."x".$item['quantity']."\n";
@@ -2197,43 +2209,109 @@ class ApiCustomerController extends Controller
                             $delete_item_array[]=$item['id'];
                         }
 
+                        $price = (!empty($request['amount']))?$request['amount'] : $price*1.18;
 
-                        //    return $price ;
+                ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
 
-
-                        $shipping_price=$this->calculateShipping($delete_item_array,$request['cargo_company_id']);
-                        $order_id=$this->generateOrderCode();
-
-                        $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$ch['name']." ".$ch['surname'];
-
-
+                $cargo_company_id = (!empty($request['cargo_company_id']))?$request['cargo_company_id']:1;
+                       $shipping_price=$this->calculateShipping($delete_item_array,$cargo_company_id);
 
 
                         $file = $request->file('receipt');
                         if (!empty($file)) {
-                            $fileName = $order_id. "_". date('YmdHis').'.'.$request->file('receipt')->extension();
+                            $fileName = $order['order_code']. "_". date('YmdHis').'.'.$request->file('receipt')->extension();
                             $request->file('receipt')->move('receipt', $fileName);
+                            $fileName= 'receipt/'.$fileName;
                         }else{
                             $fileName="";
                         }
 
+                $order->name_surname =$name_surname;
+                $order->cargo_company_id = $request['cargo_company_id'];
+                $order->customer_id= $customer_id;
+                $order->guid=$guid;
+                $order->customer_address_id = $address_id;
+                $order->invoice_address_id = $invoice_address_id;
+                $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
+                $order->status = CartItemStatus::init;
+                $order->cargo_company_id = $cargo_company_id;
+                $order->amount = $price;
+                $order->shipping_price = $shipping_price;
+                $order->receipt =$fileName;
+                $order->save();
+
+                $result = array();
+                $i=0;
+                foreach ($items as $item){
+                    $result[$i]= $this->cartItemDetail($item);
+                    $i++;
+                }
+
+                if($customer_id>0){
+                CartItem::whereIn('id',$delete_item_array)->update([ 'order_id'=>$order['id']]);
+                }else{
+                    GuestCartItem::whereIn('id',$delete_item_array)->update([ 'order_id'=>$order['id']]);
+                    $city_id =  (!empty($request['city_id']))? $request['city_id']:0;
+                    $phone=(!empty($request['phone'])) ? $request['phone']:'';
+                    if(!empty($request['address'])){
+
+                        $orderAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',0)->first();
+
+                        if(empty($orderAddress['id'])){
+                        $orderAddress = new OrderAddress();
+                        }
+
+                        $orderAddress->order_id=$order['id'];
+                        $orderAddress->name_surname=$name_surname;
+                        $orderAddress->address = $request['address'];
+                        $orderAddress->city_id =$city_id;
+                        $orderAddress->phone = $phone;
+
+                        if(!empty($request['invoice_address'])){
+
+                            $invoiceAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
+
+                            if(empty($orderAddress['id'])){
+                                $invoiceAddress = new OrderAddress();
+                            }
+                            $invoiceAddress->order_id=$order['id'];
+                            $invoiceAddress->name_surname=(!empty($request['invoice_name_surname']))?$request['invoice_name_surname']:$name_surname;
+                            $invoiceAddress->address = $request['invoice_address'];
+                            $invoiceAddress->city_id = (!empty($request['invoice_city_id']))? $request['invoice_city_id']:$city_id;
+                            $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone']:$phone;
+                            $invoiceAddress->invoice =1;
+                            $invoiceAddress->save();
+                            $orderAddress->invoice = 0;
+                        }else{
+                            $orderAddress->invoice = 1;
+                        }
+                        $orderAddress->save();
+                    }else{///empty address
+                        if(!empty($request['invoice_address'])){
+                            $invoiceAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
+
+                            if(empty($orderAddress['id'])){
+                                $invoiceAddress = new OrderAddress();
+                            }
+                            $invoiceAddress->order_id=$order['id'];
+                            $invoiceAddress->name_surname=(!empty($request['invoice_name_surname']))?$request['invoice_name_surname']:$name_surname;
+                            $invoiceAddress->address = $request['invoice_address'];
+                            $invoiceAddress->city_id = (!empty($request['invoice_city_id']))? $request['invoice_city_id']:$city_id;
+                            $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone']:$phone;
+                            $invoiceAddress->invoice =1;
+                            $invoiceAddress->save();
+                        }
 
 
-
-
-
-
-
-
-
-                        //$result['shipping_price']=50;
-
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
                     }
+
+
+                }
+
+                $returnArray['status']=true;
+                $status_code=200;
+                $returnArray['data'] =['items'=>$result,'amount'=>$price,'shipping_price'=>$shipping_price];
+                $returnArray['order_code']=$order['order_code'];
 
             }else{
                 $returnArray['status']=false;
@@ -2253,56 +2331,40 @@ class ApiCustomerController extends Controller
 
 
 
-    public function paymentResult(Request $request)
+    public function paymentConfirm(Request $request,Mailer $mailer)
     {
 
         if ($request->isMethod('post')) {
-
-            if( !empty($request['orderID'])){
-
-                $order =  Order::where('order_code','=',$request['orderID'])->first();
-
-                $ch =  Customer::where('id','=',$order['customer_id'])->where('status','=',CustomerStatus::active)->first();
-
-
-                if(!empty($ch['id'])  && !empty($order['id'])){
+            $order =  Order::with('customer')
+                ->where('status','=',CartItemStatus::init)
+                ->where('order_code','=',$request['order_code'])->first();
+            if( !empty($order['id'])){
 
 
                     if($request['result']==1){
 
-                        if(!empty($request['item_array'])){
-                            $item_array= explode(',',$request['item_array']);
-                            $items = CartItem::where('status','=',CartItemStatus::init)
-                                ->where('customer_id','=',$ch['id'])->whereIn('item_code',$item_array)->get();
+                     if($order['customer_id']>0){
+                             CartItem::where('status','=',CartItemStatus::init)
+                                ->where('customer_id','=',$order['customer_id'])
+                                ->where('order','=',$order['id'])
+                                 ->update(['status'=>CartItemStatus::paid]);
+
+
+                         $mailer->to($order->customer()->first()->email)->send(new OrderEmail($order['order_code'].' kodlu siparişiniz alınmıştır'));
+
+
                         }else{
-                            $items = CartItem:: where('status','=',CartItemStatus::init)
-                                ->where('customer_id','=',$ch['id'])
+                            GuestCartItem:: where('status','=',CartItemStatus::init)
+                                ->where('guid','=',$order['guid'])
                                 ->where('order_id','=',$order['id'])
-                                ->get();
+                                ->update(['status'=>CartItemStatus::paid]);
                         }
 
-                        if($items->count()==0){
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'no item found'];
-                            return response()->json($returnArray,$status_code);
-                        }
-
-
-                        $price = 0 ;
-                        $delete_item_array = array();
-                        foreach ($items as $item){
-                            ///     echo $item['price']."x".$item['quantity']."\n";
-                            $price += $item['price']*$item['quantity'];
-                            $delete_item_array[]=$item['id'];
-                        }
-
-                        CartItem::whereIn('id',$delete_item_array)->update(['status'=>CartItemStatus::paid]);
                         Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::paid]);
 
                         $returnArray['status']=true;
                         $status_code=200;
-                        //   $returnArray['data'] =['items'=>$result,'amount'=>$price,'shipping_price'=>$shipping_price];
+
                     }else{////payment error
                         $returnArray['status']=false;
                         $status_code=402;
@@ -2311,16 +2373,6 @@ class ApiCustomerController extends Controller
                     }/////payment status
 
 
-
-
-
-                    //$ch->activation_key=0;
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
-                }
             }else{
                 $returnArray['status']=false;
                 $status_code=406;
@@ -2348,28 +2400,30 @@ class ApiCustomerController extends Controller
                     $order =  Order::where('order_code','=',$request['order_code'])->first();
 
 
-                    if(!empty($order['id'])   ){
+                    if(!empty($order['id'])   ) {
+                        $invoice = (!empty($request['invoice']))?1:0;
+                        $not = ($invoice == 1)?0:1;
+                        $orderAddress = OrderAddress::where('order_id', '=', $order['id'])->where('invoice', '=', $invoice)->first();
 
-
-                        $item_count=CartItem::where('order_id','=',$order['id'])->count();
-
-                        if(empty($request['item_array'])){
-                            $item_array=CartItem::where('order_id','=',$order['id'])->pluck('item_code')->toArray();
-                        }else{
-                            $item_array= explode(',',$request['item_array']);
+                        if (empty($orderAddress['id'])) {
+                            $orderAddress = new OrderAddress();
                         }
 
-                        CartItem::where('order_id','=',$order['id'])->whereIn('item_code',$item_array)
-                            //->where('status','=',CartItemStatus::paid)
-                            ->update(['status'=>CartItemStatus::canceled]);
+                        $orderAddress->order_id = $order['id'];
+                        $orderAddress->name_surname = (!empty($request['name_surname'])) ? $request['name_surname'] : $order['name_surname'];
+                        $orderAddress->address = $request['address'];
+                        $orderAddress->city_id = (!empty($request['city_id'])) ? $request['city_id'] : 0;
+                        $orderAddress->phone = (!empty($request['phone'])) ? $request['phone'] : '';
+                        $orderAddress->invoice = $invoice;
+                        $orderAddress->save();
 
-                        if($item_count == count($item_array)){//order is cancelled
-                            Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled]);
-                        }
 
-
-                        return "ok";
-
+                    OrderAddress::where('order_id','=',$order['id'])
+                        ->where('id','<>',$orderAddress['id'])
+                        ->where('invoice','=',$invoice)->update(['invoice'=>$not]);
+                        $returnArray['status']=true;
+                        $status_code=200;
+                        $returnArray['data'] =$orderAddress;
                     }else{
                         $returnArray['status']=false;
                         $status_code=406;
@@ -2398,35 +2452,30 @@ class ApiCustomerController extends Controller
     public function cancelOrder(Request $request)
     {
 
+        return route('payment-confirm-api');
+
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
                 if(!empty($request['customer_id']) ){
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',1)->first();
+                    //   $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',CustomerStatus::active)->first();
 
-                    $order =  Order::where('order_code','=',$request['order_code'])->where('customer_id','=',(!empty($ch['id']))?$ch['id']:0)->first();
+                    $order =  Order::where('order_code','=',$request['order_code'])->first();
+                    if (!empty($order['id'])   ){
 
+                        if($order['customer_id']>0){
+                            CartItem::where('order_id','=',$order['id'])
+                                ->update(['status'=>CartItemStatus::canceled]);
 
-                    if(!empty($ch['id']) && !empty($order['id'])   ){
-
-
-                        $item_count=CartItem::where('order_id','=',$order['id'])->count();
-
-                        if(empty($request['item_array'])){
-                            $item_array=CartItem::where('order_id','=',$order['id'])->pluck('item_code')->toArray();
                         }else{
-                            $item_array= explode(',',$request['item_array']);
+                            GuestCartItem::where('order_id','=',$order['id'])
+                                ->update(['status'=>CartItemStatus::canceled]);
+
                         }
+                     Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled]);
 
-                        CartItem::where('order_id','=',$order['id'])->whereIn('item_code',$item_array)
-                            //->where('status','=',CartItemStatus::paid)
-                            ->update(['status'=>CartItemStatus::canceled]);
-
-                        if($item_count == count($item_array)){//order is cancelled
-                            Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled]);
-                        }
-
-
-                        return "ok";
+                        $returnArray['status']=true;
+                        $status_code=200;
+                        $returnArray['data'] =['order'=>$order];
 
                     }else{
                         $returnArray['status']=false;

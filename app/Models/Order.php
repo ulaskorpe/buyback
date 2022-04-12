@@ -15,7 +15,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_code','name_surname','cargo_company_id','cargo_company_branch_id',
-        'order_method','cargo_code','customer_id','customer_address_id','service_address_id','status'
+        'order_method','cargo_code','customer_id','guid','customer_address_id','invoice_address_id','service_address_id','status'
     ];
 
     protected $hidden = [
@@ -32,6 +32,10 @@ class Order extends Model
 
     public function customer_address(){
         return $this->hasOne(CustomerAddress::class,'id','customer_address_id');
+    }
+
+    public function invoice_address(){
+        return $this->hasOne(CustomerAddress::class,'id','invoice_address_id');
     }
     public function cargo_company(){
         return $this->hasOne(CargoCompany::class,'id','cargo_company_id');
