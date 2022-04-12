@@ -28,7 +28,7 @@ class Register extends Mailable
      */
     public function build()
     {
-        return $this->from('bilgi@garantiliteknoloji.com')
+        return $this->from('bilgilendirme.form@garantili.com.tr')
             ->subject('Hoşgeldiniz')
             ->with([
                 //  'name' => 'ulaş körpe',

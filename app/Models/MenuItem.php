@@ -20,9 +20,16 @@ class MenuItem extends Model
         'created_at','updated_at','deleted_at'
     ];
 
+    public function sub_items_site(){
+        return $this->hasMany(MenuSubItem::class,'menu_id','id')
+
+            ->orderBy('order');
+    }
+
+
     public function sub_items(){
         return $this->hasMany(MenuSubItem::class,'menu_id','id')
             ->where('status','=',1)
-            ->orderBy('order','DESC');
+            ->orderBy('order');
     }
 }

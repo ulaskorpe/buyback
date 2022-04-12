@@ -37,7 +37,11 @@
 
                             <td>{{$model->brand()->first()->BrandName}}</td>
                             <td>{{$model['Modelname']}}</td>
-                            <td>{{$model->memory()->first()->memory_value}}GB</td>
+                            <td>
+                                @if($model['memory_id']>0)
+                                {{$model->memory()->first()->memory_value}}GB
+                                @endif
+                            </td>
                             <td>
 
                                 @if(!empty($model['Imagethumb']))

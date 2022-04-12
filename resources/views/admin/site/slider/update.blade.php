@@ -66,10 +66,10 @@
                             </div>
 
                             <div class="form-group row">
-                                <label class="col-lg-2 col-form-label font-weight-semibold">Link :</label>
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Ürün ID :</label>
                                 <div class="col-lg-8">
                                     <input type="text" class="form-control" name="link" id="link"
-                                           value="{{$slider['link']}}" data-popup="tooltip" data-trigger="focus"
+                                           value="{{$slider['micro_id']}}" data-popup="tooltip" data-trigger="focus"
                                            placeholder="Açılacak Bağlantı">
                                     <span id="link_error"></span>
                                 </div>
@@ -262,7 +262,7 @@
 
         $('#update-slider').submit(function (e) {
             e.preventDefault();
-
+            var micro_id_array =[@foreach($micro_id_array as $item) parseInt({{$item}}),@endforeach , -555];
             var formData = new FormData(this);
             var error = false;
 
@@ -281,12 +281,15 @@
             // }
 
             if ($('#link').val() != '') {
-                if (!validURL($('#link').val())) {
-                    $('#link_error').html('<span style="color: red">Geçersiz URL</span>');
+
+
+                if(!micro_id_array.includes(parseInt($('#link').val()))){
+                    $('#link_error').html('<span style="color: red">Geçersiz ÜRÜN</span>');
                     $('#link').val('');
                     error = true;
-                } else {
+                }else{
                     $('#link_error').html('');
+
                 }
             }
             if (error) {

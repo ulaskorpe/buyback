@@ -24,7 +24,7 @@ class OrderEmail extends Mailable
 
     public function build()
     {
-        return $this->from('bilgi@garantiliteknoloji.com')
+        return $this->from('bilgilendirme.form@garantili.com.tr')
             ->subject('Sipariş Bilgi ')
             ->with([
                 //  'name' => 'ulaş körpe',

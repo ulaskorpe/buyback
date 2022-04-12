@@ -256,6 +256,7 @@ class ApiController extends Controller
                 $array[$i]['buttonTitle'] = $slider['btn_1'];
                 $array[$i]['bottomTitle'] = $slider['btn_2'];
                 $array[$i]['imageUrl'] = url($slider['image']);
+                $array[$i]['url'] = $slider['link'];
                 $array[$i]['backgroundImageUrl'] = url($slider['bgimg']);
                 $i++;
             }
@@ -551,7 +552,7 @@ class ApiController extends Controller
         if ($request->header('x-api-key') == $this->generateKey()) {
 
 
-            $faker = Factory::create();
+
             /***
              * dealItem = [
              * { id: 1, title: 'Ta555blet Red EliteBook Revolve',
@@ -560,23 +561,27 @@ class ApiController extends Controller
              * ]
              */
 
+            $super = ProductLocation::with('product')->where('location_id','=',1)->limit(3)->orderBy('order')->get();
+
             $array = [];
             //    foreach ($banners as $banner){
-            for ($i = 0; $i < 2; $i++) {
-
-                $price = rand(2, 10) * 100;
-                $dis = rand(1, 3) * 30;
-                $array[$i]['id'] = $i + 1;
-                $array[$i]['title'] = $faker->sentence;
+            //for ($i = 0; $i < 2; $i++) {
+            $i=0;
+            foreach ($super as $product){
+                $price =$product->product()->first()->price;
+                $dis = ($product->product()->first()->price - $product->product()->first()->price_ex);
+                $array[$i]['id'] = $product->product()->first()->id;
+                $array[$i]['title'] = $product->product()->first()->title;
                 $array[$i]['listPrice'] = $price;
                 $array[$i]['price'] = $price + $dis;
 
-                $array[$i]['imageUrl'] = url('images/products/' . rand(1, 16) . ".jpg");
+                $array[$i]['imageUrl'] = url($product->product()->first()->firstImage()->first()->image);
+                $array[$i]['url'] = '/urun-detay/'.GeneralHelper::fixName($product->product()->first()->title)."/".$product['product_id'];
                 $array[$i]['win'] = $dis;
                 $array[$i]['stockItem'] = rand(10, 1000);
                 $array[$i]['soldItem'] = rand(10, 1000);
                 $array[$i]['seconds'] = 28800;;
-
+                $i++;
             }
 
             return $array;
@@ -637,6 +642,7 @@ class ApiController extends Controller
         $i=0;
         $menus = MenuItem::with('sub_items','sub_items.menu_groups')
             ->where('location','=',3) //->where('id','<',17)
+            ->where('status','=',1)
             ->orderBy('order')->get();
         foreach ($menus as $menu){
             $array[$i]['id'] = $menu['id'];
@@ -728,6 +734,8 @@ class ApiController extends Controller
         foreach ($menus as $menu){
             $array[$i]['id'] = $menu['id'];
 
+            //$sub_items=MenuSubItem::where('menu_id','=',$menu['id'])->orderBy('order')
+
             if($menu->sub_items()->count()>0){
                 $array[$i]['isDropdown'] = true;
                 $array[$i]['title'] = $menu['title'];
@@ -736,11 +744,14 @@ class ApiController extends Controller
                 $sub_menu = array();
                 $j=0;
                 foreach ($menu->sub_items()->get() as $sub){
+                    if($sub['status']==1){
+
                     $sub_menu[$j]['id'] = $sub['id'];
                     $sub_menu[$j]['isDropdown'] =false;
                     $sub_menu[$j]['title'] =$sub['title'];
                     $sub_menu[$j]['url'] =(!empty($sub['link']))? $sub['link']:'#';
                     $j++;
+                    }
                 }
                 $array[$i]['subItems'] = $sub_menu;
 
@@ -1019,10 +1030,10 @@ class ApiController extends Controller
             $result['coordinates']['latitude']=41.03095714596805;
             $result['coordinates']['longitude']=28.81474066545636;
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =['orders'=>$result  ];
-                        //$ch->activation_key=0;
+            $returnArray['status']=true;
+            $status_code=200;
+            $returnArray['data'] =['orders'=>$result  ];
+            //$ch->activation_key=0;
 
         }else{
             $returnArray['status']=false;
@@ -1037,27 +1048,27 @@ class ApiController extends Controller
     {
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-           $banks = Bank::with('purchases')->get();
-$array = array();
-$i=0;
-foreach ($banks as $bank){
-    $array[$i]['bank_name']=$bank['bank_name'];
-    $array[$i]['bank_id']=$bank['bank_id'];
-    if($bank->purchases()->count() >0 ){
-        $p_array=array();
-        $j=0;
-        foreach($bank->purchases()->get() as $p){
-            $p_array[$j]['comission']=$p['commission'];
-            $p_array[$j]['purchase_count']=$p['purchase'];
-            $j++;
-        }
+            $banks = Bank::with('purchases')->get();
+            $array = array();
+            $i=0;
+            foreach ($banks as $bank){
+                $array[$i]['bank_name']=$bank['bank_name'];
+                $array[$i]['bank_id']=$bank['bank_id'];
+                if($bank->purchases()->count() >0 ){
+                    $p_array=array();
+                    $j=0;
+                    foreach($bank->purchases()->get() as $p){
+                        $p_array[$j]['comission']=$p['commission'];
+                        $p_array[$j]['purchase_count']=$p['purchase'];
+                        $j++;
+                    }
 
 
-        $array[$i]['purchases']=$p_array;
-    }
+                    $array[$i]['purchases']=$p_array;
+                }
 
-    $i++;
-}
+                $i++;
+            }
 
 
             return  response()->json( $array);
@@ -1134,7 +1145,7 @@ foreach ($banks as $bank){
 
                     $extension = $request->file('cv_file')->getClientOriginalExtension();
 
-                 //   $fileNameToStore = $filename.'-'.time().'.'.$extension;
+                    //   $fileNameToStore = $filename.'-'.time().'.'.$extension;
 
 
 
@@ -1144,10 +1155,10 @@ foreach ($banks as $bank){
                     $fileNameToStore = GeneralHelper::fixName($request['name'].$request['surname']) . "_"
                         . date('YmdHis') . "." . GeneralHelper::findExtension($request->file('cv_file')->getClientOriginalName());
                     $path =  "images/human_resources" ;
-               //     $path = $request->file('cv_file')->storeAs($path, $fileNameToStore);
+                    //     $path = $request->file('cv_file')->storeAs($path, $fileNameToStore);
                     $request->file('cv_file')->move($path,$fileNameToStore);
                     $c->cv_file=$path."/".$fileNameToStore;
-                  $c->save();
+                    $c->save();
 
                     //return  response()->json( $c);
                     $returnArray['status'] = true;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Controllers\Helpers\GeneralHelper;
+use App\Mail\OrderEmail;
 use App\Models\Answer;
 use App\Models\Bank;
 use App\Models\BankPurchase;
@@ -14,6 +15,8 @@ use App\Models\City;
 use App\Models\Color;
 use App\Models\ColorModel;
 use App\Models\Country;
+use App\Models\Customer;
+use App\Models\CustomerAddress;
 use App\Models\Log;
 use App\Models\Memory;
 use App\Models\ModelAnswer;
@@ -22,6 +25,7 @@ use App\Models\ProductBrand;
 use App\Models\ProductMemory;
 use App\Models\ProductModel;
 use App\Models\ProductImage;
+use App\Models\Tmp;
 use App\Models\Town;
 use App\Models\User;
 use App\Models\UserGroup;
@@ -29,12 +33,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Mail\Mailer;
 
 class HomeController extends Controller
 {
     use ApiTrait;
     public function home(){
-
+        //echo route('banka-taksitler',40);
 //        Session::put('admin_id',$check['id']);
 //        Session::put('name_surname',$check['name']." ".$check['surname']);
 //        Session::put('sudo',$check['sudo']);
@@ -56,8 +61,35 @@ class HomeController extends Controller
          return view('react');
 
     }
+    public function customerFix(){
+        $cs = Customer::all();
+        foreach ($cs as $c){
+            $address = CustomerAddress::where('customer_id','=',$c['id'])->first();
+            if(empty($address['id'])){
+                echo $c['id']."<br>";
+            }
+        }
+die();
+        $addreses = CustomerAddress::all();
+        foreach ($addreses as $a){
+            $c = Customer::find($a['customer_id']);
+            if(empty($c['id'])){
+                echo $a['id']."<br>";
+            }
+        }
+
+        //return view('react');
+
+    }
 
 
+
+    public function sendEmail($email='ulaskorpe@gmail.com',Mailer $mailer){
+
+        $txt = date("Y-m-d His");
+
+        $mailer->to($email)->send(new OrderEmail($txt));
+    }
     private  function checkModelsTable(){
         $models = ProductModel::all();
         foreach ($models as $model){
@@ -88,7 +120,7 @@ class HomeController extends Controller
 
     }
 
-    private function getRandomArray($n=5){
+    private function getRandomArray($n=5){////for colors
         $rands = array();
         for($i=0; $i<$n;$i++) {
             $ok = true;
@@ -103,18 +135,34 @@ class HomeController extends Controller
         return $rands;
     }
 
-    public function getProducts(){
+    public function listProducts()
+    {
+        $products = Product::where('fake', '=', 0)->get();
 
-        $products = Product::where('fake','=',0)->get();
+        foreach ($products as $product) {
+            if($product['price']==0){
+            $price=rand(10,50)*100;
+            $price_ex = $price+rand(1,10)*100;
+            echo $product['id']."<br>";
+            $product->price=$price;
+            $product->price_ex=$price_ex;
+            $product->save();
+            }
 
-        foreach ($products as $product){
-//           foreach ($this->getRandomArray(rand(2,7)) as $color_id ){
-//               $cm = new ColorModel();
-//               $cm->model_id=$product['model_id'];
-//               $cm->color_id= $color_id;
-//            ///   $cm->save();
-//               echo $color_id."<br>";
-//           };
+            $image = ProductImage::where('product_id','=',$product['id'])->first();
+            if(empty($image['id'])){
+                $this->assignImage($product['id']);
+            }
+            $colors = ColorModel::where('model_id','=',$product['model_id'])->first();
+            if(empty($colors['id'])){
+                $this->assignColor($product['model_id']);
+            }
+
+
+            $model = ProductModel::where('id','=',$product['model_id'])->first();
+            if(empty($model['id'])){
+                echo $model['id']."<hr>";
+            }
 
 //            $model = ProductModel::where('id','=',$product['model_id'])->first();
 //            if(empty($model['id'])){
@@ -124,44 +172,75 @@ class HomeController extends Controller
 //            echo "<hr>";
 //            }
 
-            $mem = ProductMemory::where('product_id','=',$product['id'])->first();
-            if(empty($mem['id'])){
-                $mem = new ProductMemory();
-                $mem->product_id = $product['id'];
-                $mem->memory_id = rand(5,7);
-                $mem->save();
-                            echo "PRODUCTID". $product['id']."<br>";
-            echo "<hr>";
+//                $mem = ProductMemory::where('product_id', '=', $product['id'])->first();
+//                if (empty($mem['id'])) {
+//                    $mem = new ProductMemory();
+//                    $mem->product_id = $product['id'];
+//                    $mem->memory_id = rand(5, 7);
+//                    $mem->save();
+//                    echo "PRODUCTID" . $product['id'] . "<br>";
+//                    echo "<hr>";
+//                }
+
+
             }
 
-//            $img = ProductImage::where('product_id','=',$product['id'])->first();
-//            if(empty($img['id'])){
-//                $r = rand(1,10);
-//                $img = new ProductImage();
-//                $img->product_id = $product['id'];
-//                $img->thumb = 'images/products/THL'.$r.'.jpg';
-//                $img->image = 'images/products/L'.$r.'.jpg';
-//                $img->order=1;
-//                $img->first=1;
-//                $img->status=1;
-//                $img->save();
-//
-//            echo "PRODUCTID". $product['id']."<br>";
-//            echo "<hr>";
-//            }
+
+        //die();
+    }
+
+    public function listBrands(){
+        return view('brand_list',['brands'=>ProductBrand::all()]);
+    }
+
+    public function clearProductMemories(){
+
+        $productMemories = ProductMemory::all();
+        foreach ($productMemories as $pm){
+            $ch = ProductMemory::where('product_id','=',$pm['product_id'])
+                ->where('memory_id','=',$pm['memory_id'])->where('id','<>',$pm['id'])->count();
+            if($ch>0){
+                ProductMemory::where('product_id','=',$pm['product_id'])
+                    ->where('memory_id','=',$pm['memory_id'])->where('id','<>',$pm['id'])->delete();
+            echo $pm['product_id'].":".$pm['memory_id']."<br>";
+            }
         }
-die();
 
 
+    }
 
-  //      $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-markalar");
-      //$url = curl_init("https://garantili.com.tr/eticaret/api.php");
+    private function assignColor($model_id){
+        foreach ($this->getRandomArray(rand(2, 7)) as $color_id) {
+               $cm = new ColorModel();
+               $cm->model_id=$model_id;
+               $cm->color_id= $color_id;
+                $cm->save();
+              // echo $color_id."<br>";
+        };
+    }
+
+    private function assignImage( $product_id){
+         $img = ProductImage::where('product_id','=',$product_id)->first();
+            if(empty($img['id'])){
+                $r = rand(1,10);
+                $img = new ProductImage();
+                $img->product_id = $product_id;
+                $img->thumb = 'images/products/THL'.$r.'.jpg';
+                $img->image = 'images/products/L'.$r.'.jpg';
+                $img->order=1;
+                $img->first=1;
+                $img->status=1;
+                $img->save();
+            }
+    }
+
+
+    private function connectApi($call){
         $payload = [
             'uyeno'		=> 2033,
             'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
-            'call'    => 'ilandakiler'
+            'call'    =>$call
         ];
-
         $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
 
         //curl_setopt($ch, CURLOPT_URL, $url);
@@ -169,18 +248,24 @@ die();
         //curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
         $output = curl_exec($ch);
-
-
         curl_close($ch);
+        return json_decode($output,true);
+    }
 
-        $arr_1 = json_decode($output, TRUE);
+    public function getProducts(){
+
+
+        $arr_1 = $this->connectApi('ilandakiler');
+echo count($arr_1)." Adet <hr>";
+die();
 $uid="";
+$added=0;
         foreach ($arr_1 as $item){
 
            $brand = ProductBrand::where('BrandName','=',$item['marka_id'])->first();
                    if(empty( $brand['id'])){
                        echo "MARKA" .$item['marka']."YOK";
-                   }else {
+                   }else { /// marka var
 
                        //       echo $item['marka'].":".$brand['BrandName'].":".$item['marka_id']."<br>";
 
@@ -189,60 +274,63 @@ $uid="";
                        if (empty($model['id'])) {
                            $model = ProductModel::where('Modelname', '=', $item['model'])->first();
                            if (empty($model['id'])) {
-                               echo "MODEL" . $item['model'] . "YOK";
-
-
+                               echo "MODEL" . $item['model'] . "  BULUNAMADI<br>";
                                $model = new ProductModel();
                                $model->Modelname = $item['model'];
                                $model->Brandid = $brand['id'];
                                $model->Catid = 2;
                                $model->micro_id = $item['model_id'];
-                               //   $model->micro_id = $item['model_id'];
-                            ///   $model->save();
-                           } else {
-                           //    echo "MODEL" . $item['model'] . "VAR ::::" . $model['micro_id'] . ":" . $item['model_id'] . "ZZZ";
-                               $model->micro_id = $item['model_id'];
-                               //   $model->micro_id = $item['model_id'];
-                            //   $model->save();
+                               $model->save();
+                               $this->assignColor($model['id']);
+                                echo "EKLENDİ".$model['Modelname'].":".$model['id']."<br>";
+//                           } else {
+//                           //    echo "MODEL" . $item['model'] . "VAR ::::" . $model['micro_id'] . ":" . $item['model_id'] . "ZZZ";
+//                               $model->micro_id = $item['model_id'];
+//                               //   $model->micro_id = $item['model_id'];
+//                            //   $model->save();
 
                            }
 
 
                        } elseif ($model['Modelname'] != $item['model']) {
-                           echo $model['Modelname'] . "!=" . $item['model'];
+                           echo $model['Modelname'] . "  !=    " . $item['model'].":".$model['id']."<br>";
                            $model->Modelname = $item['model'];
-                          // $model->save();
+                        //   $model->save();
                        }else{
 
                            $product = Product::where('micro_id','=',$item['urun_id'])->first();
                            if(empty($product['id'])){
                                $uid.=$item['urun_id'].",";
-                               echo $item['model']." YOK!".$item['marka']." ".$item['model']."UID".$item['urun_id'];
+                               echo $item['model']." YOK!<br>".$item['marka']." ".$item['model']."UID".$item['urun_id']." EKLENDİ <hr>";
+                               $price=rand(10,50)*100;
+                               $price_ex = $price+rand(1,10)*100;
                        $product= new Product();
                        $product->title = $item['marka']." ".$item['model'];
                        $product->micro_id =$item['urun_id'];
                        $product->brand_id = $brand['id'];
                        $product->model_id = $model['id'];
-
                        $product->category_id = 2;
                        $product->description ="";
-                       $product->price = 0;
-                       $product->price_ex =0;
-
+                       $product->price = $price;
+                       $product->price_ex =$price_ex;
                        $product->status =1;
                     $product->save();
+                    $added++;
 
+                    $this->assignImage($product['id']);
                      $mem_array = explode("/", str_replace("-","",trim($item['hafiza'])));
              //        var_dump($mem_array);
                        foreach ($mem_array as $mem) {
                            if (!empty($mem)) {
                                $m = Memory::where('memory_value', '=', (int)$mem)->first();
                                //       echo $mem.":::".$m['memory_value']."/".$m['id']."<br>";
-
+                               $pm = ProductMemory::where('memory_id','=',$m['id'])->where('product_id','=',$product['id'])->first();
+                                if(empty($pm['id'])){
                                $pm = new ProductMemory();
                                $pm->memory_id = $m['id'];
                                $pm->product_id = $product['id'];
                               $pm->save();
+                                }
                            }
 
                        }
@@ -265,26 +353,8 @@ $uid="";
     public function getBrands(){
 
 
-        $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-markalar");
-      //$url = curl_init("https://garantili.com.tr/eticaret/api.php");
-        $payload = [
-            'uyeno'		=> 2033,
-            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
-            'call'    => 'eticaret-markalar'
-        ];
+        $arr_1 = $this->connectApi('eticaret-markalar');
 
-        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
-
-        //curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        //curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
-        $output = curl_exec($ch);
-
-
-        curl_close($ch);
-
-        $arr_1 = json_decode($output, TRUE);
 
 
 
@@ -297,10 +367,10 @@ $uid="";
                 //      $pb->save();
 
             }else{
-//                $brand = new ProductBrand();
-//                $brand->micro_id= $item['marka_id'];
-//                $brand->BrandName = $item['marka'];
-                //   $brand->save();
+                $brand = new ProductBrand();
+                $brand->micro_id= $item['marka_id'];
+                $brand->BrandName = $item['marka'];
+                   $brand->save();
                 echo $item['marka']." Eklendi<br>";
                 echo $item['marka_id']." Eklendi<br>";
                 echo "<hr>";
@@ -314,37 +384,7 @@ $uid="";
 
     public function getModels(){
 
-//        $models= ProductModel::all();
-//        foreach ($models as $model){
-//            $ch = ProductModel::where('Modelname','=',$model['Modelname'])->where('id','<>',$model['id'])->first();
-//            if(!empty($ch['id'])){
-//                echo $ch['id'].":".$model['id'].".::.".$model['Modelname']."<hR>";
-//            }
-//        }
-//
-//        die();
-
-
-    //    $url = curl_init("https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&call=eticaret-modeller");
-
-        $payload = [
-            'uyeno'		=> 2033,
-            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
-            'call'    => 'eticaret-modeller'
-        ];
-
-        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
-
-        //curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        //curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
-        $output = curl_exec($ch);
-
-
-        curl_close($ch);
-
-        $arr_1 = json_decode($output, TRUE);
+         $arr_1 = $this->connectApi('eticaret-modeller');
         //echo count($arr_1);
         foreach ($arr_1 as $item){
             $model = ProductModel::where('Modelname','=',trim($item['model']))->first();
@@ -365,8 +405,8 @@ $uid="";
                 $pm->Brandid = $brand['id'];
                 $pm->Catid=2;
                 $pm->status = 1;
-                //$pm->save();
-
+                $pm->save();
+                $this->assignColor($pm['id']);
 
                 echo $item['model']." YOK!". ":".$brand['BrandName']."-".$brand['id'].":".$brand['micro_id'].":".$item['marka_id']."<br>";
             }
@@ -374,67 +414,8 @@ $uid="";
          //   var_dump($item)."<hr>";
         }
         die();
-        $c=0;
-        foreach ($arr_1 as $item){
 
 
-            $model = ProductModel::where('Modelname','=',$item['model'])->first();
-            if(!empty($model['id'])){
-                echo $model['Modelname'].":".$item['model']."<hr>";
-                $model->micro_id=$item['model_id'];
-             //   $model->save();
-
-            }else{
-
-                $brand = ProductBrand::where('micro_id','=',$item['marka_id'])->first();
-                if(empty($brand['id'])){
-                    echo $item['model'].":".$item['model_id'].":".$item['marka']."<hr>";
-                }else{
-
-
-                    $model = new ProductModel();
-                    $model->Brandid= $brand['id'];
-                    $model->Catid=2;
-                    $model->micro_id = $item['model_id'];
-                    $model->Modelname = $item['model'];
-                    $model->memory_id = 2;
-
-                    $model->save();
-                }
-
-
-
-             /*   $brand = ProductBrand::where('micro_id','=',$item['marka_id'])->first();
-                if(!empty($brand['id'])){
-              //     echo $item['marka'].":".$brand['BrandName']."<hr>";
-
-
-
-
-
-             //   var_dump($item);
-               // echo "<hr>";
-
-                }else{
-
-               //     echo  $item['marka'].":".$item['marka_id']." marka !!<hr>";
-
-                    $brand= ProductBrand::where('BrandName','=',$item['marka'])->first();
-                    if(empty($brand['id'])){
-                        $brand = new ProductBrand();
-                        $brand->BrandName = $item['marka'];
-                        $brand->micro_id= $item['marka_id'];
-                  //      $brand->save();
-                     //   echo  $item['marka'].":".$item['marka_id']."YOK!!<hr>";
-                       // $c++;
-                    }
-
-                }*/
-            }
-        }
-        echo $c;
-        //return $arr_1;
-        //fclose($fp);
     }
 
     public function getMemories(){
@@ -527,28 +508,15 @@ if($item['hafiza']!='Tanımsız'){
     }
 
     public function banksList(){
-        $payload = [
-            'uyeno'		=> 2033,
-            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
-            'call'    => 'eticaret-bankalar'
-        ];
 
-        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+        $arr_1 = $this->connectApi( 'eticaret-bankalar') ;
 
-        //curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        //curl_setopt($ch, CURLOPT_POST, 1);
-          curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
-        $output = curl_exec($ch);
-        curl_close($ch);
-
-        $arr_1 = json_decode($output, TRUE);
-        $c=0;
+        Bank::query()->truncate();
         foreach ($arr_1 as $item){
             $b= new Bank();
                 $b->bank_name=$item['banka'];
                 $b->bank_id=$item['id'];
-             ///   $b->save();
+                $b->save();
 
 
             echo $item['banka']."<br>";
@@ -559,23 +527,10 @@ if($item['hafiza']!='Tanımsız'){
     }
 
     public function bankPurchases(){
-        $payload = [
-            'uyeno'		=> 2033,
-            'storekey' 		=> '0b763e9cf94fc77819dc408b81c1be93',
-            'call'    => 'eticaret-taksitlendirme'
-        ];
 
-        $ch = curl_init("https://garantili.com.tr/eticaret/api.php");
+        $arr_1 =$this->connectApi('eticaret-taksitlendirme');
 
-        //curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        //curl_setopt($ch, CURLOPT_POST, 1);
-          curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
-        $output = curl_exec($ch);
-        curl_close($ch);
-//'bank_id','purchase_id','commission','purchase','payment_plan_id','description_id'
-        $arr_1 = json_decode($output, TRUE);
-        $c=0;
+        BankPurchase::query()->truncate();
         foreach ($arr_1 as $item){
             $b= new BankPurchase();
             $b->bank_id=$item['banka'];

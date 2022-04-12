@@ -139,7 +139,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach($menu->sub_items()->get() as $submenu)
+                                @foreach($menu->sub_items_site()->get() as $submenu)
                                     <tr>
                                         <td>
 

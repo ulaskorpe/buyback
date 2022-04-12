@@ -9,14 +9,9 @@ use BenSampo\Enum\Enum;
  * @method static static OptionTwo()
  * @method static static OptionThree()
  */
-final class CartItemStatus extends Enum
+final class ProductLocations extends Enum
 {
-    const init =   0;
-    const paid =   1;
-    const sent = 2;
-    const canceled = 3;
-    const completed = 4;
-    const returned = 5;
-
-
+    const OptionOne =   0;
+    const OptionTwo =   1;
+    const OptionThree = 2;
 }

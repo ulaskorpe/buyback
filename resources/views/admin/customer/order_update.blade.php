@@ -78,6 +78,9 @@
                         <div class="row">
                             <div class="col-3 my-5 mx-3">
                           <h5> <b>Sipariş Kodu :</b>{{$order['order_code']}}</h5>
+                                @if(!empty($order['receipt']))
+                                    <a href="{{url($order['receipt'])}}" target="_blank"><b>DEKONT</b></a>
+                                    @endif
                             </div>
 
                             <div class="col-4 my-5 mx-3">

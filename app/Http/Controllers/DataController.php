@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Answer;
+use App\Models\Bank;
 use App\Models\BankAccount;
+use App\Models\BankPurchase;
 use App\Models\BuyBack;
 use App\Models\CargoCompany;
 use App\Models\CargoCompanyBranch;
@@ -41,7 +43,23 @@ class DataController extends Controller
         return response()->json(['key'=>$this->generateKey()]);
 
     }
+    public function ccTest(Request $request){
+        $data=array();
+        $array = ['cc_no','expiryYY','expiryMM','name_surname','cvc','amount','purchase','order_id'];
+        foreach ($array as $item) {
+            if(!empty($request[$item])){
+                $data[$item]=$request[$item];
+            }
+            //$data .= $item.":".(!empty($request[$item])) ? $request[$item]:$item.'YOK'."---";
+        }
 
+        $this->makeTmp(date("YmdHis")." KK api",json_encode($data,true));
+
+        //echo "ok";
+
+       return response()->json('ok');
+
+    }
     public function deleteTmp($id){
         $tmp = Tmp::find($id);
         $tmp->delete();
@@ -1273,6 +1291,106 @@ if($responseCode==1){
             $status_code = 200;
             $resultArray['status'] = true;
             $resultArray['data']= ['bank_accounts'=>BankAccount::where('status','=',1)->get()];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+    public function bankalarList(Request $request )
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+            $status_code = 200;
+            $resultArray['status'] = true;
+            $resultArray['data']= ['bankalar'=>Bank::select('bank_name','bank_id')->orderBy('bank_id')->get()];
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+    public function bankaTaksitler(Request $request ,$bank_id=0)
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $bank = Bank::where('bank_id','=',$bank_id)->first();
+            if(!empty($bank['id'])){
+
+                $purchases = BankPurchase::where('bank_id','=',$bank_id)->orderBy('purchase')->pluck('purchase')->toArray();
+                $purchases = array_merge([1], $purchases);
+            $status_code = 200;
+            $resultArray['status'] = true;
+
+            $resultArray['data']= ['banka'=>$bank,'purchases'=>$purchases];
+
+            }else{
+                $resultArray['status'] = false;
+                $status_code=404;
+                $resultArray['errors'] =['msg'=>'not found'] ;
+
+            }
+
+
+        } else {
+            $resultArray['status'] = false;
+            // $resultArray['status_code'] = 406;
+            $status_code=406;
+            $resultArray['errors'] =['msg'=>'hatalı anahtar'] ;
+        }
+
+
+        return response()->json($resultArray,$status_code);
+        // return json_encode($resultArray);
+    }
+
+    public function bankaTaksitHesapla(Request $request  )
+    {
+
+
+        if ($request->header('x-api-key') == $this->generateKey()) {
+
+            $purchase= BankPurchase::where('bank_id','=',$request['banka_id'])->where('purchase','=',$request['taksit'])->first();
+
+
+
+            if(empty($purchase['id'])){
+                $tutar = $request['tutar']*1.18;
+                $sayi=1;
+                $taksit=$tutar;
+            }else{
+                $tutar = $request['tutar']*1.18;
+                $sayi=(int)$purchase['purchase'];
+
+            $tutar =  ( $tutar/  (100-$purchase['commission']) )*100;
+
+            $taksit= str_replace(",","",number_format( $tutar / $sayi,2))*1;
+            $tutar = str_replace(",","",number_format($tutar,2))*1;
+            }
+
+
+            $status_code = 200;
+            $resultArray['status'] = true;
+            $resultArray['data']=['tutar'=> $tutar,'taksit_sayisi'=>$sayi,'taksit'=>$taksit];
 
 
         } else {

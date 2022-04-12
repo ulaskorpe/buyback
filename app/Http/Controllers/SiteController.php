@@ -41,6 +41,11 @@ class SiteController extends Controller
         return "Başvuru silindi";
     }
 
+    private  function micro_id_array(){
+        return Product::where('status','=',1)->where('fake','=',0)
+            ->where('micro_id','>',0)->pluck('micro_id')->toArray();
+    }
+
     //////////////SLIDER/////////////////////////////////////
     public  function sliderList(){
 
@@ -50,7 +55,13 @@ class SiteController extends Controller
     public function createSlider(){
         $count = Slider::count();
 
-        return view('admin.site.slider.create',['count'=>$count+1]);
+        return view('admin.site.slider.create',['count'=>$count+1,'micro_id_array'=>$this->micro_id_array()]);
+    }
+
+
+    private function getProductLink($micro_id){
+        $p = Product::select('id','title')->where('micro_id','=',$micro_id)->first();
+        return '/urun-detay/'.GeneralHelper::fixName($p['title']).'/'.$p['id'];
     }
 
     public function createSliderPost(Request $request){
@@ -64,10 +75,22 @@ class SiteController extends Controller
             ];
             $this->validate($request, $rules, $messages);
             $resultArray = DB::transaction(function () use ($request) {
+
+                if(!empty($request['link'])){
+                    ///urun-detay/samsung_galaxy_a30s/431
+                   $link = $this->getProductLink($request['link']);
+                   $micro_id = $request['link'];
+
+                }else{
+                    $link=null ;
+                    $micro_id=0;
+                }
+
                 $slider= new Slider();
                 $slider->title = $request['title'];
                 $slider->subtitle = (!empty($request['subtitle']))?$request['subtitle']:'';
-                $slider->link = (!empty($request['link']))?$request['link']:'';
+                $slider->link = $link;
+                $slider->micro_id=$micro_id;
                 $slider->btn_1 = (!empty($request['btn_1']))?$request['btn_1']:'';
                 $slider->btn_2 = (!empty($request['btn_2']))?$request['btn_2']:'';
                 $slider->note = (!empty($request['note']))?$request['note']:'';
@@ -140,12 +163,21 @@ class SiteController extends Controller
             $this->validate($request, $rules, $messages);
             $resultArray = DB::transaction(function () use ($request) {
 
+                if(!empty($request['link'])){
+                    ///urun-detay/samsung_galaxy_a30s/431
+                    $link = $this->getProductLink($request['link']);
+                    $micro_id = $request['link'];
+
+                }else{
+                    $link=null ;
+                    $micro_id=0;
+                }
                 $slider= Slider::find($request['id']);
                 $old=$slider['count'];
-
                 $slider->title = $request['title'];
                 $slider->subtitle = (!empty($request['subtitle']))?$request['subtitle']:'';
-                $slider->link = (!empty($request['link']))?$request['link']:'';
+                $slider->link = $link;
+                $slider->micro_id=$micro_id;
                 $slider->btn_1 = (!empty($request['btn_1']))?$request['btn_1']:'';
                 $slider->btn_2 = (!empty($request['btn_2']))?$request['btn_2']:'';
                 $slider->note = (!empty($request['note']))?$request['note']:'';
@@ -216,7 +248,8 @@ class SiteController extends Controller
 
     public function updateSlider($id){
         $count = Slider::count();
-        return view('admin.site.slider.update',['slider'=>Slider::find($id),'count'=>$count,'slider_id'=>$id]);
+        return view('admin.site.slider.update',['slider'=>Slider::find($id),'count'=>$count,'slider_id'=>$id
+            ,'micro_id_array'=>$this->micro_id_array()]);
     }
     //////////////SLIDER/////////////////////////////////////
 
@@ -693,7 +726,8 @@ $file=$path."/".$i.".jpg";
     }
 
     public function updateMenu($id){
-        $menu = MenuItem::with('sub_items','sub_items.menu_groups','sub_items.menu_groups.menu_links')->find($id);
+        $menu = MenuItem::with('sub_items_site','sub_items_site.menu_groups','sub_items_site.menu_groups.menu_links')->find($id);
+
         $count = MenuItem::where('location','=',$menu['location'])->count();
 
 
@@ -985,7 +1019,7 @@ $file=$path."/".$i.".jpg";
 
         $last = Area::select('id')->orderBy('id','desc')->first();
         $code =(!empty($last['id'])) ? "A".($last['id']+1) : "A1";
-        return view('admin.site.area.create',['code'=>$code]);
+        return view('admin.site.area.create',['code'=>$code,'micro_id_array'=>$this->micro_id_array()]);
     }
 
     public function createAreaPost(Request $request){
@@ -999,12 +1033,23 @@ $file=$path."/".$i.".jpg";
             ];
             $this->validate($request, $rules, $messages);
             $resultArray = DB::transaction(function () use ($request) {
+                if(!empty($request['link'])){
+
+                    $link = $this->getProductLink($request['link']);
+                    $micro_id = $request['link'];
+
+                }else{
+                    $link=null ;
+                    $micro_id=0;
+                }
+
                 $area= new Area();
                 $area->title = $request['title'];
                 $area->code = $request['code'];
                 $area->txt_1 = (!empty($request['txt_1']))?$request['txt_1']:'';
                 $area->txt_2 = (!empty($request['txt_2']))?$request['txt_2']:'';
-                $area->link = (!empty($request['link']))?$request['link']:'';
+                $area->link = $link;
+                $area->micro_id=$micro_id;
                 $area->type = $request['type'];
                 $area->textStyle = $request['textStyle'];
 
@@ -1053,11 +1098,22 @@ $file=$path."/".$i.".jpg";
             ];
             $this->validate($request, $rules, $messages);
             $resultArray = DB::transaction(function () use ($request) {
+
+                if(!empty($request['link'])){
+
+                    $link = $this->getProductLink($request['link']);
+                    $micro_id = $request['link'];
+
+                }else{
+                    $link=null ;
+                    $micro_id=0;
+                }
                 $area= Area::find($request['id']);
                 $area->title = $request['title'];
                 $area->txt_1 = (!empty($request['txt_1']))?$request['txt_1']:'';
                 $area->txt_2 = (!empty($request['txt_2']))?$request['txt_2']:'';
-                $area->link = (!empty($request['link']))?$request['link']:'';
+                $area->link = $link;
+                $area->micro_id=$micro_id;
                 $area->type = $request['type'];
                 $area->textStyle = $request['textStyle'];
                 $area->status = (!empty($request['status']))?1:0;
@@ -1096,7 +1152,7 @@ $file=$path."/".$i.".jpg";
 
     public function updateArea($id){
 
-        return view('admin.site.area.update',['area'=>Area::find($id),'area_id'=>$id]);
+        return view('admin.site.area.update',['area'=>Area::find($id),'area_id'=>$id,'micro_id_array'=>$this->micro_id_array()]);
     }
 
     public  function productLocation ($brand_id=0,$model_id=0){
@@ -1176,6 +1232,61 @@ $file=$path."/".$i.".jpg";
                 }else{
                     return ['ürün yeni konuma eklendi', 'success', route('products.product-update',[$request['product_id'],4]), '', ''];
                 }
+
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function productLocatePost(Request $request){
+        if ($request->isMethod('post')) {
+
+            //     return $request['invoice_date'];
+
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+                $p = Product::select('id')->where('micro_id','=',$request['product_micro_id'])->first();
+
+                $selected_areas = Area::where('micro_id','=',$request['product_micro_id'])->pluck('id')->toArray();
+                Area::whereIn('id',$selected_areas)->update(['link'=>'','micro_id'=>0]);
+
+                $selected_sliders = Slider::where('micro_id','=',$request['product_micro_id'])->pluck('id')->toArray();
+                Slider::whereIn('id',$selected_sliders)->update(['link'=>'','micro_id'=>0]);
+
+                    $areas = explode('@',$request['area_list']);
+
+                    foreach ($areas as $area){
+                    if(!empty($area)){
+                        $a_id = str_replace('a','',$area);
+
+                        $a = Area::find($a_id);
+
+                        $a->link = $this->getProductLink($request['product_micro_id']);
+                        $a->micro_id = $request['product_micro_id'];
+                        $a->save();
+                    }
+                    }
+                $sliders = explode('@',$request['slider_list']);
+
+                foreach ($sliders as  $slider){
+                    if(!empty($slider)){
+                        $s_id = str_replace('s','',$slider);
+                        $a = Slider::find($s_id);
+                        $a->link = $this->getProductLink($request['product_micro_id']);
+                        $a->micro_id = $request['product_micro_id'];
+                        $a->save();
+                    }
+                }
+
+                    return ['ürün yeniden konumlandı', 'success', route('products.product-update',[$p['id'],4]), '', ''];
+
 
             });
             return json_encode($resultArray);

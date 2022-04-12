@@ -1114,5 +1114,21 @@ if(formData.get('status')=='out'){
             }
         });
 
+        $('#product-locate').submit(function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            var error = false;
+
+
+
+            if (error) {
+                return false;
+            } else {
+
+            save(formData, '{{route('site.product-locate-post')}}', '', '', '');
+            }
+        });
+
     </script>
 @endsection

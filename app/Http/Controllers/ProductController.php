@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Models\Answer;
+use App\Models\Area;
 use App\Models\Color;
 use App\Models\ColorModel;
 use App\Models\Memory;
@@ -22,6 +23,7 @@ use App\Models\ProductVariant;
 use App\Models\ProductVariantValue;
 use App\Models\Question;
 use App\Models\SiteLocation;
+use App\Models\Slider;
 use App\Models\Tmp;
 use App\Models\VariantGroup;
 use App\Models\VariantValue;
@@ -182,8 +184,21 @@ class ProductController extends Controller
     }
 
     public function productUpdate($id,$selected=0,$brand_id=0,$model_id=0){
+        $product=Product::with('images')->find($id);
         $p_locations = ProductLocation::where('product_id','=',$id)->pluck('location_id')->toArray();
         $site_locations= SiteLocation::whereNotIn('id',$p_locations)->where('status','=',1)->get();
+
+        $area_array = Area::where('micro_id','=',$product['micro_id'])->pluck('id')->toArray();
+        $slider_array = Slider::where('micro_id','=',$product['micro_id'])->pluck('id')->toArray();
+
+        $areas = "";
+        foreach ($area_array as $a){
+            $areas .= "@a".$a ;
+        }
+        $sliders = "";
+        foreach ($slider_array as $a){
+            $sliders .= "@s".$a ;
+        }
 
         $count_array = [];
         foreach (SiteLocation::all() as $location){
@@ -208,10 +223,15 @@ class ProductController extends Controller
 
 
         return view('admin.products.update',[
+            'areas'=>Area::all(),
+            'area_array'=>$area_array,'areas_'=>$areas,
+            'slider_array'=>$slider_array,'sliders_'=>$sliders,
+
+            'sliders'=>Slider::all(),
             'brands'=>ProductBrand::select('id','BrandName')->orderBy('BrandName')->get(),
             'categories'=>ProductCategory::select('id','category_name')->orderBy('category_name')->get(),
             'colors'=>Color::all(),'memories'=>Memory::all()
-            ,'product'=>Product::with('images')->find($id)
+            ,'product'=>$product
             ,'product_colors'=>$p_colors
             ,'product_memories'=>$p_memories,'m_value'=>$m_value
             ,'stock_colors'=>Color::whereIn('id',$p_colors)->get()

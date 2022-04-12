@@ -3,6 +3,7 @@
     <link href="{{url('vendors/switchery/dist/switchery.min.css')}}" rel="stylesheet">
 @endsection
 @section('main')
+
     <div class="content">
         <div class="row">
             <div class="col-md-12">
@@ -64,7 +65,7 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-lg-2 col-form-label font-weight-semibold">Link :</label>
+                                <label class="col-lg-2 col-form-label font-weight-semibold">Ürün ID  :</label>
                                 <div class="col-lg-8">
                                     <input type="text" class="form-control" name="link" id="link"
                                            value="" data-popup="tooltip" data-trigger="focus"
@@ -167,6 +168,9 @@
     <script src="{{url("js/save.js")}}"></script>
     <script src="{{url('vendors/switchery/dist/switchery.js')}}"></script>
     <script>
+
+
+
         function showImage(img, t, hide_it,w=0,h=0) {
             $('#' + hide_it).hide();
             $('#' + img).show();
@@ -251,7 +255,7 @@
         }
         $('#create-slider').submit(function (e) {
             e.preventDefault();
-
+            var micro_id_array =[@foreach($micro_id_array as $item) parseInt({{$item}}),@endforeach , -555];
             var formData = new FormData(this);
             var error = false;
 
@@ -270,12 +274,15 @@
             }
 
             if ($('#link').val() != '') {
-                if(!validURL($('#link').val())){
-                    $('#link_error').html('<span style="color: red">Geçersiz URL</span>');
+
+
+                if(!micro_id_array.includes(parseInt($('#link').val()))){
+                    $('#link_error').html('<span style="color: red">Geçersiz ÜRÜN</span>');
                     $('#link').val('');
                     error = true;
                 }else{
                     $('#link_error').html('');
+
                 }
            }
              if(error){

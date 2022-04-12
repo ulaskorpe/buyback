@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/return-key', [ \App\Http\Controllers\DataController::class, 'returnKey'])->name('return-key');
+Route::post('/cc-test', [ \App\Http\Controllers\DataController::class, 'ccTest'])->name('cc-test');
 Route::post('/add-tmp', [ \App\Http\Controllers\DataController::class, 'addTmp'])->name('add-tmp');
 Route::post('/update-tmp', [ \App\Http\Controllers\DataController::class, 'updateTmp'])->name('update-tmp');
 Route::get('/get-tmp/{id}', [ \App\Http\Controllers\DataController::class, 'getTmp'])->name('get-tmp');
@@ -35,6 +36,10 @@ Route::get('/service-addresses', [ \App\Http\Controllers\DataController::class, 
 Route::get('/return-problems', [ \App\Http\Controllers\DataController::class, 'returnProblems'])->name('return-problems-api');
 Route::get('/cargo-companies', [ \App\Http\Controllers\DataController::class, 'cargoCompanies'])->name('cargo-companies-api');
 Route::get('/bank-accounts', [ \App\Http\Controllers\DataController::class, 'bankAccounts'])->name('bank-accounts-api');
+Route::get('/bankalar-list', [ \App\Http\Controllers\DataController::class, 'bankalarList'])->name('bankalar-list-api');
+
+Route::get('/bankalar-taksitler/{bank_id?}', [ \App\Http\Controllers\DataController::class, 'bankaTaksitler'])->name('banka-taksitler');
+Route::post('/banka-taksit-hesapla', [ \App\Http\Controllers\DataController::class, 'bankaTaksitHesapla'])->name('banka-taksit-hesapla');
 Route::get('/contact-info', [ \App\Http\Controllers\DataController::class, 'contactInfo'])->name('contact-info-api');
 Route::get('/get-banks-purchases', [ \App\Http\Controllers\ApiController::class, 'banksPurchases'])->name('banks-purchases-api');
 
@@ -117,6 +122,11 @@ Route::group(['prefix' => 'cart'], function () {
     Route::post('/remove', [ \App\Http\Controllers\ApiCustomerController::class, 'removeFromCart'])->name('remove-cart-api');
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'UpdateCart'])->name('update-cart-api');
     Route::post('/place-order', [ \App\Http\Controllers\ApiCustomerController::class, 'placeOrder'])->name('place-order-api');
+    Route::post('/get-order-code', [ \App\Http\Controllers\ApiCustomerController::class, 'getOrderCode'])->name('get-order-code');
+
+    Route::post('/add-order-address', [ \App\Http\Controllers\ApiCustomerController::class, 'addOrderAddress'])->name('add-order-addressi');
+    Route::post('/payment-result', [ \App\Http\Controllers\ApiCustomerController::class, 'paymentResult'])->name('payment-result-api');
+    Route::post('/cancel-order', [ \App\Http\Controllers\ApiCustomerController::class, 'cancelOrder'])->name('cancel-order-api');
     Route::post('/order-summary', [ \App\Http\Controllers\ApiCustomerController::class, 'orderSummary'])->name('order-summary-api');
     Route::post('/order-history', [ \App\Http\Controllers\ApiCustomerController::class, 'orderHistory'])->name('order-history-api');
 

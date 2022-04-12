@@ -4,14 +4,81 @@
         <div class="x_title text-center">
 
             <div class="text-center">
-{{ route('products.product-update',[3,4])}}
+
 
                 <h2>{{$product->brand()->first()->BrandName}} &gt;{{$product->model()->first()->Modelname}} &gt; {{$product['title']}}</h2>
             </div>
             <div class="clearfix"></div>
         </div>
         <div class="x_content">
+            <form id="product-locate" action="#" method="post"
+                  enctype="multipart/form-data">
+                {{csrf_field()}}
+                <input type="hidden" id="product_micro_id" name="product_micro_id" value="{{$product['micro_id']}}">
+            <div class="tab-content my-5" id="myTabContent">
+            <div class="row">
+                <div class="col-3">
+                    <input type="hidden" id="area_list" name="area_list" value="{{$areas_}}">
+                    <h5>Alanlar</h5>
+                    <table>
+               @foreach($areas as $area)
+                   <tr><td>
+                        <label class="">
+                            <div class="icheckbox_flat-green" style="position: relative;">
+                                <input type="checkbox" id="a{{$area['id']}}"
+                                       name="a{{$area['id']}}"
+                                       @if(in_array($area['id'],$area_array)) checked
+                                       @endif class="flat"
+                                       style="position: absolute; opacity: 0;">
 
+                                <ins class="iCheck-helper"
+                                     onclick="eklecikar('a{{$area['id']}}','area_list')"
+                                     style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+
+                                </ins>
+
+                            </div>  {{$area['title']}} <b>{{$area['code']}}</b> <br>
+                        </label>
+                       </td></tr>
+                   @endforeach
+                    </table>
+                </div>
+                <div class="col-3">
+                    <input type="hidden" id="slider_list" name="slider_list" value="{{$sliders_}}">
+                    <h5>Sliderlar</h5>
+                    <table>
+                        @foreach($sliders as $slider)
+                            <tr><td>
+                                    <label class="">
+                                        <div class="icheckbox_flat-green" style="position: relative;">
+                                            <input type="checkbox" id="s{{$slider['id']}}"
+                                                   name="s{{$slider['id']}}"
+                                                   @if(in_array($slider['id'],$slider_array)) checked
+                                                   @endif class="flat"
+                                                   style="position: absolute; opacity: 0;">
+
+                                            <ins class="iCheck-helper"
+                                                 onclick="eklecikar('s{{$slider['id']}}','slider_list')"
+                                                 style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+
+                                            </ins>
+
+                                        </div>  {{$slider['title']}}   <br>
+                                    </label>
+                                </td></tr>
+                        @endforeach
+                    </table>
+                </div>
+                <div class="col-3  text-center my-5">
+                    <button type="submit" class="btn btn-primary font-weight-bold rounded-round">Konumlandır
+                        GÜNCELLE
+                    </button>
+
+            </div>
+
+            </div>
+            </div>
+            </form>
             <div class="tab-content" id="myTabContent">
 
 

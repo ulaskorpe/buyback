@@ -14,14 +14,11 @@ class OrderAddress extends Model
     protected $table = 'order_addresses';
 
     protected $fillable = [
-       'customer_id','order_id','name','surname','address_1','address_2','city','zipcode','phone'
+       'order_id','name_surname','address','city','phone','invoice'
 
     ];
 
 
-    public function customer(){
-        return $this->hasOne(Customer::class,'id','customer_id');
-    }
 
     public function order(){
         return $this->hasOne(Order::class,'id','order_id');

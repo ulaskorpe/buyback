@@ -28,7 +28,7 @@ class ForgetPassword extends Mailable
      */
     public function build()
     {
-        return $this->from('bilgi@garantiliteknoloji.com')
+        return $this->from('bilgilendirme.form@garantili.com.tr')
             ->subject('Şifre Güncelleme')
             ->with([
                 //  'name' => 'ulaş körpe',

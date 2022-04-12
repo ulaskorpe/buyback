@@ -212,7 +212,7 @@
                                 <li style="display: none"><a href="{{route('site.update-article',$article_id)}}"></a></li>
                             @endif
                             <li><a href="{{route('site.product-location')}}">Ürün Konumları</a></li>
-
+@if(false)
                             @if(!empty($model_id))
                                 <li style="display: none"><a href="{{route('site.product-location',[$brand_id,$model_id])}}"></a></li>
                                 @endif
@@ -220,6 +220,7 @@
                                 <li style="display: none"><a href="{{route('site.product-location',[$brand_id,$model_id])}}"></a></li>
                             @endif
 
+                            @endif
                             @if(!empty($product_id))
                                 <li style="display: none"><a href="{{route('site.locate-product',$product_id)}}"></a></li>
 
@@ -230,7 +231,7 @@
                     </li>
                     @endif
 
-
+@if(false)
                     <li><a><i class="fa fa-desktop"></i> UI Elements <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="general_elements.html">General Elements</a></li>
@@ -265,6 +266,7 @@
                             <li><a href="fixed_footer.html">Fixed Footer</a></li>
                         </ul>
                     </li>
+    @endif
                 </ul>
             </div>
         </div>

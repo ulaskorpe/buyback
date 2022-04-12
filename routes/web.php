@@ -18,15 +18,20 @@ Route::get('/', function () {
 */
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
-Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('home');
+Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('react');
+Route::get('/customer-fix',[\App\Http\Controllers\HomeController::class,'customerFix'])->name('customer-fix');
+Route::get('/send-email/{email?}',[\App\Http\Controllers\HomeController::class,'sendEmail'])->name('send-email-test');
 Route::get('/get-products',[\App\Http\Controllers\HomeController::class,'getProducts'])->name('get-products-ekspar');
+Route::get('/list-products',[\App\Http\Controllers\HomeController::class,'listProducts'])->name('list-products');
 Route::get('/get-brands',[\App\Http\Controllers\HomeController::class,'getBrands'])->name('get-brands-ekspar');
+Route::get('/list-brands',[\App\Http\Controllers\HomeController::class,'listBrands'])->name('list-brands');
 Route::get('/get-models',[\App\Http\Controllers\HomeController::class,'getModels'])->name('get-models-ekspar');
 Route::get('/get-colors',[\App\Http\Controllers\HomeController::class,'getColors'])->name('get-colors-ekspar');
 Route::get('/get-memories',[\App\Http\Controllers\HomeController::class,'getMemories'])->name('get-memories-ekspar');
 Route::get('/cc-payment',[\App\Http\Controllers\HomeController::class,'ccPayment'])->name('cc-payment');
 Route::get('/banks-list',[\App\Http\Controllers\HomeController::class,'banksList'])->name('banks-list');
 Route::get('/bank-purchases',[\App\Http\Controllers\HomeController::class,'bankPurchases'])->name('bank-purchases');
+Route::get('/clear-product-memories',[\App\Http\Controllers\HomeController::class,'clearProductMemories'])->name('clear-product-memories');
 
 
 Route::get('/logs',[\App\Http\Controllers\HomeController::class,'logs'])->name('logs');
@@ -135,6 +140,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
             Route::get('/reorder-location/{location_id}/{product_id}/{order}',[\App\Http\Controllers\SiteController::class,'locationOrder'])
                 ->name('reorder-location');
             Route::post('/add-product-location',[\App\Http\Controllers\SiteController::class,'addLocation'])->name('add-product-location-post');
+            Route::post('/product-locate-post',[\App\Http\Controllers\SiteController::class,'productLocatePost'])->name('product-locate-post');
             Route::get('/delete-product-location/{location_id}',[\App\Http\Controllers\SiteController::class,'deleteLocation'])->name('delete-product-location');
             Route::get('/change-product-location-order/{location_id}/{new_order}',[\App\Http\Controllers\SiteController::class,'changeLocationOrder'])->name('change-product-location-order');
 
