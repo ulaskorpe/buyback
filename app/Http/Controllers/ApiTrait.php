@@ -17,6 +17,7 @@ trait ApiTrait
     private  function generateKey(){
         return md5('garantili_crm_2021');
     }
+    private $order_status_array= [0=>'Sepette',1=>'Ödendi',2=>'Gönderildi',3=>'İptal',4=>'Tamamlandı',5=>'Geri Gönderildi'];
 
 
 private $buyback_status_array = [0=>'Alındı',1=>'Kontrol Ediliyor',2=>'Hazırlanıyor',3=>'Tamamlandı',4=>'İptal Edildi'];

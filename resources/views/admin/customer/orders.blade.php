@@ -22,7 +22,7 @@
                         <thead>
                         <tr>
                             <th>Sipariş Kodu</th>
-                            <th>Müşteri</th>
+                            <th>Müşteri/Ziyaretçi</th>
                             <th>Ürünler</th>
 
                             <th>Tutar / Durum</th>
@@ -33,50 +33,55 @@
                         </thead>
                         <tbody>
                             @foreach($orders as $order)
-                                <tr>
-                                    <td>
-                                        {{$order['order_code']}}
-                                    </td>
-                                    <td>
-                                        {{$order->customer()->first()->name}} {{$order->customer()->first()->surname}}
 
-                                    </td>
-                                    <td>  @php
-                                            $amount = 0;
-                                        @endphp
-                                        <table width="100%">
+                                @if($order['customer_id']>0)
+                                    @if($order->cart_items()->count()>0)
+                                    <tr>
+                                        <td>
+                                            {{$order['order_code']}}
+                                        </td>
+                                        <td>
 
-                                        @foreach($order->cart_items()->get() as $item)
-                                            <tr>
-                                                <td  >
-                                                    {{$item->product()->first()->title}}
-                                                    @if($item['color_id']>0)
-                                                       <br> {{$item->color()->first()->color_name}}
-                                                        @endif
-                                                    @if($item['memory_id']>0)
-                                                        <br> {{$item->memory()->first()->memory_value}} GB
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    {{$item->product()->first()->price}}TL x  {{$item['quantity']}}
-                                                </td>
 
-                                            </tr>
-                                                @php
-                                                    $amount += $item->product()->first()->price * $item['quantity'];
-                                                @endphp
+                                            {{$order->customer()->first()->name}} {{$order->customer()->first()->surname}}
 
-                                            @endforeach
-                                        </table>
 
-                                    </td>
+                                        </td>
+                                        <td>  @php
+                                                $amount = 0;
+                                            @endphp
+                                            <table width="100%">
 
-                                    <td>
-                                        @if($amount != $order['amount'])
-                                            {{$order['amount']}}TL <br>
-                                            ({{$amount}}TL)
-                                        @else
-                                            {{$amount}}TL
+                                                @foreach($order->cart_items()->get() as $item)
+
+                                                    @php
+                                                        $price =($item->product()->first()->price>$item->product()->first()->price_ex) ?$item->product()->first()->price:$item->product()->first()->price_ex;
+                                                    @endphp
+                                                    <tr>
+                                                        <td  >
+                                                            {{$item->product()->first()->title}}
+
+                                                        </td>
+                                                        <td>
+                                                            {{$price}}TL x  {{$item['quantity']}}
+                                                        </td>
+
+                                                    </tr>
+                                                    @php
+                                                        $amount += $item->product()->first()->price * $item['quantity'];
+                                                    @endphp
+
+                                                @endforeach
+                                            </table>
+
+                                        </td>
+
+                                        <td>
+                                            @if($amount != $order['amount'])
+                                                {{$order['amount']}}TL <br>
+                                                ({{$amount}}TL)
+                                            @else
+                                                {{$amount}}TL
                                             @endif
                                             <hr>
                                             @if($order['order_method'] > 0)
@@ -85,21 +90,115 @@
 
                                                 {{$order->order_method()->first()->name_surname}}
                                                 {{$order->order_method()->first()->iban}}
+
+
+                                                    @if(!empty($order['receipt']))
+                                                        <hr>
+                                                        <a href="{{url($order['receipt'])}}" target="_blank"><b>Dekont</b></a>
+                                                    @endif
                                             @else
                                                 KrediKartı Ödemesi
                                             @endif
 
                                             <h2>{{$order_status[$order['status']]}}</h2>
 
-                                          </td>
+                                        </td>
 
-                                    <td>{{\Carbon\Carbon::parse($order['created_at'])->format('d.m.Y H:i')}}</td>
-                                    <td>
-                                        <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order['id'])}}','_self')">GÜNCELLE</button>
+                                        <td>{{\Carbon\Carbon::parse($order['created_at'])->format('d.m.Y H:i')}}</td>
+                                        <td>
+                                            <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order['id'])}}','_self')">GÜNCELLE</button>
 
-                                    </td>
+                                        </td>
 
-                                </tr>
+                                    </tr>
+                                    @endif
+                                @else
+
+                                    @if($order->guest_cart_items()->count()>0)
+                                    <tr>
+                                        <td>
+                                            {{$order['order_code']}}
+                                        </td>
+                                        <td>
+
+                                        @if(!empty($order->guest()->first()->id))
+                                            {{$order->guest()->first()->guid}}
+                                            @endif
+
+                                        </td>
+                                        <td>  @php
+                                                $amount = 0;
+                                            @endphp
+                                            <table width="100%">
+
+                                                @foreach($order->guest_cart_items()->get() as $item)
+                                                    @php
+                                                        $price =($item->product()->first()->price>$item->product()->first()->price_ex) ?$item->product()->first()->price:$item->product()->first()->price_ex;
+                                                    @endphp
+                                                    <tr>
+                                                        <td  >
+                                                            {{$item->product()->first()->title}}
+
+                                                        </td>
+                                                        <td>
+                                                            {{$price}}TL
+                                                        </td>
+
+                                                    </tr>
+                                                    @php
+                                                        $amount += $item->product()->first()->price ;
+                                                    @endphp
+
+                                                @endforeach
+                                            </table>
+
+                                        </td>
+
+                                        <td>
+                                            @if($amount != $order['amount'])
+                                                {{$order['amount']}}TL <br>
+                                                ({{$amount}}TL)
+                                                @if($order['banka_id']>0)
+                                                    <br>
+                                                    {{$order->banka()->first()->bank_name}}<br>
+                                                    {{$order['amount']/$order['taksit']}} x    {{$order['taksit']}}
+                                                    @endif
+
+
+                                            @else
+                                                {{$amount}}TL
+                                            @endif
+                                            <hr>
+                                            @if($order['order_method'] > 0)
+                                                <b>Havale</b><br>
+                                                {{$order->order_method()->first()->bank_name}}/{{$order->order_method()->first()->branch}}<br>
+
+                                                {{$order->order_method()->first()->name_surname}}
+                                                {{$order->order_method()->first()->iban}}
+
+                                                @if(!empty($order['receipt']))
+                                                        <hr>
+                                                        <a href="{{url($order['receipt'])}}" target="_blank"><b>Dekont</b></a>
+                                                    @endif
+
+                                            @else
+                                                KrediKartı Ödemesi
+                                            @endif
+
+                                            <h2>{{$order_status[$order['status']]}}</h2>
+
+                                        </td>
+
+                                        <td>{{\Carbon\Carbon::parse($order['created_at'])->format('d.m.Y H:i')}}</td>
+                                        <td>
+                                            <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order['id'])}}','_self')">GÜNCELLE</button>
+
+                                        </td>
+
+                                    </tr>
+                                        @endif
+                                @endif
+
                             @endforeach
 
                         </tbody>

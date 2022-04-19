@@ -144,7 +144,7 @@
 
                     <td>{{\Carbon\Carbon::parse($order['created_at'])->format('d.m.Y H:i')}}</td>
                     <td>
-                        <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order['id'])}}','_blank')">GÜNCELLE</button>
+                        <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order['id'])}}','_self')">GÜNCELLE</button>
 
                     </td>
 

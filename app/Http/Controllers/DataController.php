@@ -38,11 +38,17 @@ class DataController extends Controller
 
     use ApiTrait;
 
+    use CCPayment;
+
     public function returnKey(Request $request){
 
         return response()->json(['key'=>$this->generateKey()]);
 
     }
+
+
+
+
     public function ccTest(Request $request){
         $data=array();
         $array = ['cc_no','expiryYY','expiryMM','name_surname','cvc','amount','purchase','order_id'];
@@ -53,11 +59,35 @@ class DataController extends Controller
             //$data .= $item.":".(!empty($request[$item])) ? $request[$item]:$item.'YOK'."---";
         }
 
-        $this->makeTmp(date("YmdHis")." KK api",json_encode($data,true));
+        $result = $this->findBank($request['bank_id'],$request['purchase'],$request['amount']);
+     //   $this->makeTmp(date("YmdHis")." KK api",json_encode($data,true));
+/**
+"bank_name": "Yapı Kredi",
+"kdv": 1.8,
+"taksit": 10,
+"taksit_sayisi": 1,
+"tutar": "10"
 
+ */
+
+ $expDate = $request['expiryYY'].$request['expiryMM'];
+
+        $amount=str_replace(".","",$result['tutar']);
+///1057753331923    //// 1057.7533319229956
+
+if($result['bank_name']="Yapı Kredi"){
+///yapiKredi($tutar,$siparis_no,$taksit,$cardHolderName,$ccno,$expDate,$cvc){
+    $array = $this->yapiKredi($request['tutar'],'GRNTL202204131213564'
+        ,$result['taksit'],$request['name_surname'],$request['cc_no'],$expDate,$request['cvc']);
+
+    return response()->json($array);
+
+}else{
+    return response()->json($expDate);
+}
         //echo "ok";
 
-       return response()->json('ok');
+
 
     }
     public function deleteTmp($id){
@@ -395,6 +425,113 @@ class DataController extends Controller
 
         }
     }
+
+    //////////////return
+
+    public function returnlist()
+    {
+
+        return view('admin.return.list', ['returns' => ReturnProblem::all()]);
+    }
+
+    public function returnadd()
+    {
+
+
+        return view('admin.return.add',['count'=>ReturnProblem::get()->count()]);
+    }
+
+    public function returnUpdate ($id)
+    {
+
+        return view('admin.return.update',['return'=>ReturnProblem::find($id),'return_id'=>$id,'count'=>ReturnProblem::get()->count()]);
+    }
+
+    public function returnaddPost(Request $request)
+    {
+        if ($request->isMethod('post')) {
+
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+//                $rgb = $request['color_code'];
+//                $rgbarr = explode(",",$rgb,3);
+//                $color_code= sprintf("#%02x%02x%02x", $rgbarr[0], $rgbarr[1], $rgbarr[2]);
+
+
+//                $rgb = str_replace('rgb(', '', str_replace(')', '', trim($request['color_code'])));
+//                $arr = explode(",", $rgb);
+//
+//                $r = (intval($arr[0]) > 0) ? dechex(intval($arr[0])) : "00";
+//                $g = (intval($arr[1]) > 0) ? dechex(intval($arr[1])) : "00";
+//                $b = (intval($arr[2]) > 0) ? dechex(intval($arr[2])) : "00";
+//
+//                $rgb = "#" . $r . $g . $b;
+                $return = new ReturnProblem();
+                $return->description = $request['description'];
+                $return->order = $request['order'];
+                $return->status = (!empty($request['status'])) ? 1 : 0;
+                $return->save();
+
+                ReturnProblem::where('order','>=',$request['order'])
+                    ->where('id','<>',$return['id'])
+                    ->increment('order');
+
+                return ['yeni sorun eklendi', 'success', route('return.return-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function returnUpdatePost(Request $request)
+    {
+        if ($request->isMethod('post')) {
+
+
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+
+                $return = ReturnProblem::find($request['id']);
+                $old = $return['order'];
+                $return->description = $request['description'];
+                $return->order = $request['order'];
+                $return->status = (!empty($request['status'])) ? 1 : 0;
+                $return->save();
+
+
+                if($request['order']!=$old){
+                    if($request['order']>$old){
+                        ReturnProblem:: where('order','>=',$old)
+                            ->where('order','<=',$request['order'])
+                            ->where('id','<>',$return['id'])
+                            ->decrement('order');
+
+                    }else{
+                        ReturnProblem:: where('order','<=',$old)
+                            ->where('order','>=',$request['order'])
+                            ->where('id','<>',$return['id'])
+                            ->increment('order');
+                    }
+                }
+
+                return ['sorun güncellendi', 'success', route('return.return-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
 
     public function questionList(){
         return view('admin.question.questionlist',['questions'=>Question::all()]);
@@ -1363,34 +1500,50 @@ if($responseCode==1){
         // return json_encode($resultArray);
     }
 
+
+
+
+
+
     public function bankaTaksitHesapla(Request $request  )
     {
 
 
         if ($request->header('x-api-key') == $this->generateKey()) {
 
-            $purchase= BankPurchase::where('bank_id','=',$request['banka_id'])->where('purchase','=',$request['taksit'])->first();
+            $result = $this->findBank($request['banka_id'],$request['taksit'],$request['tutar']);
+//$total = $tutar/(100-$komisyon)*100;
+             $bp = BankPurchase::where('bank_id',$result['bank_id'])
+                  ->where('purchase','=',$request['taksit'])
+                 ->first();
 
-
-
-            if(empty($purchase['id'])){
-                $tutar = $request['tutar']*1.18;
-                $sayi=1;
-                $taksit=$tutar;
+            if(!empty($bp['commission'])){
+                $tutar =$this->makeFloat(($request['tutar']*1)/(100-($bp['commission']*1)) *100);
             }else{
-                $tutar = $request['tutar']*1.18;
-                $sayi=(int)$purchase['purchase'];
-
-            $tutar =  ( $tutar/  (100-$purchase['commission']) )*100;
-
-            $taksit= str_replace(",","",number_format( $tutar / $sayi,2))*1;
-            $tutar = str_replace(",","",number_format($tutar,2))*1;
+                $tutar =$this->makeFloat($request['tutar']*1);
             }
 
 
+
+
+                //$this->makeFloat( $request['tutar']);
+           // $taksit = $this->makeFloat( $request['tutar']/$result['taksit']);
             $status_code = 200;
             $resultArray['status'] = true;
-            $resultArray['data']=['tutar'=> $tutar,'taksit_sayisi'=>$sayi,'taksit'=>$taksit];
+            $resultArray['data']=['aratoplam'=>$request['tutar'],
+                'tutar'=>$tutar
+                ,'kdv'=> $this->makeFloat(  $request['tutar']*0.18),
+                'taksit_sayisi'=>$request['taksit'],
+                'taksit'=>$this->makeFloat($tutar/($request['taksit']*1))
+
+            ];
+
+
+
+                //['aratoplam'=>$request['tutar'],'tutar'=> $this->makeFloat( $result['tutar']),
+            //'kdv'=> $result['kdv'],
+            //'taksit_sayisi'=>$result['taksit_sayisi'],
+            //'taksit'=>$this->makeFloat($result['taksit']) ];
 
 
         } else {

@@ -17,6 +17,7 @@ use App\Models\Guest;
 use App\Models\GuestCartItem;
 use App\Models\NewsLetter;
 use App\Models\Order;
+use App\Models\OrderAddress;
 use App\Models\ServiceAddress;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,7 +32,6 @@ class CustomerController extends Controller
         return view('admin.customer.customerlist',['customers'=>Customer::all()]);
     }
 
-    private $order_status_array= [0=>'Sepette',1=>'Ödendi',2=>'İptal',3=>'Gönderildi',4=>'Tamamlandı'];
 
     public function customerUpdate ($customer_id,$selected=0){
 
@@ -231,19 +231,19 @@ class CustomerController extends Controller
 
     public function orders(){
 
-            $orders = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','order_method'
+            $orders = Order::with('cart_items','guest_cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','guest','order_method'
                 ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
              //   ->where('id','=',1)
                 ->orderBy('id','DESC')
                 ->get();
 
- //  return $orders;
+
        return view('admin.customer.orders',['orders'=>$orders,'order_status'=>$this->order_status_array]);
     }
 
     public function guests(){
 
-       return view('admin.customer.guests',['guests'=>Guest::with('cart_items')->orderBy('created_at','DESC')->get()]);
+       return view('admin.customer.guests',['guests'=>Guest::with('cart_items.order')->orderBy('created_at','DESC')->get()]);
     }
 
     public function newsletter(){
@@ -280,15 +280,26 @@ class CustomerController extends Controller
     }
 
     public function orderUpdate($order_id,$selected=0){
-        $order = Order::with('cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','order_method'
+        $order = Order::with('cart_items','guest_cart_items','guest','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','order_method'
             ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
                ->where('id','=',$order_id)
             ->orderBy('id','DESC')
             ->first();
 
-        return view('admin.customer.order_update',['order'=>$order,'order_status'=>$this->order_status_array
-            ,'selected'=>$selected,'order_id'=>$order_id,'cargo_companies'=>CargoCompany::with('branches')->get()
-            ,'service_addresses'=>ServiceAddress::all(),'bank_accounts'=>BankAccount::all()]);
+        if($order['customer_id']==0){
+            $deliver_address  = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',0)->first();
+            $invoice_address  = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
+        }else{
+            $deliver_address=null;
+            $invoice_address=null;
+        }
+
+
+            return view('admin.customer.order_update',['order'=>$order,'order_status'=>$this->order_status_array
+                ,'selected'=>$selected,'order_id'=>$order_id,'cargo_companies'=>CargoCompany::with('branches')->get()
+                ,'service_addresses'=>ServiceAddress::all(),'bank_accounts'=>BankAccount::all(),
+                'deliver_address'=>$deliver_address,'invoice_address'=>$invoice_address]);
+
     }
 
     public function orderUpdatePost(Request $request){
@@ -303,7 +314,7 @@ class CustomerController extends Controller
                     $order->cargo_company_id=$request['cargo_company_id'];
                     $order->cargo_company_branch_id=$request['cargo_branch_id'];
                     $order->service_address_id=$request['service_address_id'];
-                    $order->order_method=$request['order_method'];
+                 //   $order->order_method=$request['order_method'];
                     $order->cargo_code=$request['cargo_code'];
                     $order->status=$request['status'];
                     $order->save();

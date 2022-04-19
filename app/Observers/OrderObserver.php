@@ -14,26 +14,22 @@ class OrderObserver
     {
 
 
+            if($order['customer_id']>0){
 
-//        $tmp = new Tmp();
-//        $tmp->title  = $order['id'];
-//         $tmp->data  = $order['cargo_code'].": ".$order['status'].":".$order->customer()->first()->email;
-//        $tmp->save();
-
-
-
-        if($order['status']==CartItemStatus::sent){
-
-
-            if(empty($order['cargo_code'])){
-                $txt = "Siparişiniz alınmıştır";
-            }else{
-                $txt = "Siparişiniz ".$order['cargo_code']."  kodu ile yola çıkmıştır";
+                if($order['status']==CartItemStatus::paid) {
+                    $txt = "Siparişiniz alınmıştır";
+                }elseif($order['status']==CartItemStatus::sent){
+                    $txt = "Siparişiniz ".$order['cargo_code']."  kodu ile yola çıkmıştır";
+                }elseif($order['status']==CartItemStatus::canceled){
+                    $txt = "Sipariş iptaliniz alınmıştır";
+                }elseif($order['status']==CartItemStatus::completed){
+                    $txt = "Siparişiniz tamamlanmıştır";
+                }else{
+                    $txt = "Siparişiniz alınmıştır";
+                }
+            Mail::to($order->customer()->first()->email)->send(new OrderEmail($txt));
             }
 
-
-            Mail::to($order->customer()->first()->email)->send(new OrderEmail($txt));
-        }
 
 
     }

@@ -76,17 +76,30 @@
                     <div class="tab-pane fade  @if($selected==0) active show @endif" id="home" role="tabpanel"
                          aria-labelledby="home-tab">
                         <div class="row">
-                            <div class="col-3 my-5 mx-3">
+                            <div class="col-5 my-5 mx-5">
                           <h5> <b>Sipariş Kodu :</b>{{$order['order_code']}}</h5>
+
+                                <br>
+                               <h3 class="btn btn-secondary">{{$order_status[$order['status']]}}</h3>
+
+
                                 @if(!empty($order['receipt']))
                                     <a href="{{url($order['receipt'])}}" target="_blank"><b>DEKONT</b></a>
                                     @endif
                             </div>
 
                             <div class="col-4 my-5 mx-3">
+
+                            @if($order['customer_id']>0)
                                 <b>Müşteri :</b><br>
+
+
                                 {{$order->customer()->first()->name}}     {{$order->customer()->first()->surname}}<br>
                                 {{$order->customer()->first()->email}}
+                                @else
+                                    <b>Ziyaretçi :</b><br>
+                                    {{$order->guest()->first()->guid}}
+                                @endif
                             </div>
                             @if(!empty($order->customer()->first()->avatar))
                                 <div class="col-2">
@@ -103,7 +116,7 @@
                                             <th scope="col">Ürün</th>
                                             <th scope="col">Marka/Model</th>
                                             <th scope="col">Birim Fiyat</th>
-                                            <th scope="col">Adet</th>
+
                                             <th scope="col">Tutar</th>
                                             <th></th>
                                         </tr>
@@ -111,44 +124,85 @@
                                         @php
                                         $amount =0;
                                         @endphp
+
+
+                                        @if($order['customer_id']>0)
+
                                 @foreach($order->cart_items()->get() as $item)
                                     <tr>
                                         <td>{{$item->product()->first()->title}}</td>
                                         <td>    {{$item->product()->first()->brand()->first()->BrandName}} /
                                             {{$item->product()->first()->model()->first()->Modelname}}
                                             <br>
-                                            {{$item->memory()->first()->memory_value}}GB
-                                            {{$item->color()->first()->color_name}}</td>
+                                           </td>
                                         <td>{{$item->product()->first()->price}} TL</td>
-                                        <td>
-                                           x{{$item['quantity']}}
-                                        </td>
+
                                         <td>
                                             {{$item['price']}} TL
                                         </td>
                                         <td>
-                                            <button class="btn btn-danger"><i class="fa fa-close"></i></button>
+                                            <button class="btn btn-danger" style="display: none"><i class="fa fa-close"></i></button>
                                         </td>
                                     </tr>
                                             @php
                                                 $amount +=$item['price'];
                                             @endphp
                                 @endforeach
+
+                                            @else
+
+                                            @foreach($order->guest_cart_items()->get() as $item)
+                                                <tr>
+                                                    <td>{{$item->product()->first()->title}}</td>
+                                                    <td>    {{$item->product()->first()->brand()->first()->BrandName}} /
+                                                        {{$item->product()->first()->model()->first()->Modelname}}
+                                                        <br>
+
+                                                      </td>
+                                                    <td>{{$item->product()->first()->price}} TL</td>
+
+                                                    <td>
+                                                        {{$item['price']}} TL
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-danger" style="display: none"><i class="fa fa-close"></i></button>
+                                                    </td>
+                                                </tr>
+                                                @php
+                                                    $amount +=$item['price'];
+                                                @endphp
+                                            @endforeach
+                                        @endif
                                     </table>
                                     <!-- /touchspin spinners -->
 
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-10"> </div>
-                            <div class="col-2">
+                            <div class="col-4"> </div>
+
+                                <div class="col-4">
+                                    @if($order['banka_id']>0)
+                                  <b>  Banka :</b>
+
+                                    <br>
+                                    {{$order->banka()->first()->bank_name}}<br>
+                                    {{ number_format($order['amount']/$order['taksit'],2)}}TL x    {{$order['taksit']}}
+                                    @endif
+                                </div>
+
+
+
+                            <div class="col-4">
                                 @if($order['amount']==$amount)
                                 <h3>{{$amount}} TL</h3>
                                 @else
-                                    <h4><del>{{$amount}}</del> TL</h4>
-                                    <h3>{{$amount}} TL</h3>
+                                    <h4>Toplam : {{$amount}} TL</h4>
+                                    <h4>Ödenen :{{number_format($order['amount'],2)}} TL</h4>
 
                                 @endif
+
+
 
                             </div>
 
@@ -160,11 +214,13 @@
 
                         <div class="row">
                             <div class="col-12">
-                                <form id="order-detail" action="#" method="post"
+
+                                <form id="order-drretail" action="#" method="post"
                                       enctype="multipart/form-data">
                                     {{csrf_field()}}
                                     <input type="hidden" id="id" name="id" value="{{$order['id']}}">
 
+                                    @if($order['customer_id']>0)
                                     <div class="form-group row">
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Müşteri Adresi :</label>
                                         <div class="col-lg-3" id="customer_address">
@@ -172,6 +228,30 @@
                                         </div>
 
                                     </div>
+                                    @else
+                                        <div class="form-group row">
+                                            <label class="col-lg-2 col-form-label font-weight-semibold">Gönder Adresi :</label>
+                                            <div class="col-lg-4" id="customer_address">
+                                                    @if(!empty($deliver_address))
+                                                        <b>Gönderim adresi</b><br>
+                                                        {{$deliver_address['name_surname']}}<br>
+                                                        {{$deliver_address['address']}}<br>
+                                                        {{$deliver_address->city()->first()->name}}<br>
+                                                        {{$deliver_address['phone']}}<br>
+                                                        @endif
+                                            </div>
+                                            <div class="col-lg-4" id="customer_address">
+                                                @if(!empty($invoice_address))
+                                                    <b>Fatura adresi</b><br>
+                                                    {{$invoice_address['name_surname']}}<br>
+                                                    {{$invoice_address['address']}}<br>
+                                                    {{$invoice_address->city()->first()->name}}<br>
+                                                    {{$invoice_address['phone']}}<br>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @endif
 
                                     <div class="form-group row">
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Kargo Şirketi :</label>
@@ -225,7 +305,7 @@
                                     <div class="form-group row">
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Ödeme Yöntemi:</label>
                                         <div class="col-lg-4">
-                                            <select name="order_method" id="order_method"  class="form-control" onchange="showPayment(this.value)">
+                                            <select name="order_method" id="order_method" disabled class="form-control" onchange="showPayment(this.value)">
                                                 <option value="0" @if($order['order_method']==0) selected @endif>Kredi Kartı Ödemesi</option>
                                                 @foreach($bank_accounts as $bank)
                                                     <option value="{{$bank['id']}}" @if($order['order_method']==$bank['id']) selected @endif>
@@ -235,6 +315,17 @@
                                             <span id="cargo_code_error"></span>
                                         </div>
                                     </div>
+                                    @if($order['banka_id']>0)
+                                    <div class="form-group row">
+                                        <label class="col-lg-2 col-form-label font-weight-semibold">Banka :</label>
+
+                                        <br>
+                                        {{$order->banka()->first()->bank_name}}<br>
+                                        {{number_format($order['amount']/$order['taksit'],2)}} TL x    {{$order['taksit']}}
+
+                                    </div>
+
+                                    @endif
 
                                     <div class="row my-3"><div class="col-lg-2"></div>   <div class="col-lg-5" id="bank_detail"></div></div>
                                     <div class="form-group row">

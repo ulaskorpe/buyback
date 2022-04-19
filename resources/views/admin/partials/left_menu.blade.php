@@ -146,6 +146,12 @@
                                 <li style="display: none"><a href="{{route('memory.memoryupdate',$memory_id)}}"></a></li>
                             @endif
 
+                            <li><a href="{{route('return.return-list')}}">İade Sorunları</a></li>
+                            <li style="display: none"><a href="{{route('return.return-add')}}"></a></li>
+                            @if(!empty($return_id))
+                                <li style="display: none"><a href="{{route('return.returnUpdate',$return_id)}}"></a></li>
+                            @endif
+
                             <li><a href="{{route('question.question-list')}}">Sorular</a></li>
                             <li style="display: none"><a href="{{route('question.questionadd')}}"></a></li>
                             @if(!empty($question_id))

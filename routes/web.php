@@ -313,6 +313,14 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::post('/update-post',[\App\Http\Controllers\DataController::class,'colorUpdatePost'])->name('colorUpdate-post');
     });
 
+        Route::group(['prefix'=>'return','as'=>'return.'],function (){
+            Route::get('/list',[\App\Http\Controllers\DataController::class,'returnList'])->name('return-list');
+            Route::get('/add',[\App\Http\Controllers\DataController::class,'returnAdd'])->name('return-add');
+            Route::post('/add-post',[\App\Http\Controllers\DataController::class,'returnAddPost'])->name('returnAdd-post');
+            Route::get('/update/{id}',[\App\Http\Controllers\DataController::class,'returnUpdate'])->name('returnUpdate');
+            Route::post('/update-post',[\App\Http\Controllers\DataController::class,'returnUpdatePost'])->name('returnUpdate-post');
+        });
+
     Route::group(['prefix'=>'question','as'=>'question.'],function (){
         Route::get('/',[\App\Http\Controllers\DataController::class,'questionList'])->name('question-list');
         Route::get('/add',[\App\Http\Controllers\DataController::class,'questionAdd'])->name('questionadd');

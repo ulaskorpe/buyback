@@ -41,11 +41,30 @@
                                 </td>
                                 <td>  @php
                                         $amount = 0;
+                                    $del = true;
+                                    $order_id=0;
                                     @endphp
                                     <table width="100%">
 
+
                                         @foreach($guest->cart_items()->get() as $item)
+
+                                            @php
+                                                if($del == true){
+                                                    $del = ($item['order_id']>0)? false : $del;
+                                                    $order_id = ($order_id == 0)?$item['order_id']:$order_id;
+                                                }
+
+                                            @endphp
                                             <tr>
+                                                <td>
+                                                    @if($item['order_id']>0)
+                                                    {{$item->order()->first()->order_code}}
+                                                        @else
+                                                        -
+                                                    @endif
+
+                                                </td>
                                                 <td  >
                                                     {{$item->product()->first()->title}}
                                                     @if($item['color_id']>0)
@@ -82,7 +101,12 @@
 
                                 <td>{{\Carbon\Carbon::parse($guest['created_at'])->format('d.m.Y H:i')}}</td>
                                 <td>
+                                    @if($del)
+
                                     <button class="btn btn-danger" onclick="deleteGuest({{$guest['id']}})"><i class="fa fa-close"></i></button>
+                                        @else
+                                        <button class="btn btn-primary" onclick="window.open('{{route('customer.order-update',$order_id)}}','_self')">Sipariş Detay</button>
+                                        @endif
 
                                 </td>
 

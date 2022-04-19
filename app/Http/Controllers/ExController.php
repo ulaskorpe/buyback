@@ -331,4 +331,293 @@ class ExController extends Controller
         return response()->json($returnArray,$status_code);
 
     }
+
+    public function placeOrderKK(Request $request)
+    {
+
+
+        if ($request->isMethod('post')) {
+            if ($request->header('x-api-key') == $this->generateKey()) {
+
+
+
+                if(!empty($request['customer_id']) ){
+                    $ch= Customer::where('status','=',CustomerStatus::active)->where('customer_id','=',$request['customer_id'])->first();
+                    $customer_id=(!empty($ch['id']))? $ch['id']:0;
+                    $guid=0;
+
+                    $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
+
+                    if($address_id == 0){
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'address not found'];
+                        return response()->json($returnArray,$status_code);
+                    }else{
+                        $invoice_address_id = $this->addressCheck($ch['id'],(!empty($request['invoice_address_id'])?$request['invoice_address_id']:0));
+                        $invoice_address_id = ($invoice_address_id==0)?$address_id:$invoice_address_id;
+
+                    }
+                    $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$ch['name']." ".$ch['surname'];
+                    $ch->ip_address=$request->ip();
+                    $ch->save();
+
+                }else{
+                    $address_id=0;
+                    $invoice_address_id=0;
+                    $guest = Guest::where('guid','=',$request['guid'])->first();
+                    if(empty($guest['id'])){
+                        $guest = new Guest();
+                        $guest->ip = $request->ip();
+                        $guest->guid= $request['guid'];
+                        $guest->expires_at = Carbon::now()->addYear(1)->format('Y-m-d');
+                        $guest->save();
+                    }
+                    $customer_id=0;
+                    $guid=$guest['id'];
+                    $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$request['guid'];
+                }
+
+
+
+                if(!empty($request['order_code'])) {
+                    $order = Order::where('customer_id','=',$customer_id)->where('guid','=',$guid)
+                        ->where('order_code','=',$request['order_code'])->first();
+
+
+                }else{
+                    $order_code = $this->generateOrderCode($customer_id,$guid);
+                    $order = Order::where('order_code','=',$order_code)->first();
+                }
+
+
+
+                if($customer_id + $guid ==0  ){
+                    $returnArray['status']=false;
+                    $status_code=404;
+                    $returnArray['errors'] =['msg'=>'missing data'];
+                    return response()->json($returnArray,$status_code);
+                }
+
+/////////////////////////////PAYMENT
+
+                $fileName="";
+                if($request['payment_method']>0){
+
+                    $file = $request->file('receipt');
+                    if (!empty($file)) {
+                        $fileName= 'receipt/ornek_dekont.pdf';
+//                    try{
+//                        $fileName = $order['order_code']. "_". date('YmdHis').'.'.$request->file('receipt')->extension();
+//                        $request->file('receipt')->move('receipt', $fileName);
+//                        $fileName= 'receipt/'.$fileName;
+//                    }catch (Exception $e){
+//                        $fileName="";
+//                    }
+
+                    }
+
+                }else{//////KKK ÖDEMESİ
+                    $expDate = $request['expiryYY'].$request['expiryMM'];
+
+                    $result = $this->findBank($request['bank_id'],$request['taksit'],$request['amount']);
+
+
+                    if($result['bank_id']==58){
+                        $array = $this->yapiKredi($request['amount'],$order['order_code']
+                            ,$request['taksit'],$request['name_surname'],$request['cc_no'],$expDate,$request['cvc']);
+
+
+                        if($array['approved']==0){
+                            ////ödeme başarılı
+                        //    echo "successs";
+                        }else{
+
+                        }
+
+                     //   return response()->json($array);
+
+
+                    }else{/////diğer bankalar
+                   //     return response()->json($result);
+                    }
+
+                }////// KKÖDEMESİ
+
+/////////////////////////////PAYMENT
+
+
+                if($customer_id>0){
+                    $items = CartItem::with('product.firstImage','memory','color')
+                        ->where('status','=',CartItemStatus::init)
+                        ->where('customer_id','=',$customer_id)->get();
+
+                }else{
+                    $items = GuestCartItem::with('product.firstImage','memory','color')
+                        ->where('status','=',CartItemStatus::init)
+                        ->where('guid','=',$guid)->get();
+                }
+
+                ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
+
+                if($items->count()==0){
+                    $returnArray['status']=false;
+                    $status_code=404;
+                    $returnArray['errors'] =['msg'=>'no item found'];
+                    return response()->json($returnArray,$status_code);
+                }
+
+                $price = 0 ;
+                $delete_item_array = array();
+                foreach ($items as $item){
+                    ///     echo $item['price']."x".$item['quantity']."\n";
+                    $price += $item['price']*$item['quantity'];
+                    $delete_item_array[]=$item['id'];
+                }
+
+                $price = (!empty($request['amount']))?$request['amount'] : $price*1.18;
+
+                ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
+
+                $cargo_company_id = (!empty($request['cargo_company_id']))?$request['cargo_company_id']:1;
+                $shipping_price=$this->calculateShipping($delete_item_array,$cargo_company_id);
+
+
+
+                $order->name_surname =$name_surname;
+                $order->cargo_company_id = $request['cargo_company_id'];
+                $order->customer_id= $customer_id;
+                $order->guid=$guid;
+                $order->customer_address_id = $address_id;
+                $order->invoice_address_id = $invoice_address_id;
+                $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
+                $order->status = CartItemStatus::init;
+                $order->cargo_company_id = $cargo_company_id;
+                $order->amount = $price;
+                $order->banka_id= (!empty($request['bank_id']))?$request['bank_id']:0;
+                $order->taksit= (!empty($request['taksit']))?$request['taksit']:0;
+                $order->shipping_price = $shipping_price;
+                $order->receipt =$fileName;
+                $order->save();
+
+/////////////addressss
+                $city_id =  (!empty($request['delivery_city_id']))? $request['delivery_city_id']:0;
+                $phone=(!empty($request['delivery_phone'])) ? $request['delivery_phone']:'';
+                if(!empty($request['delivery_address'])){
+
+                    $orderAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',0)->first();
+
+                    if(empty($orderAddress['id'])){
+                        $orderAddress = new OrderAddress();
+                    }
+
+                    $orderAddress->order_id=$order['id'];
+                    $orderAddress->name_surname=(!empty($request['delivery_full_name']))?$request['delivery_full_name']:$name_surname;
+                    $orderAddress->address = $request['delivery_address'];
+                    $orderAddress->city_id =$city_id;
+                    $orderAddress->phone = $phone;
+                    $orderAddress->invoice = 0;
+                    $orderAddress->save();
+                    if(!empty($request['invoice_address'])){
+
+                        $invoiceAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
+
+                        if(empty($invoiceAddress['id'])){
+                            $invoiceAddress = new OrderAddress();
+                        }
+
+
+
+
+                        $invoiceAddress->order_id=$order['id'];
+                        $invoiceAddress->name_surname=(!empty($request['invoice_name_surname']))?$request['invoice_name_surname']:$name_surname;
+                        $invoiceAddress->address = $request['invoice_address'];
+                        $invoiceAddress->city_id = (!empty($request['invoice_city_id']))? $request['invoice_city_id']:$city_id;
+                        $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone']:$phone;
+                        $invoiceAddress->invoice =1;
+                        $invoiceAddress->save();
+
+
+                    }
+
+                }else{///empty address
+                    if(!empty($request['invoice_address'])){
+                        $invoiceAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
+
+                        if(empty($orderAddress['id'])){
+                            $invoiceAddress = new OrderAddress();
+                        }
+                        $invoiceAddress->order_id=$order['id'];
+                        $invoiceAddress->name_surname=(!empty($request['invoice_name_surname']))?$request['invoice_name_surname']:$name_surname;
+                        $invoiceAddress->address = $request['invoice_address'];
+                        $invoiceAddress->city_id = (!empty($request['invoice_city_id']))? $request['invoice_city_id']:$city_id;
+                        $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone']:$phone;
+                        $invoiceAddress->invoice =1;
+                        $invoiceAddress->save();
+                    }
+
+
+                }
+/////////////addressss
+
+                $result = array();
+                $i=0;
+                foreach ($items as $item){
+                    $result[$i]= $this->cartItemDetail($item);
+                    $i++;
+                }
+
+                if($customer_id>0){
+                    CartItem::whereIn('id',$delete_item_array)->update([ 'order_id'=>$order['id']]);
+                }else{
+                    GuestCartItem::whereIn('id',$delete_item_array)->update([ 'order_id'=>$order['id']]);
+                }
+
+                $returnArray['status']=true;
+                $status_code=200;
+                $returnArray['data'] =['items'=>$result,'amount'=>$price,'shipping_price'=>$shipping_price];
+                $returnArray['order_code']=$order['order_code'];
+
+            }else{
+                $returnArray['status']=false;
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
+            }
+
+        }else{
+            $returnArray['status'] = false;
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+        }
+        return response()->json($returnArray,$status_code);
+
+    }
+
+    //             }else{//////KKK ÖDEMESİ
+//                    $expDate = $request['expiryYY'].$request['expiryMM'];
+//
+//                    $result = $this->findBank($request['bank_id'],$request['taksit'],$request['amount']);
+//
+//
+//                    if($result['bank_id']==58){
+//                    $array = $this->yapiKredi($request['amount'],$order['order_code']
+//                        ,$request['taksit'],$request['name_surname'],$request['cc_no'],$expDate,$request['cvc']);
+//
+//
+//
+//
+//                    if($array['approved']==0){
+//                ////ödeme başarılı
+//                    //   echo "successs";
+//                    }else{
+//
+//                    }
+//
+////    return response()->json($array);
+//
+//
+//                        }else{/////diğer bankalar
+//                            //return response()->json($result);
+//                        }
+
 }
