@@ -25,6 +25,7 @@ use App\Models\Neighborhood;
 use App\Models\NewsLetter;
 use App\Models\Order;
 use App\Models\OrderAddress;
+use App\Models\OrderReturn;
 use App\Models\Product;
 use App\Models\ProductMemory;
 use App\Models\Tmp;
@@ -2685,10 +2686,11 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
 
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
-                if(!empty($request['customer_id']) ){
+
                     //   $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',CustomerStatus::active)->first();
 
                     $order =  Order::where('order_code','=',$request['order_code'])->first();
+
                     if (!empty($order['id'])   ){
 
                         if($order['customer_id']>0){
@@ -2700,7 +2702,21 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                                 ->update(['status'=>CartItemStatus::canceled]);
 
                         }
-                     Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled]);
+
+                        $problem_id= (!empty($request['problem_id']))?$request['problem_id']:0;
+
+                        if($order['status']==CartItemStatus::sent){
+
+
+                            $return = new OrderReturn();
+                            $return->return_code = 'RTN'.date('YmdHis').'-'.rand(100,999);
+                            $return->name_surname = $order['name_surname'];
+                            $return->order_id=$order['id'];
+                            $return->save();
+
+                        }
+
+                         Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled,'return_problem_id'=>$problem_id]);
 
                         $returnArray['status']=true;
                         $status_code=200;
@@ -2711,11 +2727,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                         $status_code=406;
                         $returnArray['errors'] =['msg'=>'missing data'];
                     }
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
-                }
+
             }else{
                 $returnArray['status']=false;
                 $status_code=498;
