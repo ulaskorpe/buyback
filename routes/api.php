@@ -128,6 +128,7 @@ Route::group(['prefix' => 'cart'], function () {
     Route::post('/payment-confirm', [ \App\Http\Controllers\ApiCustomerController::class, 'paymentConfirm'])->name('payment-confirm-api');
     Route::post('/cancel-order', [ \App\Http\Controllers\ApiCustomerController::class, 'cancelOrder'])->name('cancel-order-api');
     Route::post('/order-summary', [ \App\Http\Controllers\ApiCustomerController::class, 'orderSummary'])->name('order-summary-api');
+    Route::post('/order-detail', [ \App\Http\Controllers\ApiCustomerController::class, 'orderDetay'])->name('order-detail-api');
     Route::post('/order-history', [ \App\Http\Controllers\ApiCustomerController::class, 'orderHistory'])->name('order-history-api');
 
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\CartItemStatus;
 use App\Enums\CustomerStatus;
+use App\Enums\OrderReturnStatus;
 use App\Http\Controllers\Helpers\GeneralHelper;
 use App\Mail\ForgetPassword;
 use App\Mail\Register;
@@ -1571,6 +1572,42 @@ class ApiCustomerController extends Controller
         }/////////////
     }
 
+    private function updateCartItems($customer_id=0,$guid=0){
+
+        if($customer_id>0){
+            $items = CartItem::where('customer_id','=',$customer_id)->where('status','=',CartItemStatus::init)->get();
+            foreach ($items as $item){
+                $product = Product::find($item['product_id']);
+                if($product['status']==0 || empty($product['id'])){
+                    $item->delete();
+                }else{
+                    $price = ($product['price']>$product['price_ex'])?$product['price_ex']:$product['price'];
+                    $item->price = $price;
+                    $item->save();
+
+                }
+            }
+
+        }else{
+
+            $items = GuestCartItem::where('guid','=',$guid)->where('status','=',CartItemStatus::init)->get();
+            foreach ($items as $item){
+                $product = Product::find($item['product_id']);
+                if($product['status']==0 || empty($product['id'])){
+                    $item->delete();
+                }else{
+                    $price = ($product['price']>$product['price_ex'])?$product['price_ex']:$product['price'];
+                    $item->price = $price;
+                    $item->save();
+
+                }
+            }
+        }
+
+
+    }
+
+
     public function addToCart(Request $request)
     {
 
@@ -1586,7 +1623,7 @@ class ApiCustomerController extends Controller
 
 
                     if(!empty($ch['id'])){ ///// customer process
-
+                        $this->updateCartItems($ch['id'],0);
                         $item_code=$this->createCartItem($ch['id'],0,$request['product_id'],$price);
                         $ch->ip_address=$request->ip();
                         $ch->save();
@@ -1605,6 +1642,7 @@ class ApiCustomerController extends Controller
                             ->orderBy('created_at','DESC')
                             ->get();
                         $i=0;
+
                         foreach ($cart_items as $cart_item){
                             $item_array[$i] = $this->cartItemDetail($cart_item);
                             $i++;
@@ -1629,6 +1667,7 @@ class ApiCustomerController extends Controller
                                 $guest->expires_at = Carbon::now()->addYear(1)->format('Y-m-d');
                                 $guest->save();
                             }
+                            $this->updateCartItems(0,$guest['id']);
                             $item_code = $this->createCartItem(0,$guest['id'],$product['id'],$price);
                             if(!empty($request['buy_together'])){
                                 $this->buyTogether($request['buy_together'],0,$guest['id']);
@@ -1641,6 +1680,8 @@ class ApiCustomerController extends Controller
                                 ->orderBy('created_at','DESC')
                                 ->get();
                             $i=0;
+
+
                             foreach ($cart_items as $cart_item){
                                 $item_array[$i]=$this->cartItemDetail($cart_item);
                                 $i++;
@@ -1707,7 +1748,7 @@ class ApiCustomerController extends Controller
                             $item->delete();
                             $returnArray['status']=true;
                             $status_code=200;
-
+                            $this->updateCartItems($ch['id'],0);
 
                             $ch->ip_address=$request->ip();
                             $ch->save();
@@ -1719,6 +1760,7 @@ class ApiCustomerController extends Controller
                                 ->orderBy('created_at','DESC')
                                 ->get();
                             $i=0;
+
                             foreach ($cart_items as $cart_item){
                                 $item_array[$i] = $this->cartItemDetail($cart_item);
                                 $i++;
@@ -1740,13 +1782,14 @@ class ApiCustomerController extends Controller
                         if(!empty($guest['id']) && !empty($item['id'])){
                             $item->delete();
 
-
+                            $this->updateCartItems(0,$guest['id']);
                             $item_array=array();
                             $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
                                 ->where('guid','=',$guest['id'])
                                 ->orderBy('created_at','DESC')
                                 ->get();
                             $i=0;
+
                             foreach ($cart_items as $cart_item){
                                 $item_array[$i]=$this->cartItemDetail($cart_item);
                                 $i++;
@@ -1832,7 +1875,7 @@ class ApiCustomerController extends Controller
 
                             $ch->ip_address=$request->ip();
                             $ch->save();
-
+                            $this->updateCartItems($ch['id'],0);
                             $item_array=array();
                             $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
                                 ->where('status','=',0)
@@ -1875,7 +1918,7 @@ class ApiCustomerController extends Controller
                             $item->quantity = $qty;
 
                             $item->save();
-
+                            $this->updateCartItems(0,$guest['id']);
 
                             $item_array=array();
                             $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
@@ -1968,7 +2011,7 @@ class ApiCustomerController extends Controller
                         $status_code=200;
                         $item_array=array();
 
-
+                        $this->updateCartItems($ch['id'],0);
                         $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
                             ->where('status','=',0)
                             ->where('customer_id','=',$ch['id'])
@@ -2010,12 +2053,14 @@ class ApiCustomerController extends Controller
 
 
                         $item_array=array();
+                        $this->updateCartItems(0,$guest['id']);
                         $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
                             ->where('guid','=',$guest['id'])
                             ->where('order_id','=',0)
                             ->orderBy('created_at','DESC')
                             ->get();
                         $i=0;
+
                         foreach ($cart_items as $cart_item){
                             $item_array[$i]=$this->cartItemDetail($cart_item);
                             $i++;
@@ -2199,6 +2244,7 @@ class ApiCustomerController extends Controller
 
 
 
+
                 if($customer_id + $guid ==0  ){
                     $returnArray['status']=false;
                     $status_code=404;
@@ -2233,8 +2279,8 @@ class ApiCustomerController extends Controller
                     $taksit = (!empty($request['taksit']))?$request['taksit']:1;
 
 
-                    $this->makeTmp(date("YmdHis")." Place-Order-CC",
-                        $request['name_surname'].":".$request['cc_no'].",YY:".$request['expiryYY']." MM".$request['expiryMM'].",CVC ".$request['cvc']);
+//                    $this->makeTmp(date("YmdHis")." Place-Order-CC",
+//                        $request['name_surname'].":".$request['cc_no'].",YY:".$request['expiryYY']." MM".$request['expiryMM'].",CVC ".$request['cvc']);
 
                 }////// HAVALE/KK - ÖDEMESİ
 
@@ -2297,6 +2343,8 @@ class ApiCustomerController extends Controller
                 $order->save();
 
 /////////////addressss
+
+if($guid>0){
                 $city_id =  (!empty($request['delivery_city_id']))? $request['delivery_city_id']:0;
                 $phone=(!empty($request['delivery_phone'])) ? $request['delivery_phone']:'';
                 if(!empty($request['delivery_address'])){
@@ -2354,6 +2402,7 @@ class ApiCustomerController extends Controller
 
 
                 }
+}///guid>0
 /////////////addressss
 
                 $result = array();
@@ -2561,60 +2610,85 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
     {
 
         if ($request->isMethod('post')) {
-            $order =  Order::with('customer')
-                ->where('status','=',CartItemStatus::init)
-                ->where('order_code','=',$request['order_code'])->first();
-            if( !empty($order['id'])){
+
+//            $returnData = json_encode($request);
+//
+//            $this->makeTmp($request->ip(), $returnData);
+            if ($request->header('x-api-key') == $this->generateKey()) {
+            //    return response()->json(['order_code'=>$request['order_code'],'result'=>$request['result'] ]);
+
+                $order = Order::with('customer')
+                    ->where('status', '=', CartItemStatus::init)
+                    ->where('order_code', '=', $request['order_code'])->first();
+                if (!empty($order['id'])) {
 
 
-                    if($request['result']==1){
+                    if ($request['result'] == 1) {
+                        $this->makeTmp($request->ip(), $request['Order_code'] . ":" . $request['Result'] . ":" . $request['Msg'] . ':' . date('YmdHi'));
 
-                     if($order['customer_id']>0){
-                             CartItem::where('status','=',CartItemStatus::init)
-                                ->where('customer_id','=',$order['customer_id'])
-                                ->where('order_id','=',$order['id'])
-                                 ->update(['status'=>CartItemStatus::paid]);
+                        if($order['id']!=52){
+
+                        if ($order['customer_id'] > 0) {
+                            $items = CartItem::where('status', '=', CartItemStatus::init)
+                                ->where('customer_id', '=', $order['customer_id'])
+                                ->where('order_id', '=', $order['id'])->get();
+                         //       ->update(['status' => CartItemStatus::paid]);
 
 
-                  //      $mailer->to($order->customer()->first()->email)->send(new OrderEmail($order['order_code'].' kodlu siparişiniz alınmıştır'));
+                            //      $mailer->to($order->customer()->first()->email)->send(new OrderEmail($order['order_code'].' kodlu siparişiniz alınmıştır'));
 
 
-                        }else{
-                            GuestCartItem:: where('status','=',CartItemStatus::init)
-                                ->where('guid','=',$order['guid'])
-                                ->where('order_id','=',$order['id'])
-                                ->update(['status'=>CartItemStatus::paid]);
+                        } else {
+                          $items =  GuestCartItem:: where('status', '=', CartItemStatus::init)
+                                ->where('guid', '=', $order['guid'])
+                                ->where('order_id', '=', $order['id'])->get();
+                                //->update(['status' => CartItemStatus::paid]);
                         }
 
-                        Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::paid]);
+                        foreach($items as $item){
+                            $item->status = CartItemStatus::paid;
+                            $item->save();
+                            $product  = Product::find($item['product_id']);
+                            $product->status =0 ;
+                            $product->save();
 
-                        $returnArray['status']=true;
-                        $status_code=200;
+                        }
 
-                    }else{////payment error
-                        $returnArray['status']=false;
-                        $status_code=402;
+                        Order::where('id', '=', $order['id'])->update(['status' => CartItemStatus::paid]);
+                        }
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+
+                    } else {////payment error
+                        $returnArray['status'] = false;
+                        $status_code = 402;
 
 
                     }/////payment status
 
 
-                $order->message = (!empty($request['msg']))?$request['msg']:'';
+                    $order->message = (!empty($request['msg'])) ? $request['msg'] : '';
                     $order->save();
 
 
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
+                }
+
             }else{
                 $returnArray['status']=false;
-                $status_code=406;
-                $returnArray['errors'] =['msg'=>'missing data'];
+                $status_code=498;
+                $returnArray['errors'] =['msg'=>'invalid key'];
+            }
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 405;
+                $returnArray['errors'] = ['msg' => 'method_not_allowed'];
             }
 
 
-        }else{
-            $returnArray['status'] = false;
-            $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
-        }
         return response()->json($returnArray,$status_code);
 
     }
@@ -2694,33 +2768,54 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                     if (!empty($order['id'])   ){
 
                         if($order['customer_id']>0){
-                            CartItem::where('order_id','=',$order['id'])
-                                ->update(['status'=>CartItemStatus::canceled]);
+                            $items = CartItem::where('order_id','=',$order['id'])->get();
+                                //->update(['status'=>CartItemStatus::canceled]);
 
                         }else{
-                            GuestCartItem::where('order_id','=',$order['id'])
-                                ->update(['status'=>CartItemStatus::canceled]);
+                          $items =   GuestCartItem::where('order_id','=',$order['id'])->get();
+                                //->update(['status'=>CartItemStatus::canceled]);
 
                         }
 
                         $problem_id= (!empty($request['problem_id']))?$request['problem_id']:0;
 
-                        if($order['status']==CartItemStatus::sent){
-
+                        if($order['status']==CartItemStatus::sent){////gönderilmiş ise
+                        $return = OrderReturn::where('order_id','=',$order['id'])->first();
+                        if(empty($return['id'])){
 
                             $return = new OrderReturn();
-                            $return->return_code = 'RTN'.date('YmdHis').'-'.rand(100,999);
-                            $return->name_surname = $order['name_surname'];
                             $return->order_id=$order['id'];
+                            $return->return_code = 'RTN'.date('YmdHis').'-'.rand(100,999);
+                        }/////return ???
+
+
+
+                            $return->name_surname = $order['name_surname'];
+                            $return->service_address_id = (!empty($request['service_address_id']))?$request['service_address_id']:0;
+                            $return->cargo_company_id = (!empty($request['cargo_company_id']))?$request['cargo_company_id']:0;
+                            $return->cargo_code = (!empty($request['cargo_code']))?$request['cargo_code']:'';
+                            $return->status = (!empty($request['cargo_code']))?OrderReturnStatus::on_cargo:OrderReturnStatus::init;
                             $return->save();
+
+//                        }elseif ($order['status']==CartItemStatus::paid){
+
+                        }else{
+                            $return=null;
+                        }
+
+                        foreach ($items as $item){
+                            $product = Product::find($item['product_id']);
+                            $product->status = 1;
+                            $product->save();
+                            $item->status = CartItemStatus::canceled;
+                            $item->save();
 
                         }
 
-                         Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled,'return_problem_id'=>$problem_id]);
-
+                        Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled,'return_problem_id'=>$problem_id]);
                         $returnArray['status']=true;
                         $status_code=200;
-                        $returnArray['data'] =['order'=>$order];
+                        $returnArray['data'] =['order'=>$order,'return'=>$return];
 
                     }else{
                         $returnArray['status']=false;
@@ -2753,6 +2848,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
         $i=0;
         foreach ( $order->cart_items()->get() as $item){
             $items[$i]['id']=$item->product()->first()->id;
+            $items[$i]['micro_id']=$item->product()->first()->micro_id;
             $items[$i]['title']=$item->product()->first()->title;
             $items[$i]['model']=$item->product()->first()->brand()->first()->BrandName." ".$item->product()->first()->model()->first()->Modelname;
             $items[$i]['url']='/urun-detay/'.$item->product()->first()->id;
@@ -2761,7 +2857,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
            // $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
             //$items[$i]['quantity']=$item['quantity'];
             $items[$i]['price']=$item['price'];
-            $items[$i]['datetime']=$item['price'];
+        //    $items[$i]['datetime']=$item['price'];
             $i++;
         }
         $result['items']=$items;
@@ -2805,6 +2901,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
         $i=0;
         foreach ( $order->guest_cart_items()->get() as $item){
             $items[$i]['id']=$item->product()->first()->id;
+            $items[$i]['micro_id']=$item->product()->first()->micro_id;
             $items[$i]['title']=$item->product()->first()->title;
             $items[$i]['model']=$item->product()->first()->brand()->first()->BrandName." ".$item->product()->first()->model()->first()->Modelname;
             $items[$i]['url']='/urun-detay/'.$item->product()->first()->id;
@@ -2813,7 +2910,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
            // $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
             //$items[$i]['quantity']=$item['quantity'];
             $items[$i]['price']=$item['price'];
-            $items[$i]['datetime']=$item['price'];
+       //     $items[$i]['datetime']=$item['price'];
             $i++;
         }
         $result['items']=$items;
@@ -2862,6 +2959,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
                 if(!empty($request['customer_id']) ){
+
 
 
                     $customer =  Customer::where('customer_id','=',((!empty($request['customer_id']))?$request['customer_id']:0))->where('status','=',1)->first();
@@ -2919,6 +3017,81 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
             $returnArray['errors'] =['msg'=>'method_not_allowed'];
         }
         return response()->json($returnArray,$status_code);
+
+    }
+
+    public function orderDetay(Request $request){
+
+        if ($request->isMethod('post')) {
+            //if ($request->header('x-api-key') == $this->generateKey()) {
+            $data = array();
+
+            $order= Order::with('cart_items.product','guest_cart_items.product','customer','guest','customer_address','invoice_address','cargo_company','order_method')
+                ->where('order_code','=',((!empty($request['order_code']))?$request['order_code']:0))->first();
+
+            if(empty($order['id'])){
+                $returnArray['status']=false;
+                $status_code=406;
+                $returnArray['errors'] =['msg'=>'not-found'];
+                return response()->json($returnArray,$status_code);
+            }
+
+
+
+                if(!empty($order['customer_id']) ){
+
+
+                    $customer =  Customer::where('id','=',((!empty($order['customer_id']))?$order['customer_id']:0))->where('status','=',1)->first();
+                    $data['customer']=$customer;
+
+
+                    if(!empty($customer['id']) && !empty($order['id'])&&  $order->cart_items()->count()>0){
+
+                        $returnArray['status']=true;
+                        $status_code=200;
+                  //     $returnArray['data'] = $data;//array_merge(['order'=>$this->orderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
+                        $data['order']=$this->orderDetail($order);
+
+                    }else{
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'missssing data'];
+                        return response()->json($returnArray,$status_code);
+                    }
+                }else{///guest
+
+
+                    $guest =  Guest::where('id','=',((!empty($order['guid']))?$order['guid']:0))->first();
+
+
+                    $data['guest']=$guest;
+
+                    if(!empty($guest['id']) && !empty($order['id'])&&  $order->guest_cart_items()->count()>0){
+
+                        $returnArray['status']=true;
+                        $status_code=200;
+
+
+
+                     //   $returnArray['data'] = array_merge(['order'=>$this->guestOrderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
+                        $data['order']=$this->guestOrderDetail($order);
+
+                    }else{
+                        $returnArray['status']=false;
+                        $status_code=406;
+                        $returnArray['errors'] =['msg'=>'missing data'];
+                    }
+
+                }
+            $data['payment_informations']=$this->paymentInfo($order);
+
+
+        }else{
+            $returnArray['status'] = false;
+            $status_code = 405;
+            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+        }
+        return response()->json($data,$status_code);
 
     }
 

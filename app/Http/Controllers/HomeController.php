@@ -55,12 +55,109 @@ class HomeController extends Controller
        return view('index',['brands'=>ProductBrand::all()]);
     //   return redirect(route('admin.index'));
     }
+    public function kkForm(){
+        //echo route('banka-taksitler',40);
+//        Session::put('admin_id',$check['id']);
+//        Session::put('name_surname',$check['name']." ".$check['surname']);
+//        Session::put('sudo',$check['sudo']);
+
+
+//        for($i=0;$i<100;$i++){
+//            $this->makeTmp($this->randomPassword(16,1),rand(100,85555));
+//        }
+
+//return  Session::get('auth_array');
+       // return view('react');
+
+       return view('kkform' );
+    //   return redirect(route('admin.index'));
+    }
     public function react(){
 
 
          return view('react');
 
     }
+
+
+    public function postConfirm(){
+
+
+        $postRequest = array(
+            'order_code' => 'asdfasff556+65+',
+            'result' => 112,
+            'msg' => 'naber nasılsın',
+        );
+/*
+        $postRequest = '<?xml version="1.0" encoding="UTF-8"?>
+                            <CC5Request>
+                            <Order_code>asdfasff55623132</Order_code>
+                            <Result>1</Result>
+                            <Msg>burası msg</Msg>
+
+                            </CC5Request>';*/
+        $data_string = json_encode($postRequest);
+        $cURLConnection = curl_init("https://buyback.garantiliteknoloji.com/api/customers/cart/payment-confirm");
+        curl_setopt($cURLConnection, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($cURLConnection, CURLOPT_RETURNTRANSFER, true);
+     //   curl_setopt($cURLConnection, CURLOPT_POST, count($postRequest));
+   //     curl_setopt($cURLConnection, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($cURLConnection, CURLOPT_POST, true);
+     //   curl_setopt($cURLConnection, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($cURLConnection, CURLOPT_POSTFIELDS, $data_string);
+
+       // curl_setopt($cURLConnection, CURLOPT_HTTPHEADER,     array('Content-Type:application/json','x-api-key:5c35640a3da4f1e3970bacbbf7b20e6c'));
+        curl_setopt($cURLConnection, CURLOPT_HTTPHEADER,     array( 'x-api-key:5c35640a3da4f1e3970bacbbf7b20e6c'));
+        $apiResponse = curl_exec($cURLConnection);
+        curl_close($cURLConnection);
+        return response()->json($apiResponse);
+// $apiResponse - available data from the API request
+
+
+
+    }
+    public function ziraatPOst(){
+
+
+        $strHostAddress = "https://sanalpos2.ziraatbank.com.tr/fim/api"; //Provizyon için xml'in post edilecegi adres
+
+/*<
+        $strXML = '<?xml version="1.0" encoding="UTF-8"?>
+                            CC5Request>
+                            <Name>NAme</Name>
+                            <Password>'.$Password.'</Password>
+                            <ClientId>'.$ClientId.'</ClientId>
+                            <IPAddress>'.$IPAddress.'</IPAddress>
+                            <OrderId>'.$OrderId.'</OrderId>
+                            <Type>'.$Type.'</Type>
+                            <Number>'.$Number.'</Number>
+                            <Amount>'.$Amount.'</Amount>
+                            <Taksit>'.$taksit.'</Taksit>
+                            <Currency>'.$Currency.'</Currency>
+                            <PayerTxnId>'.$PayerTxnId.'</PayerTxnId>
+                            <PayerSecurityLevel>'.$PayerSecurityLevel.'</PayerSecurityLevel>
+                            <PayerAuthenticationCode>'.$PayerAuthenticationCode.'</PayerAuthenticationCode>
+                            </CC5Request>';
+
+        $ch=curl_init();
+        curl_setopt($ch, CURLOPT_URL, $strHostAddress);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1) ;
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "data=".$strXML);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        $results = curl_exec($ch);
+        curl_close($ch);
+
+        $xml_parser = xml_parser_create();
+        xml_parse_into_struct($xml_parser,$results,$vals,$index);
+        xml_parser_free($xml_parser);
+*/
+
+
+    }
+
+
     public function customerFix(){
         $cs = Customer::all();
         foreach ($cs as $c){

@@ -215,7 +215,7 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <form id="order-drretail" action="#" method="post"
+                                <form id="order-detail" action="#" method="post"
                                       enctype="multipart/form-data">
                                     {{csrf_field()}}
                                     <input type="hidden" id="id" name="id" value="{{$order['id']}}">
@@ -332,11 +332,11 @@
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Durum :</label>
                                         <div class="col-lg-4">
                                             <select name="status" id="status"  class="form-control" >
-                                                <option value="0" @if($order['status']==0) selected @endif>Sepette</option>
-                                                <option value="1" @if($order['status']==1) selected @endif>Ödendi</option>
-                                                <option value="2" @if($order['status']==2) selected @endif>Gönderildi</option>
-                                                <option value="3" @if($order['status']==3) selected @endif>İptal Edildi</option>
-                                                <option value="4" @if($order['status']==4) selected @endif>Tamamlandı</option>
+                                                <option value="0" @if($order['status']==\App\Enums\CartItemStatus::init) selected @endif>Sepette</option>
+                                                <option value="1" @if($order['status']==\App\Enums\CartItemStatus::paid) selected @endif>Ödendi</option>
+                                                <option value="2" @if($order['status']==\App\Enums\CartItemStatus::sent) selected @endif>Gönderildi</option>
+                                                <option value="3" @if($order['status']==\App\Enums\CartItemStatus::canceled) selected @endif>İptal Edildi</option>
+                                                <option value="4" @if($order['status']==\App\Enums\CartItemStatus::completed) selected @endif>Tamamlandı</option>
 
                                             </select>
                                             <span id="service_address_id_error"></span>
@@ -358,6 +358,9 @@
                          aria-labelledby="variant-tab">
                         <div class="row">
                             <div class="col-12">
+                                @if($return['id'])
+                                    @include("admin.customer.order_cancel")
+                                    @endif
 
                             </div>
                         </div>
@@ -399,6 +402,15 @@
             selectAddress({{$order['customer_address_id']}});
             @endif
 
+                    @if(!empty($return['id']))
+
+            $.get("{{url('admin/customers/service-address-detail')}}/"+$('#service_address_id_return').val()  , function (data) {
+                console.log(data);
+                $('#service_address_return').html(data.branch);
+            });
+                    @endif
+
+
             @if($order['cargo_company_branch_id']>0)
             selectbranch({{$order['cargo_company_branch_id']}});
             @endif
@@ -438,6 +450,13 @@
             $('#service_address_id_error').html('');
             $.get("{{url('admin/customers/service-address-detail')}}/"+address_id  , function (data) {
                 $('#service_address').html(data.branch);
+            });
+        }
+
+        function serviceAddressReturn(address_id){
+
+            $.get("{{url('admin/customers/service-address-detail')}}/"+address_id  , function (data) {
+                $('#service_address_return').html(data.branch);
             });
         }
 
@@ -495,6 +514,18 @@
 
             }
 
+
+
+        });
+
+        $('#order-cancel-update').submit(function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            var error = false;
+
+            save(formData, '{{route('customer.order-cancel-update-post')}}', '', 'btn-1', '');
 
 
         });

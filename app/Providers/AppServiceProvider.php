@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Order;
+use App\Models\OrderReturn;
 use App\Observers\OrderObserver;
+use App\Observers\ReturnOrderObserver;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,5 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
          Schema::defaultStringLength(255);
         Order::observe(OrderObserver::class);
+       OrderReturn::observe(ReturnOrderObserver::class);
+
     }
 }

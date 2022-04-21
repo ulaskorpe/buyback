@@ -19,6 +19,9 @@ Route::get('/', function () {
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
 Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('react');
+Route::get('/post-confirm',[\App\Http\Controllers\HomeController::class,'postConfirm'])->name('post-confirm');
+Route::get('/kk-form',[\App\Http\Controllers\HomeController::class,'kkForm'])->name('kk-form');
+Route::get('/ziraat-post',[\App\Http\Controllers\HomeController::class,'postConfirm'])->name('post-confirm');
 Route::get('/customer-fix',[\App\Http\Controllers\HomeController::class,'customerFix'])->name('customer-fix');
 Route::get('/send-email/{email?}',[\App\Http\Controllers\HomeController::class,'sendEmail'])->name('send-email-test');
 Route::get('/get-products',[\App\Http\Controllers\HomeController::class,'getProducts'])->name('get-products-ekspar');
@@ -386,5 +389,6 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/order-update/{order_id}/{selected?}',[\App\Http\Controllers\CustomerController::class,'orderUpdate'])->name('order-update');
         Route::get('/cargo-code-check/{cargo_code}/{order_id}',[\App\Http\Controllers\CustomerController::class,'cargoCodeCheck'])->name('cargo-code-check');
         Route::post('/order-update-post',[\App\Http\Controllers\CustomerController::class,'orderUpdatePost'])->name('order-update-post');
+        Route::post('/order-cancel-update-post',[\App\Http\Controllers\CustomerController::class,'orderCancelUpdatePost'])->name('order-cancel-update-post');
     });
 });

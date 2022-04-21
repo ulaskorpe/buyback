@@ -27,7 +27,7 @@ class OrderObserver
                 }else{
                     $txt = "Siparişiniz alınmıştır";
                 }
-            Mail::to($order->customer()->first()->email)->send(new OrderEmail($txt));
+     //       Mail::to($order->customer()->first()->email)->send(new OrderEmail($txt));
             }
 
 

@@ -18,6 +18,7 @@ use App\Models\GuestCartItem;
 use App\Models\NewsLetter;
 use App\Models\Order;
 use App\Models\OrderAddress;
+use App\Models\OrderReturn;
 use App\Models\ServiceAddress;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -280,11 +281,17 @@ class CustomerController extends Controller
     }
 
     public function orderUpdate($order_id,$selected=0){
-        $order = Order::with('cart_items','guest_cart_items','guest','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','order_method'
+        $order = Order::with('cart_items','guest_cart_items','guest','cart_items.product.firstImage','customer','order_method'
             ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
                ->where('id','=',$order_id)
             ->orderBy('id','DESC')
             ->first();
+
+        $return =  OrderReturn::with('service_address')->where('order_id','=',$order['id'])->first();
+            if(empty($return['id'])){
+                $return=null;
+            }
+
 
         if($order['customer_id']==0){
             $deliver_address  = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',0)->first();
@@ -298,7 +305,7 @@ class CustomerController extends Controller
             return view('admin.customer.order_update',['order'=>$order,'order_status'=>$this->order_status_array
                 ,'selected'=>$selected,'order_id'=>$order_id,'cargo_companies'=>CargoCompany::with('branches')->get()
                 ,'service_addresses'=>ServiceAddress::all(),'bank_accounts'=>BankAccount::all(),
-                'deliver_address'=>$deliver_address,'invoice_address'=>$invoice_address]);
+                'deliver_address'=>$deliver_address,'invoice_address'=>$invoice_address,'return'=>$return]);
 
     }
 
@@ -320,6 +327,28 @@ class CustomerController extends Controller
                     $order->save();
 
                 return ['Sipariş  Güncellendi:', 'success', route('customer.order-update',[$request['id'],1]), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function orderCancelUpdatePost(Request $request){
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+                    $return = OrderReturn::find($request['return_id']);
+                    $return->cargo_company_id = $request['cargo_company_id'];
+                    $return->cargo_code = $request['cargo_code_return'];
+                    $return->service_address_id = $request['service_address_id_return'];
+                    $return->status = $request['status_return'];
+                    $return->save();
+
+                return [ 'Sipariş İptali  Güncellendi:', 'success', route('customer.order-update',[$request['id'],2]), '', ''];
             });
             return json_encode($resultArray);
 
