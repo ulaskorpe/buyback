@@ -19,6 +19,7 @@ Route::get('/', function () {
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
 Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('react');
+Route::get('/post-form',[\App\Http\Controllers\HomeController::class,'postForm'])->name('post-form');
 Route::get('/post-confirm',[\App\Http\Controllers\HomeController::class,'postConfirm'])->name('post-confirm');
 Route::get('/kk-form',[\App\Http\Controllers\HomeController::class,'kkForm'])->name('kk-form');
 Route::get('/ziraat-post',[\App\Http\Controllers\HomeController::class,'postConfirm'])->name('post-confirm');
@@ -373,7 +374,7 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/check-email/{email}/{customer_id}',[\App\Http\Controllers\CustomerController::class,'checkEmail'])->name('customer-check-email');
         Route::get('/address-update/{customer_id}/{address_id}',[\App\Http\Controllers\CustomerController::class,'addressUpdate'])->name('customer-address-update');
         Route::post('/update-address-post',[\App\Http\Controllers\CustomerController::class,'customerUpdateAddress'])->name('customer-update-address');
-        Route::get('/orders',[\App\Http\Controllers\CustomerController::class,'orders'])->name('orders');
+        Route::get('/orders/{type?}',[\App\Http\Controllers\CustomerController::class,'orders'])->name('orders');
         Route::get('/guests',[\App\Http\Controllers\CustomerController::class,'guests'])->name('guests');
         Route::get('/newsletter',[\App\Http\Controllers\CustomerController::class,'newsletter'])->name('newsletter');
         Route::get('/contacts',[\App\Http\Controllers\CustomerController::class,'contacts'])->name('contacts');

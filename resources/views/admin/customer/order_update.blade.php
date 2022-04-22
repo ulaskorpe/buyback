@@ -358,7 +358,7 @@
                          aria-labelledby="variant-tab">
                         <div class="row">
                             <div class="col-12">
-                                @if($return['id'])
+                                @if(!empty($return['id']))
                                     @include("admin.customer.order_cancel")
                                     @endif
 

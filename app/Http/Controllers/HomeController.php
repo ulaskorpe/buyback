@@ -72,6 +72,23 @@ class HomeController extends Controller
        return view('kkform' );
     //   return redirect(route('admin.index'));
     }
+    public function postForm(){
+        //echo route('banka-taksitler',40);
+//        Session::put('admin_id',$check['id']);
+//        Session::put('name_surname',$check['name']." ".$check['surname']);
+//        Session::put('sudo',$check['sudo']);
+
+
+//        for($i=0;$i<100;$i++){
+//            $this->makeTmp($this->randomPassword(16,1),rand(100,85555));
+//        }
+
+//return  Session::get('auth_array');
+       // return view('react');
+
+       return view('post_form' );
+    //   return redirect(route('admin.index'));
+    }
     public function react(){
 
 
@@ -80,13 +97,13 @@ class HomeController extends Controller
     }
 
 
-    public function postConfirm(){
+    public function postConfirm(Request $request){
 
 
         $postRequest = array(
-            'order_code' => 'asdfasff556+65+',
-            'result' => 112,
-            'msg' => 'naber nasılsın',
+            'order_code' =>$request['order_code'],
+            'result' => $request['result'],
+            'msg' => $request['msg'],
         );
 /*
         $postRequest = '<?xml version="1.0" encoding="UTF-8"?>
@@ -116,6 +133,7 @@ class HomeController extends Controller
 
 
     }
+
     public function ziraatPOst(){
 
 

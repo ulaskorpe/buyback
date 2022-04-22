@@ -34,7 +34,17 @@
                 </div>
 
             @endif
+            <div class="form-group row">
+                <label class="col-lg-2 col-form-label font-weight-semibold">İade IBAN :</label>
+                <div class="col-lg-3" id="customer_address">
+                 {{$return['iban_name']}}<br>
+                 {{$return['iban']}}<br>
+                 {{$return['bank_name']}}<br>
+                </div>
 
+            </div>
+
+            @if($return['requires_cargo']==1)
             <div class="form-group row">
                 <label class="col-lg-2 col-form-label font-weight-semibold">Kargo Şirketi :</label>
                 <div class="col-lg-3">
@@ -74,23 +84,37 @@
             </div>
 
             <div class="row my-3"><div class="col-lg-2"></div>   <div class="col-lg-5" id="service_address_return"></div></div>
+                <div class="form-group row">
+                    <label class="col-lg-2 col-form-label font-weight-semibold">Durum :</label>
+                    <div class="col-lg-4">
+                        <select name="status_return" id="status_return"  class="form-control" >
+                            <option value="{{\App\Enums\OrderReturnStatus::init}}" @if($return['status']==\App\Enums\OrderReturnStatus::init) selected @endif>İptal Edildi</option>
+                            <option value="{{\App\Enums\OrderReturnStatus::on_cargo}}" @if($return['status']==\App\Enums\OrderReturnStatus::on_cargo) selected @endif>Kargoya verildi</option>
+                            <option value="{{\App\Enums\OrderReturnStatus::received}}" @if($return['status']==\App\Enums\OrderReturnStatus::received) selected @endif>Tamamlandı</option>
 
-
-
-
-            <div class="row my-3"><div class="col-lg-2"></div>   <div class="col-lg-5" id="bank_detail"></div></div>
-            <div class="form-group row">
-                <label class="col-lg-2 col-form-label font-weight-semibold">Durum :</label>
-                <div class="col-lg-4">
-                    <select name="status_return" id="status_return"  class="form-control" >
-                        <option value="{{\App\Enums\OrderReturnStatus::init}}" @if($return['status']==\App\Enums\OrderReturnStatus::init) selected @endif>İptal Edildi</option>
-                        <option value="{{\App\Enums\OrderReturnStatus::on_cargo}}" @if($return['status']==\App\Enums\OrderReturnStatus::on_cargo) selected @endif>Kargoya verildi</option>
-                        <option value="{{\App\Enums\OrderReturnStatus::received}}" @if($return['status']==\App\Enums\OrderReturnStatus::received) selected @endif>Tamamlandı</option>
-
-                    </select>
-                    <span id="service_address_id_error"></span>
+                        </select>
+                        <span id="service_address_id_error"></span>
+                    </div>
                 </div>
-            </div>
+                @else
+                <div class="form-group row">
+                    <label class="col-lg-2 col-form-label font-weight-semibold">Durum :</label>
+                    <div class="col-lg-4">
+                        <select name="status_return" id="status_return"  class="form-control" >
+                            <option value="{{\App\Enums\OrderReturnStatus::init}}" @if($return['status']==\App\Enums\OrderReturnStatus::init) selected @endif>İptal Edildi</option>
+
+                            <option value="{{\App\Enums\OrderReturnStatus::received}}" @if($return['status']==\App\Enums\OrderReturnStatus::received) selected @endif>Tamamlandı</option>
+
+                        </select>
+                        <span id="service_address_id_error"></span>
+                    </div>
+                </div>
+        @endif
+
+
+
+
+
             <div class="text-center">
                 <button type="submit" class="btn btn-primary font-weight-bold rounded-round">İPTAL GÜNCELLE
                     <i class="icon-paperplane ml-2"></i></button>

@@ -44,16 +44,16 @@ class ApiCustomerController extends Controller
 {
 
 
-
     use ApiTrait;
     use CCPayment;
 
-    private function guestWelcome($guid,$c_id){
-        $guest = Guest::where('guid','=',$guid)->first();
-        if(!empty($guest['id'])){
+    private function guestWelcome($guid, $c_id)
+    {
+        $guest = Guest::where('guid', '=', $guid)->first();
+        if (!empty($guest['id'])) {
 
-            $items = GuestCartItem::where('guid','=',$guest['id'])->get();
-            foreach ($items as $item){
+            $items = GuestCartItem::where('guid', '=', $guest['id'])->get();
+            foreach ($items as $item) {
                 $cart_item = new CartItem();
                 $cart_item->item_code = $item['item_code'];
                 $cart_item->customer_id = $c_id;
@@ -67,15 +67,15 @@ class ApiCustomerController extends Controller
                 $cart_item->save();
             }
 
-            GuestCartItem::where('guid','=',$guest['id'])->delete();
-            Guest::where('guid','=',$guid)->delete();
+            GuestCartItem::where('guid', '=', $guest['id'])->delete();
+            Guest::where('guid', '=', $guid)->delete();
         }
     }
 
-    public function create(Request $request,Mailer $mailer)
+    public function create(Request $request, Mailer $mailer)
     {
         if ($request->isMethod('post')) {
-            $status_code =201;
+            $status_code = 201;
             if ($request->header('x-api-key') == $this->generateKey()) {
 
                 /*
@@ -116,7 +116,7 @@ class ApiCustomerController extends Controller
                         $c->customer_id = $last['customer_id'] + 1;
                         $c->name = $request['name'];
                         $c->surname = $request['surname'];
-                        $c->gender = (!empty($request['gender']))?$request['gender']:'';
+                        $c->gender = (!empty($request['gender'])) ? $request['gender'] : '';
                         $c->email = $request['email'];
                         $c->password = md5($request['password']);
                         $c->status = 0;
@@ -128,15 +128,15 @@ class ApiCustomerController extends Controller
                             $ch = $this->checkUnique('activation_key', 'customers', $key);
                         }
                         $c->activation_key = $key;
-                        $c->ip_address =$request->ip;
+                        $c->ip_address = $request->ip;
 
                         $file = $request->file('avatar');
                         if (!empty($file)) {
 
-                            $filename = GeneralHelper::fixName($request['name'].$request['surname']) . "_"
+                            $filename = GeneralHelper::fixName($request['name'] . $request['surname']) . "_"
                                 . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                            $path =  "images/customers" ;
-                            $th = GeneralHelper::fixName($request['name'].$request['surname']) . "TH_"
+                            $path = "images/customers";
+                            $th = GeneralHelper::fixName($request['name'] . $request['surname']) . "TH_"
                                 . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
 
 
@@ -158,9 +158,8 @@ class ApiCustomerController extends Controller
                         $c->save();
 
 
-
-                        if(!empty($request['guid'])){
-                      //      $this->guestWelcome($request['guid'],$c['id']);
+                        if (!empty($request['guid'])) {
+                            //      $this->guestWelcome($request['guid'],$c['id']);
                         }//////guest
 
 
@@ -168,7 +167,7 @@ class ApiCustomerController extends Controller
                         $returnArray['status'] = true;
                         // $returnArray['status_code'] = 201;
 
-                        $returnArray['data'] =['customer'=>$c];
+                        $returnArray['data'] = ['customer' => $c];
                         $mailer->to($request['email'])->send(new Register($key));
 //                        }else{
 //                            $returnArray['status'] = false;
@@ -179,12 +178,11 @@ class ApiCustomerController extends Controller
                         //////send email ////////////////
 
 
-
                     } else {
                         $returnArray['status'] = false;
                         //$returnArray['status_code'] = 409;
-                        $status_code=409;
-                        $returnArray['errors'] =['msg'=>'conflict/invalid'] ;
+                        $status_code = 409;
+                        $returnArray['errors'] = ['msg' => 'conflict/invalid'];
 
 
                     }
@@ -192,64 +190,62 @@ class ApiCustomerController extends Controller
                 } else {
                     $returnArray['status'] = false;
                     //$returnArray['status_code'] = 406;
-                    $status_code=406;
+                    $status_code = 406;
                     //$returnArray['msg'] = 'missing data';
-                    $returnArray['errors'] =['msg'=>'missing data'] ;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
 
             } else {
                 $returnArray['status'] = false;
                 //  $returnArray['status_code'] = 498;
-                $status_code=498;
+                $status_code = 498;
                 //   $returnArray['msg'] = 'invalid key';
-                $returnArray['errors'] =['msg'=>'invalid key'] ;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
 
-
-        }else{
+        } else {
             $returnArray['status'] = false;
             //$returnArray['status_code'] = 405;
-            $status_code=405;
+            $status_code = 405;
 
             //      $returnArray['msg'] ='method_not_allowed';
-            $returnArray['errors'] =['msg'=>'method_not_allowed'] ;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
 
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function updateProfile(Request $request)
     {
 
 
-
         if ($request->isMethod('post')) {
 
             if ($request->header('x-api-key') == $this->generateKey()) {
-                $status_code=200;
+                $status_code = 200;
 
-                if (!empty($request['name']) && !empty($request['surname']) && !empty($request['customer_id'])  ) {
+                if (!empty($request['name']) && !empty($request['surname']) && !empty($request['customer_id'])) {
 
-                    $c = Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $c = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
                     $c->name = $request['name'];
                     $c->surname = $request['surname'];
 
-                    if(!empty($request['gender']) && in_array($request['gender'],['male','female'])){
+                    if (!empty($request['gender']) && in_array($request['gender'], ['male', 'female'])) {
 
 
-                        $c->gender =$request['gender'];
+                        $c->gender = $request['gender'];
                     }
 
                     $c->ip_address = (!empty($request['ip_address'])) ? $request['ip_address'] : '';
                     $file = $request->file('avatar');
                     if (!empty($file)) {
-                        $filename = GeneralHelper::fixName($request['name'].$request['surname']) . "_"
+                        $filename = GeneralHelper::fixName($request['name'] . $request['surname']) . "_"
                             . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
-                        $path =  "images/customers" ;
-                        $th = GeneralHelper::fixName($request['name'].$request['surname']) . "TH_"
+                        $path = "images/customers";
+                        $th = GeneralHelper::fixName($request['name'] . $request['surname']) . "TH_"
                             . date('YmdHis') . "." . GeneralHelper::findExtension($file->getClientOriginalName());
                         $img = Image::make($file->getRealPath());
                         $img->save($path . '/' . $filename);
@@ -265,70 +261,67 @@ class ApiCustomerController extends Controller
                     //return  response()->json( $c);
                     $returnArray['status'] = true;
                     //    $returnArray['status_code'] = 200;
-                    $returnArray['data'] =['customer'=>$c] ;
+                    $returnArray['data'] = ['customer' => $c];
 
 
                 } else {
                     $returnArray['status'] = false;
                     // $returnArray['status_code'] = 406;
-                    $status_code=406;
-                    $returnArray['errors'] = ['msg'=>'missing data'];
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
 
             } else {
                 $returnArray['status'] = false;
                 //$returnArray['status_code'] = 498;
-                $status_code=498;
+                $status_code = 498;
                 //$returnArray['msg'] = 'invalid key';
-                $returnArray['errors'] = ['msg'=>'missing data'];
+                $returnArray['errors'] = ['msg' => 'missing data'];
             }
 
 
-
-        }else{
+        } else {
             $returnArray['status'] = false;
             //$returnArray['status_code'] = 405;
-            $status_code=405;
+            $status_code = 405;
             //$returnArray['msg'] ='method_not_allowed';
-            $returnArray['errors'] = ['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
 
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function updatePassword(Request $request)
     {
 
 
-
         if ($request->isMethod('post')) {
 
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                $status_code=200;
-                if ( !empty($request['customer_id'])  && !empty($request['password'])) {
+                $status_code = 200;
+                if (!empty($request['customer_id']) && !empty($request['password'])) {
 
-                    $c = Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $c = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
                     $c->password = md5($request['password']);
                     $c->ip_address = (!empty($request['ip_address'])) ? $request['ip_address'] : '';
-
 
 
                     $c->save();
                     //return  response()->json( $c);
                     $returnArray['status'] = true;
                     //     $returnArray['status_code'] = 200;
-                    $returnArray['data'] = ['customer'=>$c];
+                    $returnArray['data'] = ['customer' => $c];
 
 
                 } else {
                     $returnArray['status'] = false;
 //                    $returnArray['status_code'] = 406;
 //                    $returnArray['msg'] = 'missing data';
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
 
@@ -336,21 +329,20 @@ class ApiCustomerController extends Controller
                 $returnArray['status'] = false;
                 //$returnArray['status_code'] = 498;
                 //  $returnArray['msg'] = 'invalid key';
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid_key'];
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid_key'];
 
             }
 
 
-
-        }else{
+        } else {
             $returnArray['status'] = false;
             // $returnArray['status_code'] = 405;
-            $status_code=405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
 
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function login(Request $request)
@@ -375,85 +367,81 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
                 $status_code = 200;
-                if(!empty($request['email']) && !empty($request['password']) ){
+                if (!empty($request['email']) && !empty($request['password'])) {
 
 
-
-                    $ch =  Customer::select('id','customer_id','name','surname','email','status')->where('email','=',$request['email'])
-                        ->where('password','=',md5($request['password']))
+                    $ch = Customer::select('id', 'customer_id', 'name', 'surname', 'email', 'status')->where('email', '=', $request['email'])
+                        ->where('password', '=', md5($request['password']))
                         //    ->where('status','=',1)
                         ->first();
 
-                    if(empty($ch['customer_id'])){
-                        $returnArray['status']=false;
-                        $status_code=404;
-                        $returnArray['errors'] =['msg'=>'kullanıcı bulunamadı'];
-                        return response()->json($returnArray,$status_code);
+                    if (empty($ch['customer_id'])) {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => 'kullanıcı bulunamadı'];
+                        return response()->json($returnArray, $status_code);
                     }
 
-                    if($ch['status']==1) {
-                        $item_array=array();
-                        $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                            ->where('status','=',0)
-                            ->where('customer_id','=',$ch['id'])
-                            ->orderBy('created_at','DESC')
+                    if ($ch['status'] == 1) {
+                        $item_array = array();
+                        $cart_items = CartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                            ->where('status', '=', 0)
+                            ->where('customer_id', '=', $ch['id'])
+                            ->orderBy('created_at', 'DESC')
                             ->get();
-                        $i=0;
-                        foreach ($cart_items as $cart_item){
+                        $i = 0;
+                        foreach ($cart_items as $cart_item) {
                             $item_array[$i] = $this->cartItemDetail($cart_item);
                             $i++;
                         }
 
 
-
-                        $returnArray['status']=true;
-                        $returnArray['data'] =['customer'=>$ch,'cart_items'=>$item_array];//['customer'=>$ch];
-
-
-                        if(!empty($request['guid'])){
+                        $returnArray['status'] = true;
+                        $returnArray['data'] = ['customer' => $ch, 'cart_items' => $item_array];//['customer'=>$ch];
 
 
-                         //   $this->guestWelcome($request['guid'],$ch['id']);
+                        if (!empty($request['guid'])) {
+
+
+                            //   $this->guestWelcome($request['guid'],$ch['id']);
                         }//////guest
 
 
-                    }elseif ($ch['status']==0){
-                        $returnArray['status']=false;
-                        $status_code=403;
+                    } elseif ($ch['status'] == 0) {
+                        $returnArray['status'] = false;
+                        $status_code = 403;
                         $returnArray['data'] = $ch['email'];
-                        $returnArray['errors'] =['msg'=>'','code'=>'not_verified'];
-                    }elseif ($ch['status']==2){
-                        $returnArray['status']=false;
-                        $status_code=403;
-                        $returnArray['errors'] =['msg'=>'banned user'];
+                        $returnArray['errors'] = ['msg' => '', 'code' => 'not_verified'];
+                    } elseif ($ch['status'] == 2) {
+                        $returnArray['status'] = false;
+                        $status_code = 403;
+                        $returnArray['errors'] = ['msg' => 'banned user'];
                     }
 
 
+                } else {
+                    $returnArray['status'] = false;
 
-                }else{
-                    $returnArray['status']=false;
-
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
 
                 }
 
 
-
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
 
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             //$returnArray['status_code'] = 405;
-            $status_code=405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function templateFx(Request $request)
@@ -463,50 +451,48 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['email']) && !empty($request['password']) ){
+                if (!empty($request['email']) && !empty($request['password'])) {
 
-                    $ch =  Customer::where('email','=',$request['email'])
-                        ->where('password','=',md5($request['password']))
+                    $ch = Customer::where('email', '=', $request['email'])
+                        ->where('password', '=', md5($request['password']))
                         ->first();
 
-                    if($ch['status']==1) {
+                    if ($ch['status'] == 1) {
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =$ch;
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $returnArray['data'] = $ch;
 
 
-                    }elseif ($ch['status']==0){
-                        $returnArray['status']=false;
-                        $returnArray['status_code']=403;
-                        $returnArray['msg'] ='inactive user';
-                    }elseif ($ch['status']==2){
-                        $returnArray['status']=false;
-                        $returnArray['status_code']=403;
-                        $returnArray['msg'] ='banned user';
+                    } elseif ($ch['status'] == 0) {
+                        $returnArray['status'] = false;
+                        $returnArray['status_code'] = 403;
+                        $returnArray['msg'] = 'inactive user';
+                    } elseif ($ch['status'] == 2) {
+                        $returnArray['status'] = false;
+                        $returnArray['status_code'] = 403;
+                        $returnArray['msg'] = 'banned user';
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $returnArray['status_code']=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $returnArray['status_code'] = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
 
-
-            }else{
-                $returnArray['status']=false;
-                $returnArray['status_code']=498;
-                $returnArray['msg'] ='invalid key';
+            } else {
+                $returnArray['status'] = false;
+                $returnArray['status_code'] = 498;
+                $returnArray['msg'] = 'invalid key';
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $returnArray['status_code'] = 405;
 
-            $returnArray['msg'] ='method_not_allowed';
+            $returnArray['msg'] = 'method_not_allowed';
         }
         return response()->json($returnArray);
     }
@@ -518,63 +504,62 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['email']) && !empty($request['activation_key']) ){
+                if (!empty($request['email']) && !empty($request['activation_key'])) {
 
 
-                    $ch =  Customer::where('email','=',$request['email'])
-                        ->where('activation_key','=',$request['activation_key'])
+                    $ch = Customer::where('email', '=', $request['email'])
+                        ->where('activation_key', '=', $request['activation_key'])
                         ->first();
 
-                    if(!empty($ch['id'])){
+                    if (!empty($ch['id'])) {
 
-                        if($ch['status']==0) {
-                            $ch->status= 1;
-                            $ch->activation_key=0;
-                            if(!empty($request['ip_address'])){
-                                $ch->ip_address=$request['ip_address'];
+                        if ($ch['status'] == 0) {
+                            $ch->status = 1;
+                            $ch->activation_key = 0;
+                            if (!empty($request['ip_address'])) {
+                                $ch->ip_address = $request['ip_address'];
                             }
 
                             $ch->save();
-                            $returnArray['status']=true;
-                            $status_code =200;
-                            $returnArray['data'] =['customer'=>$ch];
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $returnArray['data'] = ['customer' => $ch];
 
-                        }else{
-                            $returnArray['status']=false;
-                            $status_code =304;
-                            $returnArray['errors'] =['msg'=>"not modified"];
+                        } else {
+                            $returnArray['status'] = false;
+                            $status_code = 304;
+                            $returnArray['errors'] = ['msg' => "not modified"];
 
                         }
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code =404;
-                        $returnArray['errors'] =['msg'=>"not found"];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => "not found"];
 
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code =406;
-                    $returnArray['errors'] =['msg'=>"missing data"];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => "missing data"];
 
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code =498;
-                $returnArray['errors'] =['msg'=>"invalid key"];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => "invalid key"];
 
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code =405;
-            $returnArray['errors'] =['msg'=>"method_not_allowed"];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => "method_not_allowed"];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function newsletterPost(Request $request)
@@ -584,47 +569,47 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['email']) && filter_var($request['email'], FILTER_VALIDATE_EMAIL) ){
+                if (!empty($request['email']) && filter_var($request['email'], FILTER_VALIDATE_EMAIL)) {
 
-                    $n = NewsLetter::where('email','=',$request['email'])->first();
-                    if(empty($n['id'])){
+                    $n = NewsLetter::where('email', '=', $request['email'])->first();
+                    if (empty($n['id'])) {
                         $n = new NewsLetter();
-                        $n->customer_id  = (!empty($request['customer_id']))?$request['customer_id']:0;
-                        $n->guid  = (!empty($request['guid']))?$request['guid']:'';
+                        $n->customer_id = (!empty($request['customer_id'])) ? $request['customer_id'] : 0;
+                        $n->guid = (!empty($request['guid'])) ? $request['guid'] : '';
                         $n->email = $request['email'];
                         $n->status = 1;
-                    }else{
-                        $n->customer_id  = (!empty($request['customer_id']))?$request['customer_id']:0;
-                        $n->guid  = (!empty($request['guid']))?$request['guid']:'';
+                    } else {
+                        $n->customer_id = (!empty($request['customer_id'])) ? $request['customer_id'] : 0;
+                        $n->guid = (!empty($request['guid'])) ? $request['guid'] : '';
 
                     }
                     $n->save();
 
-                    $returnArray['status']=true;
-                    $status_code =201;
-                    $returnArray['data'] =$n;
+                    $returnArray['status'] = true;
+                    $status_code = 201;
+                    $returnArray['data'] = $n;
 
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code =406;
-                    $returnArray['errors'] =['msg'=>"missing data"];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => "missing data"];
 
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code =498;
-                $returnArray['errors'] =['msg'=>"invalid key"];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => "invalid key"];
 
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code =405;
-            $returnArray['errors'] =['msg'=>"method_not_allowed"];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => "method_not_allowed"];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function contactPost(Request $request)
@@ -635,212 +620,210 @@ class ApiCustomerController extends Controller
             if ($request->header('x-api-key') == $this->generateKey()) {
 
                 // if(!empty($request['email']) && filter_var($request['email'], FILTER_VALIDATE_EMAIL)  && !empty($request['message'])){
-                if(  !empty($request['message'])){
+                if (!empty($request['message'])) {
 
-                    if(!empty($request['customer_id'])){
-                        $customer = Customer::where('customer_id','=',$request['customer_id'])->first();
+                    if (!empty($request['customer_id'])) {
+                        $customer = Customer::where('customer_id', '=', $request['customer_id'])->first();
                         $name = $customer['name'];
                         $surname = $customer['surname'];
                         $email = $customer['email'];
-                    }else{
+                    } else {
                         $name = '';
-                        $surname ='';
-                        $email ='';
+                        $surname = '';
+                        $email = '';
 
                     }
 
                     $c = new Contact();
-                    $c->customer_id  = (!empty($request['customer_id']))?$request['customer_id']:0;
-                    $c->guid  = (!empty($request['guid']))?$request['guid']:'';
-                    $c->name  = (!empty($request['name']))?$request['name']:$name;
-                    $c->surname  = (!empty($request['surname']))?$request['surname']:$surname;
-                    $c->email  = (!empty($request['surname']))?$request['surname']:$email;
-                    $c->phone_number  = (!empty($request['phone_number']))?$request['phone_number']:'';
-                    $c->subject  = (!empty($request['subject']))?$request['subject']:'';
-                    $c->message  = (!empty($request['message']))?$request['message']:'';
+                    $c->customer_id = (!empty($request['customer_id'])) ? $request['customer_id'] : 0;
+                    $c->guid = (!empty($request['guid'])) ? $request['guid'] : '';
+                    $c->name = (!empty($request['name'])) ? $request['name'] : $name;
+                    $c->surname = (!empty($request['surname'])) ? $request['surname'] : $surname;
+                    $c->email = (!empty($request['surname'])) ? $request['surname'] : $email;
+                    $c->phone_number = (!empty($request['phone_number'])) ? $request['phone_number'] : '';
+                    $c->subject = (!empty($request['subject'])) ? $request['subject'] : '';
+                    $c->message = (!empty($request['message'])) ? $request['message'] : '';
                     $c->save();
-                    if(!empty($request['email'])){
-                        $n = NewsLetter::where('email','=',$request['email'])->first();
+                    if (!empty($request['email'])) {
+                        $n = NewsLetter::where('email', '=', $request['email'])->first();
 
-                        if(empty($n['id'])){
+                        if (empty($n['id'])) {
                             $n = new NewsLetter();
 
                             $n->email = $request['email'];
                             $n->status = 1;
-                        }else{
-                            $n->customer_id  = (!empty($request['customer_id']))?$request['customer_id']:0;
-                            $n->guid  = (!empty($request['guid']))?$request['guid']:'';
+                        } else {
+                            $n->customer_id = (!empty($request['customer_id'])) ? $request['customer_id'] : 0;
+                            $n->guid = (!empty($request['guid'])) ? $request['guid'] : '';
 
                         }
                         $n->save();
                     }
-                    $returnArray['status']=true;
-                    $status_code =201;
-                    $returnArray['data'] =$c;
+                    $returnArray['status'] = true;
+                    $status_code = 201;
+                    $returnArray['data'] = $c;
 
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code =406;
-                    $returnArray['errors'] =['msg'=>"missing data"];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => "missing data"];
 
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code =498;
-                $returnArray['errors'] =['msg'=>"invalid key"];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => "invalid key"];
 
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code =405;
-            $returnArray['errors'] =['msg'=>"method_not_allowed"];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => "method_not_allowed"];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
-    public function resendActivate(Request $request,Mailer $mailer)
+    public function resendActivate(Request $request, Mailer $mailer)
     {
 
 
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['email'])){
+                if (!empty($request['email'])) {
 
 
-                    $ch =  Customer::where('email','=',$request['email'])
+                    $ch = Customer::where('email', '=', $request['email'])
                         //     ->where('activation_key','=',$request['activation_key'])
                         ->first();
 
-                    if(!empty($ch['id'])){
+                    if (!empty($ch['id'])) {
 
-                        if($ch['status']==0) {
+                        if ($ch['status'] == 0) {
 
 
-                            if(!empty($request['ip_address'])){
-                                $ch->ip_address=$request['ip_address'];
+                            if (!empty($request['ip_address'])) {
+                                $ch->ip_address = $request['ip_address'];
                                 $ch->save();
                             }
 
                             $mailer->to($request['email'])->send(new Register($ch['activation_key']));
-                            $returnArray['status']=true;
-                            $status_code =200;
-                            $returnArray['data'] =$ch['email'];//['customer'=>$ch];
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $returnArray['data'] = $ch['email'];//['customer'=>$ch];
 
-                        }else{
-                            $returnArray['status']=false;
-                            $status_code =304;
-                            $returnArray['errors'] =['msg'=>"zaten aktif"];
+                        } else {
+                            $returnArray['status'] = false;
+                            $status_code = 304;
+                            $returnArray['errors'] = ['msg' => "zaten aktif"];
 
                         }
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code =404;
-                        $returnArray['errors'] =['msg'=>"not found"];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => "not found"];
 
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code =406;
-                    $returnArray['errors'] =['msg'=>"missing data"];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => "missing data"];
 
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code =498;
-                $returnArray['errors'] =['msg'=>"invalid key"];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => "invalid key"];
 
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code =405;
-            $returnArray['errors'] =['msg'=>"method_not_allowed"];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => "method_not_allowed"];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
 
-    public function forgetPassword(Request $request,Mailer $mailer)
+    public function forgetPassword(Request $request, Mailer $mailer)
     {
 
 
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['email']) ){
-                    $ch =  Customer::select('customer_id','email','status')
-                        ->where('email','=',$request['email'])->first();
+                if (!empty($request['email'])) {
+                    $ch = Customer::select('customer_id', 'email', 'status')
+                        ->where('email', '=', $request['email'])->first();
 
-                    if(!empty($ch['customer_id'])){
-                        if($ch['status']==1) {
+                    if (!empty($ch['customer_id'])) {
+                        if ($ch['status'] == 1) {
                             ///////////SEND EMAIL///////////////
-                            $pw = GeneralHelper::randomPassword(8,1);
+                            $pw = GeneralHelper::randomPassword(8, 1);
                             $mailer->to($request['email'])->send(new ForgetPassword($pw));
                             ///////////SEND EMAIL///////////////
-                            $ch->password= md5($pw);
+                            $ch->password = md5($pw);
                             //$ch->activation_key=0;
 
-                            $ch->ip_address=$request->ip();
+                            $ch->ip_address = $request->ip();
 
 
                             $ch->save();
-                            $returnArray['status']=true;
-                            $returnArray['data']=$ch['email'];//['customer'=>$ch];
+                            $returnArray['status'] = true;
+                            $returnArray['data'] = $ch['email'];//['customer'=>$ch];
                             $status_code = 200;
 
 ///                        $returnArray['status']=true;
 
 
-                        }elseif ($ch['status']==0){
-                            $returnArray['status']=false;
-                            $status_code=403;
+                        } elseif ($ch['status'] == 0) {
+                            $returnArray['status'] = false;
+                            $status_code = 403;
                             $returnArray['data'] = $ch['email'];
-                            $returnArray['errors'] =['msg'=>'','code'=>'not_verified'];
-                        }elseif ($ch['status']==2){
-                            $returnArray['status']=false;
-                            $status_code=403;
-                            $returnArray['errors'] =['msg'=>'banned user'];
+                            $returnArray['errors'] = ['msg' => '', 'code' => 'not_verified'];
+                        } elseif ($ch['status'] == 2) {
+                            $returnArray['status'] = false;
+                            $status_code = 403;
+                            $returnArray['errors'] = ['msg' => 'banned user'];
                         }
 
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
 
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
 
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
 ///////////////////////////////ADDRESS////////////////////////////////////////////////////////
@@ -852,48 +835,46 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) ){
+                if (!empty($request['customer_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    if(!empty($ch['id'])){
-                        $address = CustomerAddress::where('customer_id','=',$ch['id'])->where('id','=',$request['address_id'])->first();
-                        $ch->ip_address=$request->ip();
+                    if (!empty($ch['id'])) {
+                        $address = CustomerAddress::where('customer_id', '=', $ch['id'])->where('id', '=', $request['address_id'])->first();
+                        $ch->ip_address = $request->ip();
                         $ch->save();
-                        $returnArray['status']=true;
+                        $returnArray['status'] = true;
                         //  $status_code=200;
-                        $status_code =200;
-                        $returnArray['data'] =['address'=>$this->makeAddress($address)];
+                        $status_code = 200;
+                        $returnArray['data'] = ['address' => $this->makeAddress($address)];
 
 
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code =404;
-                        $returnArray['errors'] =['msg'=>'not found'];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code =406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code =498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code =405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function showAddresses(Request $request)
@@ -903,67 +884,65 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) ){
+                if (!empty($request['customer_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    if(!empty($ch['id'])){
+                    if (!empty($ch['id'])) {
 
-                        $page = (!empty($request['page']))?($request['page']-1):0;
-                        $page_count = (!empty($request['page_count']))?($request['page_count']):5;
-                        $addresses = CustomerAddress::where('customer_id','=',$ch['id'])->skip($page*$page_count)
+                        $page = (!empty($request['page'])) ? ($request['page'] - 1) : 0;
+                        $page_count = (!empty($request['page_count'])) ? ($request['page_count']) : 5;
+                        $addresses = CustomerAddress::where('customer_id', '=', $ch['id'])->skip($page * $page_count)
                             ->limit($page_count)
-                            ->orderBy('first','DESC')
-                            ->orderBy('updated_at','DESC')
+                            ->orderBy('first', 'DESC')
+                            ->orderBy('updated_at', 'DESC')
                             ->get();
 
-                        $array  = array();
-                        $i=0;
-                        foreach ($addresses as $address){
+                        $array = array();
+                        $i = 0;
+                        foreach ($addresses as $address) {
 
-                            $array[$i]=$this->makeAddress($address);
+                            $array[$i] = $this->makeAddress($address);
                             $i++;
                         }
 
-                        $address_count = CustomerAddress::select('id')->where('customer_id','=',$ch['id'])->count();
-                        $ch->ip_address=$request->ip();
+                        $address_count = CustomerAddress::select('id')->where('customer_id', '=', $ch['id'])->count();
+                        $ch->ip_address = $request->ip();
                         $ch->save();
 
 
-                        $returnArray['status']=true;
+                        $returnArray['status'] = true;
                         //  $status_code=200;
-                        $status_code =200;
-                        $returnArray['data'] =['addresses'=>$array,'item_count'=>$address_count];
+                        $status_code = 200;
+                        $returnArray['data'] = ['addresses' => $array, 'item_count' => $address_count];
 
 
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code =404;
-                        $returnArray['errors'] =['msg'=>'not found'];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code =406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code =498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code =405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function addAddress(Request $request)
@@ -973,102 +952,100 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) && !empty($request['title']) && !empty($request['city_id']) && !empty($request['address'])){
+                if (!empty($request['customer_id']) && !empty($request['title']) && !empty($request['city_id']) && !empty($request['address'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    if(!empty($ch['id'])){
+                    if (!empty($ch['id'])) {
 
 
                         $address = new CustomerAddress();
                         $address->customer_id = $ch['id'];
                         $address->title = $request['title'];
 
-                        if(!empty($request['name_surname'])){
+                        if (!empty($request['name_surname'])) {
                             $address->name_surname = $request['name_surname'];
-                        }else{
-                            $address->name_surname = $ch['name']." ".$ch['surname'];
+                        } else {
+                            $address->name_surname = $ch['name'] . " " . $ch['surname'];
                         }
                         $address->address = $request['address'];
                         $address->city_id = $request['city_id'];
-                        if(!empty($request['town_id'])){
-                            $address->town_id=$request['town_id'];
-                            if(!empty($request['district_id'])){
-                                $address->district_id=$request['district_id'];
-                                if(!empty($request['neighborhood_id'])){
-                                    $address->neighborhood_id=$request['neighborhood_id'];
-                                }else{
-                                    $address->neighborhood_id=0;
+                        if (!empty($request['town_id'])) {
+                            $address->town_id = $request['town_id'];
+                            if (!empty($request['district_id'])) {
+                                $address->district_id = $request['district_id'];
+                                if (!empty($request['neighborhood_id'])) {
+                                    $address->neighborhood_id = $request['neighborhood_id'];
+                                } else {
+                                    $address->neighborhood_id = 0;
                                 }
-                            }else{
-                                $address->district_id=0;
-                                $address->neighborhood_id=0;
+                            } else {
+                                $address->district_id = 0;
+                                $address->neighborhood_id = 0;
                             }
 
-                        }else{
-                            $address->town_id=0;
-                            $address->district_id=0;
-                            $address->neighborhood_id=0;
+                        } else {
+                            $address->town_id = 0;
+                            $address->district_id = 0;
+                            $address->neighborhood_id = 0;
                         }
 
-                        $address->phone_number=(!empty($request['phone_number']))?$request['phone_number']:'';
-                        $address->phone_number_2=(!empty($request['phone_number_2']))?$request['phone_number_2']:'';
+                        $address->phone_number = (!empty($request['phone_number'])) ? $request['phone_number'] : '';
+                        $address->phone_number_2 = (!empty($request['phone_number_2'])) ? $request['phone_number_2'] : '';
 
-                        $ach=CustomerAddress::where('customer_id','=',$ch['id'])->where('first','=',1)->first();
-                        if(empty($ach['id'])){
-                            $address->first=1;
-                        }else{
+                        $ach = CustomerAddress::where('customer_id', '=', $ch['id'])->where('first', '=', 1)->first();
+                        if (empty($ach['id'])) {
+                            $address->first = 1;
+                        } else {
 
-                            if(($request['first']==1)){
-                                $address->first=1;
-                                CustomerAddress::where('customer_id','=',$ch['id'])->update(['first'=>0]);
-                            }else{
-                                $address->first=0;
+                            if (($request['first'] == 1)) {
+                                $address->first = 1;
+                                CustomerAddress::where('customer_id', '=', $ch['id'])->update(['first' => 0]);
+                            } else {
+                                $address->first = 0;
                             }
 
                         }
                         $address->save();
 
                         //$ch->activation_key=0;
-                        if(!empty($request['ip_address'])){
-                            $ch->ip_address=$request['ip_address'];
+                        if (!empty($request['ip_address'])) {
+                            $ch->ip_address = $request['ip_address'];
                             $ch->save();
                         }
 
-                        $returnArray['status']=true;
-                        $status_code= 201;
-                        $returnArray['data'] =['address'=>$address];
+                        $returnArray['status'] = true;
+                        $status_code = 201;
+                        $returnArray['data'] = ['address' => $address];
 
 
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code= 404;
-
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code= 406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code= 498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
-            $status_code= 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function updateAddress(Request $request)
@@ -1078,103 +1055,101 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) && !empty($request['title']) && !empty($request['city_id'])  && !empty($request['address_id'])){
+                if (!empty($request['customer_id']) && !empty($request['title']) && !empty($request['city_id']) && !empty($request['address_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    $address =  CustomerAddress::where('customer_id','=',$ch['id'])
-                        ->where('id','=',$request['address_id'])->first();
+                    $address = CustomerAddress::where('customer_id', '=', $ch['id'])
+                        ->where('id', '=', $request['address_id'])->first();
 
-                    if(!empty($ch['id']) && !empty($address['id'])){
+                    if (!empty($ch['id']) && !empty($address['id'])) {
 
 
                         $address->title = $request['title'];
 
-                        if(!empty($request['name_surname'])){
+                        if (!empty($request['name_surname'])) {
                             $address->name_surname = $request['name_surname'];
-                        }else{
-                            $address->name_surname = $ch['name']." ".$ch['surname'];
+                        } else {
+                            $address->name_surname = $ch['name'] . " " . $ch['surname'];
                         }
                         $address->address = $request['address'];
                         $address->city_id = $request['city_id'];
-                        if(!empty($request['town_id'])){
-                            $address->town_id=$request['town_id'];
-                            if(!empty($request['district_id'])){
-                                $address->district_id=$request['district_id'];
-                                if(!empty($request['neighborhood_id'])){
-                                    $address->neighborhood_id=$request['neighborhood_id'];
-                                }else{
-                                    $address->neighborhood_id=0;
+                        if (!empty($request['town_id'])) {
+                            $address->town_id = $request['town_id'];
+                            if (!empty($request['district_id'])) {
+                                $address->district_id = $request['district_id'];
+                                if (!empty($request['neighborhood_id'])) {
+                                    $address->neighborhood_id = $request['neighborhood_id'];
+                                } else {
+                                    $address->neighborhood_id = 0;
                                 }
-                            }else{
-                                $address->district_id=0;
-                                $address->neighborhood_id=0;
+                            } else {
+                                $address->district_id = 0;
+                                $address->neighborhood_id = 0;
                             }
 
-                        }else{
-                            $address->town_id=0;
-                            $address->district_id=0;
-                            $address->neighborhood_id=0;
+                        } else {
+                            $address->town_id = 0;
+                            $address->district_id = 0;
+                            $address->neighborhood_id = 0;
                         }
 
-                        $address->phone_number=(!empty($request['phone_number']))?$request['phone_number']:'';
-                        $address->phone_number_2=(!empty($request['phone_number_2']))?$request['phone_number_2']:'';
+                        $address->phone_number = (!empty($request['phone_number'])) ? $request['phone_number'] : '';
+                        $address->phone_number_2 = (!empty($request['phone_number_2'])) ? $request['phone_number_2'] : '';
 
-                        $ach=CustomerAddress::where('customer_id','=',$ch['id'])->where('first','=',1)->first();
-                        if(empty($ach['id'])){
-                            $address->first=1;
-                        }else{
+                        $ach = CustomerAddress::where('customer_id', '=', $ch['id'])->where('first', '=', 1)->first();
+                        if (empty($ach['id'])) {
+                            $address->first = 1;
+                        } else {
 
-                            if(($request['first']==1)){
-                                $address->first=1;
-                                CustomerAddress::where('customer_id','=',$ch['id'])->update(['first'=>0]);
-                            }else{
-                                $address->first=0;
+                            if (($request['first'] == 1)) {
+                                $address->first = 1;
+                                CustomerAddress::where('customer_id', '=', $ch['id'])->update(['first' => 0]);
+                            } else {
+                                $address->first = 0;
                             }
 
                         }
                         $address->save();
 
                         //$ch->activation_key=0;
-                        if(!empty($request['ip_address'])){
-                            $ch->ip_address=$request['ip_address'];
+                        if (!empty($request['ip_address'])) {
+                            $ch->ip_address = $request['ip_address'];
                             $ch->save();
                         }
 
-                        $returnArray['status']=true;
+                        $returnArray['status'] = true;
                         $status_code = 200;
-                        $returnArray['data'] =['address'=>$address];
+                        $returnArray['data'] = ['address' => $address];
 
 
-
-                    }else{
-                        $returnArray['status']=false;
+                    } else {
+                        $returnArray['status'] = false;
                         $status_code = 404;
 
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
+                } else {
+                    $returnArray['status'] = false;
                     $status_code = 406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
+            } else {
+                $returnArray['status'] = false;
                 $status_code = 498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function deleteAddress(Request $request)
@@ -1184,22 +1159,22 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) && !empty($request['address_id'])){
+                if (!empty($request['customer_id']) && !empty($request['address_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    $address =  CustomerAddress::where('customer_id','=',$ch['id'])
-                        ->where('id','=',$request['address_id'])->first();
+                    $address = CustomerAddress::where('customer_id', '=', $ch['id'])
+                        ->where('id', '=', $request['address_id'])->first();
 
-                    if(!empty($ch['id']) && !empty($address['id'])){
+                    if (!empty($ch['id']) && !empty($address['id'])) {
 
 
-                        if($address['first']==1){
-                            $a = CustomerAddress::where('customer_id','=',$ch['id'])
-                                ->where('id','<>',$request['address_id'])->first();
+                        if ($address['first'] == 1) {
+                            $a = CustomerAddress::where('customer_id', '=', $ch['id'])
+                                ->where('id', '<>', $request['address_id'])->first();
 
-                            if(!empty($a['id'])){
+                            if (!empty($a['id'])) {
                                 $a->first = 1;
                                 $a->save();
                             }
@@ -1207,47 +1182,45 @@ class ApiCustomerController extends Controller
                         $address->delete();
 
                         //$ch->activation_key=0;
-                        if(!empty($request['ip_address'])){
-                            $ch->ip_address=$request['ip_address'];
+                        if (!empty($request['ip_address'])) {
+                            $ch->ip_address = $request['ip_address'];
                             $ch->save();
                         }
 
-                        $returnArray['status']=true;
-                        $status_code=200;
+                        $returnArray['status'] = true;
+                        $status_code = 200;
                         //$returnArray['msg'] ='address deleted';
 
 
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
 
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
 
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
 ///////////////////////////////ADDRESS////////////////////////////////////////////////////////
@@ -1261,68 +1234,65 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) && !empty($request['product_id'])){
+                if (!empty($request['customer_id']) && !empty($request['product_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
-                    $product=  Product::find($request['product_id']);
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
+                    $product = Product::find($request['product_id']);
 
-                    if(!empty($ch['id']) && !empty($product['id'])){
+                    if (!empty($ch['id']) && !empty($product['id'])) {
 
-                        $fav = CustomerFavorite::where('customer_id','=',$ch['id'])
-                            ->where('product_id','=',$request['product_id'])->first();
-                        if(empty($fav['id'])){
+                        $fav = CustomerFavorite::where('customer_id', '=', $ch['id'])
+                            ->where('product_id', '=', $request['product_id'])->first();
+                        if (empty($fav['id'])) {
                             $fav = new CustomerFavorite();
                             $fav->customer_id = $ch['id'];
                             $fav->product_id = $request['product_id'];
                         }
 
 
-                        $fav->memory_id  = (!empty($request['memory_id']))?$request['memory_id']:0;
-                        $fav->color_id  = (!empty($request['color_id']))?$request['color_id']:0;
+                        $fav->memory_id = (!empty($request['memory_id'])) ? $request['memory_id'] : 0;
+                        $fav->color_id = (!empty($request['color_id'])) ? $request['color_id'] : 0;
                         $fav->save();
 
                         //$ch->activation_key=0;
-                        if(!empty($request['ip_address'])){
-                            $ch->ip_address=$request['ip_address'];
+                        if (!empty($request['ip_address'])) {
+                            $ch->ip_address = $request['ip_address'];
                             $ch->save();
                         }
 
-                        $returnArray['status']=true;
-                        $status_code=201;
+                        $returnArray['status'] = true;
+                        $status_code = 201;
 
 
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
 
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
 
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function removeFromFavorites(Request $request)
@@ -1332,68 +1302,65 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) && !empty($request['product_id'])){
+                if (!empty($request['customer_id']) && !empty($request['product_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
-                    $product=  Product::find($request['product_id']);
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
+                    $product = Product::find($request['product_id']);
 
-                    if(!empty($ch['id']) && !empty($product['id'])){
+                    if (!empty($ch['id']) && !empty($product['id'])) {
 
-                        $fav = CustomerFavorite::where('customer_id','=',$ch['id'])
-                            ->where('product_id','=',$request['product_id'])->first();
-                        if(!empty($fav['id'])){
+                        $fav = CustomerFavorite::where('customer_id', '=', $ch['id'])
+                            ->where('product_id', '=', $request['product_id'])->first();
+                        if (!empty($fav['id'])) {
                             $fav->delete();
 
-                            $returnArray['status']=true;
-                            $status_code=200;
+                            $returnArray['status'] = true;
+                            $status_code = 200;
 
-                        }else{
+                        } else {
 
-                            $returnArray['status']=false;
-                            $status_code=404;
+                            $returnArray['status'] = false;
+                            $status_code = 404;
 
-                            $returnArray['errors'] =['msg'=>'not found'];
+                            $returnArray['errors'] = ['msg' => 'not found'];
                         }
 
                         //$ch->activation_key=0;
-                        if(!empty($request['ip_address'])){
-                            $ch->ip_address=$request['ip_address'];
+                        if (!empty($request['ip_address'])) {
+                            $ch->ip_address = $request['ip_address'];
                             $ch->save();
                         }
 
 
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
 
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
 
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function showFavorites(Request $request)
@@ -1403,59 +1370,56 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) ){
+                if (!empty($request['customer_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    if(!empty($ch['id'])  ){
+                    if (!empty($ch['id'])) {
 
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =CustomerFavorite::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                            ->where('customer_id','=',$ch['id'])
-                            ->orderBy('created_at','DESC')
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $returnArray['data'] = CustomerFavorite::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                            ->where('customer_id', '=', $ch['id'])
+                            ->orderBy('created_at', 'DESC')
                             ->get();
 
                         //$ch->activation_key=0;
-                        if(!empty($request['ip_address'])){
-                            $ch->ip_address=$request['ip_address'];
+                        if (!empty($request['ip_address'])) {
+                            $ch->ip_address = $request['ip_address'];
                             $ch->save();
                         }
 
 
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
 
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
 
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
 
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
 
@@ -1463,140 +1427,142 @@ class ApiCustomerController extends Controller
 ///addToCart
 
 
-    private function generateItemCode($product_id){
-        $ok =true;
+    private function generateItemCode($product_id)
+    {
+        $ok = true;
         $p = Product::find($product_id);
-        while($ok){
-            $code ="ITEM"."-".$p['micro_id']."-".rand(10000,99999);
-            $ch= CartItem::where('item_code','=',$code)->first();
-            $ok = (empty($ch['id']))?false:true;
+        while ($ok) {
+            $code = "ITEM" . "-" . $p['micro_id'] . "-" . rand(10000, 99999);
+            $ch = CartItem::where('item_code', '=', $code)->first();
+            $ok = (empty($ch['id'])) ? false : true;
         }
 
         return $code;
     }
 
-    private function generateOrderCode($customer_id,$guid){
+    private function generateOrderCode($customer_id, $guid)
+    {
 
-        $order = Order::where('customer_id','=',$customer_id)->where('guid','=',$guid)->where('status','=',CartItemStatus::init)->first();
-        if(empty($order['id'])){
-            $order_code=  "GRNTL".date("YmdHis").rand(1,9);
-            $order=new Order();
-        $order->order_code =$order_code;
-        $order->name_surname ="";
-        $order->cargo_company_id = 0;
-        $order->customer_id= $customer_id;
-        $order->guid= $guid;
-        $order->customer_address_id = 0;
-        $order->invoice_address_id = 0;
-        $order->order_method =0;
-        $order->status = CartItemStatus::init;
-        $order->amount =0;
-        $order->shipping_price = 0;
-        $order->receipt = '';
-        $order->save();
-        }else{
-            $order_code=$order['order_code'];
+        $order = Order::where('customer_id', '=', $customer_id)->where('guid', '=', $guid)->where('status', '=', CartItemStatus::init)->first();
+        if (empty($order['id'])) {
+            $order_code = "GRNTL" . date("YmdHis") . rand(1, 9);
+            $order = new Order();
+            $order->order_code = $order_code;
+            $order->name_surname = "";
+            $order->cargo_company_id = 0;
+            $order->customer_id = $customer_id;
+            $order->guid = $guid;
+            $order->customer_address_id = 0;
+            $order->invoice_address_id = 0;
+            $order->order_method = 0;
+            $order->status = CartItemStatus::init;
+            $order->amount = 0;
+            $order->shipping_price = 0;
+            $order->receipt = '';
+            $order->save();
+        } else {
+            $order_code = $order['order_code'];
         }
         return $order_code;
     }
 
 
-    private function createCartItem($customer_id,$guest_id,$product_id,$price){
+    private function createCartItem($customer_id, $guest_id, $product_id, $price)
+    {
 
 
-        if($customer_id>0){
+        if ($customer_id > 0) {
 
-            $cart = CartItem::where('customer_id','=',$customer_id)
-                ->where('product_id','=',$product_id)
+            $cart = CartItem::where('customer_id', '=', $customer_id)
+                ->where('product_id', '=', $product_id)
                 //  ->where('memory_id','=',$memory_id)
                 //->where('color_id','=',$color_id)
-                ->where('status','=',CartItemStatus::init)
+                ->where('status', '=', CartItemStatus::init)
                 ->first();
-            if(empty($cart['id'])){
-                $item_code=$this->generateItemCode($product_id);
+            if (empty($cart['id'])) {
+                $item_code = $this->generateItemCode($product_id);
                 $cart = new CartItem();
                 $cart->item_code = $item_code;
                 $cart->customer_id = $customer_id;
                 $cart->product_id = $product_id;
-                $cart->memory_id  = 0 ;
-                $cart->color_id  = 0;
-                $cart->quantity  = 1;
+                $cart->memory_id = 0;
+                $cart->color_id = 0;
+                $cart->quantity = 1;
                 $cart->price = ((float)$price);
                 $cart->save();
                 return $item_code;
-            }else{
+            } else {
                 return $cart['item_code'];
             }
-        }else{///guest
+        } else {///guest
 
 
-            $cart = GuestCartItem::where('guid','=',$guest_id)
-                ->where('product_id','=',$product_id)
-
+            $cart = GuestCartItem::where('guid', '=', $guest_id)
+                ->where('product_id', '=', $product_id)
                 ->first();
 
-            if(empty($cart['id'])){
-                $item_code=$this->generateItemCode( $product_id);
+            if (empty($cart['id'])) {
+                $item_code = $this->generateItemCode($product_id);
                 $cart = new GuestCartItem();
                 $cart->item_code = $item_code;
-                $cart->guid =$guest_id;
+                $cart->guid = $guest_id;
                 $cart->product_id = $product_id;
-                $cart->memory_id  = 0 ;
-                $cart->color_id  = 0;
-                $cart->quantity  = 1;
+                $cart->memory_id = 0;
+                $cart->color_id = 0;
+                $cart->quantity = 1;
                 $cart->price = ((float)$price);
                 $cart->save();
                 return $item_code;
-            }else{
+            } else {
                 return $cart['item_code'];
             }
-
 
 
         }
 
 
-
     }
 
-    private function buyTogether($buy_together,$customer_id,$guest_id){
-        $together_array=explode(",",trim($buy_together));
-        foreach ($together_array as $together){
-            $product_together=  Product::select('price','price_ex')->find($together);
-            $price_together=($product_together['price_ex']>$product_together['price'])?$product_together['price']:$product_together['price_ex'];
-            if($customer_id>0){
-                $this->createCartItem($customer_id,0,$together,$price_together);
-            }else{
-                $this->createCartItem(0,$guest_id,$together,$price_together);
+    private function buyTogether($buy_together, $customer_id, $guest_id)
+    {
+        $together_array = explode(",", trim($buy_together));
+        foreach ($together_array as $together) {
+            $product_together = Product::select('price', 'price_ex')->find($together);
+            $price_together = ($product_together['price_ex'] > $product_together['price']) ? $product_together['price'] : $product_together['price_ex'];
+            if ($customer_id > 0) {
+                $this->createCartItem($customer_id, 0, $together, $price_together);
+            } else {
+                $this->createCartItem(0, $guest_id, $together, $price_together);
             }
         }/////////////
     }
 
-    private function updateCartItems($customer_id=0,$guid=0){
+    private function updateCartItems($customer_id = 0, $guid = 0)
+    {
 
-        if($customer_id>0){
-            $items = CartItem::where('customer_id','=',$customer_id)->where('status','=',CartItemStatus::init)->get();
-            foreach ($items as $item){
+        if ($customer_id > 0) {
+            $items = CartItem::where('customer_id', '=', $customer_id)->where('status', '=', CartItemStatus::init)->get();
+            foreach ($items as $item) {
                 $product = Product::find($item['product_id']);
-                if($product['status']==0 || empty($product['id'])){
+                if ($product['status'] == 0 || empty($product['id'])) {
                     $item->delete();
-                }else{
-                    $price = ($product['price']>$product['price_ex'])?$product['price_ex']:$product['price'];
+                } else {
+                    $price = ($product['price'] > $product['price_ex']) ? $product['price_ex'] : $product['price'];
                     $item->price = $price;
                     $item->save();
 
                 }
             }
 
-        }else{
+        } else {
 
-            $items = GuestCartItem::where('guid','=',$guid)->where('status','=',CartItemStatus::init)->get();
-            foreach ($items as $item){
+            $items = GuestCartItem::where('guid', '=', $guid)->where('status', '=', CartItemStatus::init)->get();
+            foreach ($items as $item) {
                 $product = Product::find($item['product_id']);
-                if($product['status']==0 || empty($product['id'])){
+                if ($product['status'] == 0 || empty($product['id'])) {
                     $item->delete();
-                }else{
-                    $price = ($product['price']>$product['price_ex'])?$product['price_ex']:$product['price'];
+                } else {
+                    $price = ($product['price'] > $product['price_ex']) ? $product['price_ex'] : $product['price'];
                     $item->price = $price;
                     $item->save();
 
@@ -1612,121 +1578,115 @@ class ApiCustomerController extends Controller
     {
 
 
-
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
-                $product=  Product::find($request['product_id']);
-                if(!empty($product['id'])){
-                    $price=($product['price_ex']>$product['price'])?$product['price']:$product['price_ex'];
+                $product = Product::find($request['product_id']);
+                if (!empty($product['id'])) {
+                    $price = ($product['price_ex'] > $product['price']) ? $product['price'] : $product['price_ex'];
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
 
-                    if(!empty($ch['id'])){ ///// customer process
-                        $this->updateCartItems($ch['id'],0);
-                        $item_code=$this->createCartItem($ch['id'],0,$request['product_id'],$price);
-                        $ch->ip_address=$request->ip();
+                    if (!empty($ch['id'])) { ///// customer process
+                        $this->updateCartItems($ch['id'], 0);
+                        $item_code = $this->createCartItem($ch['id'], 0, $request['product_id'], $price);
+                        $ch->ip_address = $request->ip();
                         $ch->save();
 
                         ///////buy TOGETHER//////////////////////////////////////////
-                        if(!empty($request['buy_together'])){
-                            $this->buyTogether($request['buy_together'],$ch['id'],0);
+                        if (!empty($request['buy_together'])) {
+                            $this->buyTogether($request['buy_together'], $ch['id'], 0);
                         }
                         ///////buy TOGETHER//////////////////////////////////////////
 
-                        $item_array=array();
-                        $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                            ->where('status','=',CartItemStatus::init)
-                            ->where('order_id','=',0)
-                            ->where('customer_id','=',$ch['id'])
-                            ->orderBy('created_at','DESC')
+                        $item_array = array();
+                        $cart_items = CartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                            ->where('status', '=', CartItemStatus::init)
+                            ->where('order_id', '=', 0)
+                            ->where('customer_id', '=', $ch['id'])
+                            ->orderBy('created_at', 'DESC')
                             ->get();
-                        $i=0;
+                        $i = 0;
 
-                        foreach ($cart_items as $cart_item){
+                        foreach ($cart_items as $cart_item) {
                             $item_array[$i] = $this->cartItemDetail($cart_item);
                             $i++;
                         }
-                        $returnArray['status']=true;
-                        $status_code=201;
-                        $returnArray['data']=['item_code'=>$item_code,'cart_items'=>$item_array];
+                        $returnArray['status'] = true;
+                        $status_code = 201;
+                        $returnArray['data'] = ['item_code' => $item_code, 'cart_items' => $item_array];
 
 
+                    } else {///// guest processs
 
-
-                    }else{///// guest processs
-
-                        if(!empty($request['guid'])){
+                        if (!empty($request['guid'])) {
                             // return $request->ip();
 
-                            $guest = Guest::where('guid','=',$request['guid'])->first();
-                            if(empty($guest['id'])){
+                            $guest = Guest::where('guid', '=', $request['guid'])->first();
+                            if (empty($guest['id'])) {
                                 $guest = new Guest();
                                 $guest->ip = $request->ip();
-                                $guest->guid= $request['guid'];
+                                $guest->guid = $request['guid'];
                                 $guest->expires_at = Carbon::now()->addYear(1)->format('Y-m-d');
                                 $guest->save();
                             }
-                            $this->updateCartItems(0,$guest['id']);
-                            $item_code = $this->createCartItem(0,$guest['id'],$product['id'],$price);
-                            if(!empty($request['buy_together'])){
-                                $this->buyTogether($request['buy_together'],0,$guest['id']);
+                            $this->updateCartItems(0, $guest['id']);
+                            $item_code = $this->createCartItem(0, $guest['id'], $product['id'], $price);
+                            if (!empty($request['buy_together'])) {
+                                $this->buyTogether($request['buy_together'], 0, $guest['id']);
                             }
-                            $item_array=array();
-                            $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                                ->where('guid','=',$guest['id'])
-                                ->where('status','=',CartItemStatus::init)
-                                ->where('order_id','=',0)
-                                ->orderBy('created_at','DESC')
+                            $item_array = array();
+                            $cart_items = GuestCartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                                ->where('guid', '=', $guest['id'])
+                                ->where('status', '=', CartItemStatus::init)
+                                ->where('order_id', '=', 0)
+                                ->orderBy('created_at', 'DESC')
                                 ->get();
-                            $i=0;
+                            $i = 0;
 
 
-                            foreach ($cart_items as $cart_item){
-                                $item_array[$i]=$this->cartItemDetail($cart_item);
+                            foreach ($cart_items as $cart_item) {
+                                $item_array[$i] = $this->cartItemDetail($cart_item);
                                 $i++;
                             }
 
-                            $returnArray['status']=true;
-                            $status_code=201;
-                            $returnArray['data']=['item_code'=>$item_code,'cart_items'=>$item_array];
+                            $returnArray['status'] = true;
+                            $status_code = 201;
+                            $returnArray['data'] = ['item_code' => $item_code, 'cart_items' => $item_array];
 
 
-
-                        }else{  /////empty!!!!
-                            $returnArray['status']=false;
-                            $status_code=406;
-                            $returnArray['errors'] =['msg'=>'missing data'];
+                        } else {  /////empty!!!!
+                            $returnArray['status'] = false;
+                            $status_code = 406;
+                            $returnArray['errors'] = ['msg' => 'missing data'];
                         }
 
 
                     }
 
 
+                } else {
 
-                }else{
-
-                    $returnArray['status']=false;
-                    $status_code=404;
-                    $returnArray['errors'] =['msg'=>'not found'];
-
+                    $returnArray['status'] = false;
+                    $status_code = 404;
+                    $returnArray['errors'] = ['msg' => 'not found'];
 
 
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
 
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function removeFromCart(Request $request)
@@ -1736,101 +1696,99 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['item_code']) && (!empty($request['customer_id']) || !empty($request['guid']))){
+                if (!empty($request['item_code']) && (!empty($request['customer_id']) || !empty($request['guid']))) {
 
-                    if(!empty($request['customer_id'])){
+                    if (!empty($request['customer_id'])) {
 
 
-                        $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
-                        $item=  CartItem::where('item_code','=',$request['item_code'])->where('customer_id','=',$ch['id'])->first(); //Product::find($request['product_id']);
+                        $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
+                        $item = CartItem::where('item_code', '=', $request['item_code'])->where('customer_id', '=', $ch['id'])->first(); //Product::find($request['product_id']);
 
-                        if(!empty($ch['id']) && !empty($item['id'])){
+                        if (!empty($ch['id']) && !empty($item['id'])) {
                             $item->delete();
-                            $returnArray['status']=true;
-                            $status_code=200;
-                            $this->updateCartItems($ch['id'],0);
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $this->updateCartItems($ch['id'], 0);
 
-                            $ch->ip_address=$request->ip();
+                            $ch->ip_address = $request->ip();
                             $ch->save();
 
-                            $item_array=array();
-                            $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                                ->where('status','=',0)
-                                ->where('customer_id','=',$ch['id'])
-                                ->orderBy('created_at','DESC')
+                            $item_array = array();
+                            $cart_items = CartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                                ->where('status', '=', 0)
+                                ->where('customer_id', '=', $ch['id'])
+                                ->orderBy('created_at', 'DESC')
                                 ->get();
-                            $i=0;
+                            $i = 0;
 
-                            foreach ($cart_items as $cart_item){
+                            foreach ($cart_items as $cart_item) {
                                 $item_array[$i] = $this->cartItemDetail($cart_item);
                                 $i++;
                             }
 
-                            $returnArray['data']=['cart_items'=>$item_array];
+                            $returnArray['data'] = ['cart_items' => $item_array];
 
-                        }else{
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'not found'];
+                        } else {
+                            $returnArray['status'] = false;
+                            $status_code = 404;
+                            $returnArray['errors'] = ['msg' => 'not found'];
                         }
 
-                    }else{////guest
+                    } else {////guest
 
-                        $guest =  Guest::where('guid','=',$request['guid'])->first();
-                        $item=  GuestCartItem::where('item_code','=',$request['item_code'])->where('guid','=',(!empty($guest['id'])?$guest['id']:0))->first();
+                        $guest = Guest::where('guid', '=', $request['guid'])->first();
+                        $item = GuestCartItem::where('item_code', '=', $request['item_code'])->where('guid', '=', (!empty($guest['id']) ? $guest['id'] : 0))->first();
 
-                        if(!empty($guest['id']) && !empty($item['id'])){
+                        if (!empty($guest['id']) && !empty($item['id'])) {
                             $item->delete();
 
-                            $this->updateCartItems(0,$guest['id']);
-                            $item_array=array();
-                            $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                                ->where('guid','=',$guest['id'])
-                                ->orderBy('created_at','DESC')
+                            $this->updateCartItems(0, $guest['id']);
+                            $item_array = array();
+                            $cart_items = GuestCartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                                ->where('guid', '=', $guest['id'])
+                                ->orderBy('created_at', 'DESC')
                                 ->get();
-                            $i=0;
+                            $i = 0;
 
-                            foreach ($cart_items as $cart_item){
-                                $item_array[$i]=$this->cartItemDetail($cart_item);
+                            foreach ($cart_items as $cart_item) {
+                                $item_array[$i] = $this->cartItemDetail($cart_item);
                                 $i++;
                             }
                             ///////////////////////////////////////////////////////////////////////
 
-                            $returnArray['status']=true;
-                            $status_code=200;
-                            $returnArray['data'] =['cart_items'=>$item_array];
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $returnArray['data'] = ['cart_items' => $item_array];
 
 
-
-                        }else{
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'not found'];
+                        } else {
+                            $returnArray['status'] = false;
+                            $status_code = 404;
+                            $returnArray['errors'] = ['msg' => 'not found'];
                         }
 
 
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
     public function updateCart(Request $request)
@@ -1840,149 +1798,145 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['item_code']) && (!empty($request['customer_id']) || !empty($request['guid']))){
-                    $qty = (!empty($request['quantity']))?$request['quantity']:1;
+                if (!empty($request['item_code']) && (!empty($request['customer_id']) || !empty($request['guid']))) {
+                    $qty = (!empty($request['quantity'])) ? $request['quantity'] : 1;
 
 
-
-                    if(!empty($request['customer_id'])){
-
-
-                        $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    if (!empty($request['customer_id'])) {
 
 
-                        $item=  CartItem::where('item_code','=',$request['item_code'])->where('customer_id','=',$ch['id'])->first(); //Product::find($request['product_id']);
+                        $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                        if(!empty($ch['id']) && !empty($item['id'])){
+
+                        $item = CartItem::where('item_code', '=', $request['item_code'])->where('customer_id', '=', $ch['id'])->first(); //Product::find($request['product_id']);
+
+                        if (!empty($ch['id']) && !empty($item['id'])) {
 
                             $product = Product::find($item['product_id']);
 
-                            if($request['price']>0){
-                                $item->price = ((float)$request['price'])*$qty;
-                            }else{
-                                $price = ($product['price_ex']>$product['price'])?$product['price']:$product['price_ex'];
+                            if ($request['price'] > 0) {
+                                $item->price = ((float)$request['price']) * $qty;
+                            } else {
+                                $price = ($product['price_ex'] > $product['price']) ? $product['price'] : $product['price_ex'];
 
-                                $item->price = ((float)$price)*$qty;
+                                $item->price = ((float)$price) * $qty;
                             }
 
                             $item->quantity = $qty;
 
                             $item->save();
 
-                            $returnArray['status']=true;
-                            $status_code=200;
+                            $returnArray['status'] = true;
+                            $status_code = 200;
 
 
-                            $ch->ip_address=$request->ip();
+                            $ch->ip_address = $request->ip();
                             $ch->save();
-                            $this->updateCartItems($ch['id'],0);
-                            $item_array=array();
-                            $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                                ->where('status','=',0)
-                                ->where('customer_id','=',$ch['id'])
-                                ->where('order_id','=',0)
-                                ->orderBy('created_at','DESC')
+                            $this->updateCartItems($ch['id'], 0);
+                            $item_array = array();
+                            $cart_items = CartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                                ->where('status', '=', 0)
+                                ->where('customer_id', '=', $ch['id'])
+                                ->where('order_id', '=', 0)
+                                ->orderBy('created_at', 'DESC')
                                 ->get();
-                            $i=0;
-                            foreach ($cart_items as $cart_item){
+                            $i = 0;
+                            foreach ($cart_items as $cart_item) {
                                 $item_array[$i] = $this->cartItemDetail($cart_item);
                                 $i++;
                             }
 
-                            $returnArray['data']=['cart_items'=>$item_array];
+                            $returnArray['data'] = ['cart_items' => $item_array];
 
-                        }else{
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'not found'];
+                        } else {
+                            $returnArray['status'] = false;
+                            $status_code = 404;
+                            $returnArray['errors'] = ['msg' => 'not found'];
                         }
 
-                    }else{////guest
+                    } else {////guest
 
-                        $guest =  Guest::where('guid','=',$request['guid'])->first();
-                        $item=  GuestCartItem::where('item_code','=',$request['item_code'])->where('guid','=',(!empty($guest['id'])?$guest['id']:0))->first();
+                        $guest = Guest::where('guid', '=', $request['guid'])->first();
+                        $item = GuestCartItem::where('item_code', '=', $request['item_code'])->where('guid', '=', (!empty($guest['id']) ? $guest['id'] : 0))->first();
 
-                        if(!empty($guest['id']) && !empty($item['id'])){
-
-
+                        if (!empty($guest['id']) && !empty($item['id'])) {
 
 
-                            if($request['price']>0){
-                                $item->price = ((float)$request['price'])*$qty;
-                            }else{
+                            if ($request['price'] > 0) {
+                                $item->price = ((float)$request['price']) * $qty;
+                            } else {
                                 $product = Product::find($item['product_id']);
-                                $price = ($product['price_ex']>$product['price'])?$product['price']:$product['price_ex'];
-                                $item->price = ((float)$price)*$qty;
+                                $price = ($product['price_ex'] > $product['price']) ? $product['price'] : $product['price_ex'];
+                                $item->price = ((float)$price) * $qty;
                             }
 
                             $item->quantity = $qty;
 
                             $item->save();
-                            $this->updateCartItems(0,$guest['id']);
+                            $this->updateCartItems(0, $guest['id']);
 
-                            $item_array=array();
-                            $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                                ->where('guid','=',$guest['id'])
-                                ->where('order_id','=',0)
-                                ->orderBy('created_at','DESC')
+                            $item_array = array();
+                            $cart_items = GuestCartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                                ->where('guid', '=', $guest['id'])
+                                ->where('order_id', '=', 0)
+                                ->orderBy('created_at', 'DESC')
                                 ->get();
-                            $i=0;
-                            foreach ($cart_items as $cart_item){
-                                $item_array[$i]=$this->cartItemDetail($cart_item);
+                            $i = 0;
+                            foreach ($cart_items as $cart_item) {
+                                $item_array[$i] = $this->cartItemDetail($cart_item);
                                 $i++;
                             }
                             ///////////////////////////////////////////////////////////////////////
 
-                            $returnArray['status']=true;
-                            $status_code=200;
-                            $returnArray['data'] =['cart_items'=>$item_array];
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $returnArray['data'] = ['cart_items' => $item_array];
 
 
-
-                        }else{
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'not found'];
+                        } else {
+                            $returnArray['status'] = false;
+                            $status_code = 404;
+                            $returnArray['errors'] = ['msg' => 'not found'];
                         }
 
 
                     }
 
 
-
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
-    private function cartItemDetail($cart_item){
-        $item_array=array();
-        $item_array['item_code']=$cart_item['item_code'];
-        $item_array['price']=$cart_item['price'];
-     //   $item_array['quantity']=$cart_item['quantity'];
-        $item_array['created_at']=$cart_item['created_at'];
-        $item_array['product']=$cart_item->product()->first()->title;
-        $item_array['description']=$cart_item->product()->first()->description;
-        $item_array['brand']=$cart_item->product()->first()->brand()->first()->BrandName;
-        $item_array['model']=$cart_item->product()->first()->model()->first()->Modelname;
-        $item_array['category']=$cart_item->product()->first()->category()->first()->category_name;
-        $item_array['imageUrl']=url($cart_item->product()->first()->firstImage()->first()->image);
-        $item_array['thumb']=url($cart_item->product()->first()->firstImage()->first()->thumb);
+    private function cartItemDetail($cart_item)
+    {
+        $item_array = array();
+        $item_array['item_code'] = $cart_item['item_code'];
+        $item_array['price'] = $cart_item['price'];
+        //   $item_array['quantity']=$cart_item['quantity'];
+        $item_array['created_at'] = $cart_item['created_at'];
+        $item_array['product'] = $cart_item->product()->first()->title;
+        $item_array['description'] = $cart_item->product()->first()->description;
+        $item_array['brand'] = $cart_item->product()->first()->brand()->first()->BrandName;
+        $item_array['model'] = $cart_item->product()->first()->model()->first()->Modelname;
+        $item_array['category'] = $cart_item->product()->first()->category()->first()->category_name;
+        $item_array['imageUrl'] = url($cart_item->product()->first()->firstImage()->first()->image);
+        $item_array['thumb'] = url($cart_item->product()->first()->firstImage()->first()->thumb);
 //        if($cart_item['color_id']>0){
 //            $item_array['color']=$cart_item->color()->first()->color_name;
 //        }
@@ -1999,114 +1953,112 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) ){
+                if (!empty($request['customer_id'])) {
 
 
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->first();
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
 
-                    if(!empty($ch['id'])  ){
+                    if (!empty($ch['id'])) {
 
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $item_array=array();
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $item_array = array();
 
-                        $this->updateCartItems($ch['id'],0);
-                        $cart_items = CartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                            ->where('status','=',0)
-                            ->where('customer_id','=',$ch['id'])
-                            ->where('order_id','=',0)
-                            ->orderBy('created_at','DESC')
+                        $this->updateCartItems($ch['id'], 0);
+                        $cart_items = CartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                            ->where('status', '=', 0)
+                            ->where('customer_id', '=', $ch['id'])
+                            ->where('order_id', '=', 0)
+                            ->orderBy('created_at', 'DESC')
                             ->get();
-                        $i=0;
-                        $total=0;
-                        foreach ($cart_items as $cart_item){
+                        $i = 0;
+                        $total = 0;
+                        foreach ($cart_items as $cart_item) {
                             $item_array[$i] = $this->cartItemDetail($cart_item);
-                            $total+=($cart_item->product()->first()->price > $cart_item->product()->first()->price_ex) ? $cart_item->product()->first()->price_ex : $cart_item->product()->first()->price;
+                            $total += ($cart_item->product()->first()->price > $cart_item->product()->first()->price_ex) ? $cart_item->product()->first()->price_ex : $cart_item->product()->first()->price;
                             $i++;
                         }
 
 
-                        $returnArray['data'] =['cart_items'=>$item_array,'amount'=>$total];
+                        $returnArray['data'] = ['cart_items' => $item_array, 'amount' => $total];
                         //$ch->activation_key=0;
 
-                        $ch->ip_address=$request->ip();
+                        $ch->ip_address = $request->ip();
                         $ch->save();
 
 
-
-
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-                        $returnArray['errors'] =['msg'=>'not found'];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
+                } else {
+                    $guest = Guest::where('guid', '=', $request['guid'])->first();
 
-                }else{
-                    $guest = Guest::where('guid','=',$request['guid'])->first();
-
-                    if(!empty($guest['id'])){
+                    if (!empty($guest['id'])) {
                         ///////////////////////////////////////////////////////////////////////
 
 
-                        $item_array=array();
-                        $this->updateCartItems(0,$guest['id']);
-                        $cart_items = GuestCartItem::with('product.brand','product.model','product.category','color','memory','product.firstImage')
-                            ->where('guid','=',$guest['id'])
-                            ->where('order_id','=',0)
-                            ->orderBy('created_at','DESC')
+                        $item_array = array();
+                        $this->updateCartItems(0, $guest['id']);
+                        $cart_items = GuestCartItem::with('product.brand', 'product.model', 'product.category', 'color', 'memory', 'product.firstImage')
+                            ->where('guid', '=', $guest['id'])
+                            ->where('order_id', '=', 0)
+                            ->orderBy('created_at', 'DESC')
                             ->get();
-                        $i=0;
+                        $i = 0;
 
-                        foreach ($cart_items as $cart_item){
-                            $item_array[$i]=$this->cartItemDetail($cart_item);
+                        foreach ($cart_items as $cart_item) {
+                            $item_array[$i] = $this->cartItemDetail($cart_item);
                             $i++;
                         }
                         ///////////////////////////////////////////////////////////////////////
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =['cart_items'=>$item_array];
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-                        $returnArray['errors'] =['msg'=>'not found'];
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $returnArray['data'] = ['cart_items' => $item_array];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 404;
+                        $returnArray['errors'] = ['msg' => 'not found'];
                     }
 
 
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
-    private function calculateShipping($item_array,$cargo_company_id){
+    private function calculateShipping($item_array, $cargo_company_id)
+    {
         return 0;//rand(5,10)*10;
     }
 
-    private function addressCheck($customer_id,$address_id=0){
-        if($address_id>0){
-            $address= CustomerAddress::find($address_id);
-            if($customer_id != $address['customer_id']){
-                $address = CustomerAddress::where('customer_id','=',$customer_id)->orderBy('first','DESC')->first();
-                $address_id = (!empty($address['id'])) ? $address['id'] :0;
+    private function addressCheck($customer_id, $address_id = 0)
+    {
+        if ($address_id > 0) {
+            $address = CustomerAddress::find($address_id);
+            if ($customer_id != $address['customer_id']) {
+                $address = CustomerAddress::where('customer_id', '=', $customer_id)->orderBy('first', 'DESC')->first();
+                $address_id = (!empty($address['id'])) ? $address['id'] : 0;
             }
-        }else{
-            $address = CustomerAddress::where('customer_id','=',$customer_id)->orderBy('first','DESC')->first();
-            $address_id = (!empty($address['id'])) ? $address['id'] :0;
+        } else {
+            $address = CustomerAddress::where('customer_id', '=', $customer_id)->orderBy('first', 'DESC')->first();
+            $address_id = (!empty($address['id'])) ? $address['id'] : 0;
         }
         return $address_id;
     }
@@ -2119,59 +2071,59 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                if(!empty($request['customer_id']) ) {
+                if (!empty($request['customer_id'])) {
                     $ch = Customer::where('customer_id', '=', $request['customer_id'])->first();
                     $cart_items = CartItem::where('status', '=', CartItemStatus::init)
                         ->where('customer_id', '=', $ch['id'])
                         ->count();
-                    $customer_id=$ch['id'];
+                    $customer_id = $ch['id'];
                     $guid = 0;
-                    $order = Order::where('status','=',CartItemStatus::init)->where('customer_id','=',$ch['id'])->first();
-                }else{//// GUEST
-                    $guest = Guest::where('guid','=',$request['guid'])->first();
-                    $cart_items = GuestCartItem::where('guid','=',$guest['id'])
-                        ->where('status','=',CartItemStatus::init)
+                    $order = Order::where('status', '=', CartItemStatus::init)->where('customer_id', '=', $ch['id'])->first();
+                } else {//// GUEST
+                    $guest = Guest::where('guid', '=', $request['guid'])->first();
+                    $cart_items = GuestCartItem::where('guid', '=', $guest['id'])
+                        ->where('status', '=', CartItemStatus::init)
                         ->count();
-                    $customer_id=0;
+                    $customer_id = 0;
                     $guid = $guest['id'];
-                    $order = Order::where('status','=',CartItemStatus::init)->where('guid','=',$guid)->first();
+                    $order = Order::where('status', '=', CartItemStatus::init)->where('guid', '=', $guid)->first();
                 }
 
 
-              if($cart_items>0 ){
+                if ($cart_items > 0) {
 
 
-                        $returnArray['status']=true;
-                        $status_code=200;
+                    $returnArray['status'] = true;
+                    $status_code = 200;
 
 
-                        if(empty($order['id'])){
+                    if (empty($order['id'])) {
 
-                        $order_code = $this->generateOrderCode($customer_id,$guid);
+                        $order_code = $this->generateOrderCode($customer_id, $guid);
 
-                        }else{
-                            $order_code = $order['order_code'];
-                        }
-
-                        $returnArray['data'] =['order_code'=>$order_code];
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=404;
-                        $returnArray['errors'] =['msg'=>'not found'];
+                    } else {
+                        $order_code = $order['order_code'];
                     }
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+
+                    $returnArray['data'] = ['order_code' => $order_code];
+
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 404;
+                    $returnArray['errors'] = ['msg' => 'not found'];
+                }
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
     }
 
 
@@ -2182,80 +2134,78 @@ class ApiCustomerController extends Controller
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                $ch= Customer::where('status','=',CustomerStatus::active)->where('customer_id','=',$request['customer_id'])->first();
-
-                if(!empty($request['customer_id']) ){
-
-                        $customer_id=(!empty($ch['id']))? $ch['id']:0;
-
-                        $guid=0;
-
-                        if($customer_id==0){
-                            $returnArray['status']=false;
-                            $status_code=406;
-                            $returnArray['errors'] =['msg'=>'customer not found'];
-                            return response()->json($returnArray,$status_code);
-                        }
+                $ch = Customer::where('status', '=', CustomerStatus::active)->where('customer_id', '=', $request['customer_id'])->first();
 
 
-                    $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
+                if (!empty($request['customer_id'])) {
 
-                    if($address_id == 0){
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'address not found'];
-                        return response()->json($returnArray,$status_code);
-                    }else{
-                        $invoice_address_id = $this->addressCheck($ch['id'],(!empty($request['invoice_address_id'])?$request['invoice_address_id']:0));
-                        $invoice_address_id = ($invoice_address_id==0)?$address_id:$invoice_address_id;
+                    $customer_id = (!empty($ch['id'])) ? $ch['id'] : 0;
+
+                    $guid = 0;
+
+                    if ($customer_id == 0) {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'customer not found'];
+                        return response()->json($returnArray, $status_code);
+                    }
+
+
+                    $address_id = $this->addressCheck($ch['id'], (!empty($request['customer_address_id']) ? $request['customer_address_id'] : 0));
+
+                    if ($address_id == 0) {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'address not found'];
+                        return response()->json($returnArray, $status_code);
+                    } else {
+                        $invoice_address_id = $this->addressCheck($ch['id'], (!empty($request['invoice_address_id']) ? $request['invoice_address_id'] : 0));
+                        $invoice_address_id = ($invoice_address_id == 0) ? $address_id : $invoice_address_id;
 
                     }
-                    $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$ch['name']." ".$ch['surname'];
-                    $ch->ip_address=$request->ip();
+                    $name_surname = (!empty($request['name_surname'])) ? $request['name_surname'] : $ch['name'] . " " . $ch['surname'];
+                    $ch->ip_address = $request->ip();
                     $ch->save();
 
-                }else{
-                    $address_id=0;
-                    $invoice_address_id=0;
-                    $guest = Guest::where('guid','=',$request['guid'])->first();
-                    if(empty($guest['id'])){
+                } else {
+                    $address_id = 0;
+                    $invoice_address_id = 0;
+                    $guest = Guest::where('guid', '=', $request['guid'])->first();
+                    if (empty($guest['id'])) {
                         $guest = new Guest();
                         $guest->ip = $request->ip();
-                        $guest->guid= $request['guid'];
+                        $guest->guid = $request['guid'];
                         $guest->expires_at = Carbon::now()->addYear(1)->format('Y-m-d');
                         $guest->save();
                     }
-                    $customer_id=0;
-                    $guid=$guest['id'];
-                    $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$guest['guid'];
+                    $customer_id = 0;
+                    $guid = $guest['id'];
+                    $name_surname = (!empty($request['name_surname'])) ? $request['name_surname'] : $guest['guid'];
                 }
 
 
+                if (!empty($request['order_code'])) {
+                    $order = Order::where('customer_id', '=', $customer_id)->where('guid', '=', $guid)
+                        ->where('order_code', '=', $request['order_code'])->first();
 
-                if(!empty($request['order_code'])) {
-                    $order = Order::where('customer_id','=',$customer_id)->where('guid','=',$guid)
-                        ->where('order_code','=',$request['order_code'])->first();
 
-
-                }else{
-                    $order_code = $this->generateOrderCode($customer_id,$guid);
-                    $order = Order::where('order_code','=',$order_code)->first();
+                } else {
+                    $order_code = $this->generateOrderCode($customer_id, $guid);
+                    $order = Order::where('order_code', '=', $order_code)->first();
                 }
 
 
-
-
-                if($customer_id + $guid ==0  ){
-                    $returnArray['status']=false;
-                    $status_code=404;
-                    $returnArray['errors'] =['msg'=>'missing data'];
-                    return response()->json($returnArray,$status_code);
+                if ($customer_id + $guid == 0) {
+                    $returnArray['status'] = false;
+                    $status_code = 404;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
+                    return response()->json($returnArray, $status_code);
                 }
 
 /////////////////////////////PAYMENT
 
-                $fileName="";
-                if($request['payment_method']>0) {///havale
+                $fileName = "";
+                if ($request['payment_method'] > 0) {///havale
                     $bank_id = 0;
                     $taksit = 1;
                     $file = $request->file('receipt');
@@ -2272,11 +2222,10 @@ class ApiCustomerController extends Controller
                     }
 
 
+                } else {////kk ödemesi
 
-                }else{////kk ödemesi
-
-                    $bank_id = (!empty($request['bank_id']))?$request['bank_id']:0;
-                    $taksit = (!empty($request['taksit']))?$request['taksit']:1;
+                    $bank_id = (!empty($request['bank_id'])) ? $request['bank_id'] : 0;
+                    $taksit = (!empty($request['taksit'])) ? $request['taksit'] : 1;
 
 
 //                    $this->makeTmp(date("YmdHis")." Place-Order-CC",
@@ -2287,154 +2236,166 @@ class ApiCustomerController extends Controller
 /////////////////////////////PAYMENT
 
 
-                if($customer_id>0){
-                            $items = CartItem::with('product.firstImage','memory','color')
-                                ->where('status','=',CartItemStatus::init)
-                                ->where('customer_id','=',$customer_id)->get();
+                if ($customer_id > 0) {
+                    $items = CartItem::with('product.firstImage', 'memory', 'color')
+                        ->where('status', '=', CartItemStatus::init)
+                        ->where('customer_id', '=', $customer_id)->get();
 
-                }else{
-                    $items = GuestCartItem::with('product.firstImage','memory','color')
-                        ->where('status','=',CartItemStatus::init)
-                        ->where('guid','=',$guid)->get();
+                } else {
+                    $items = GuestCartItem::with('product.firstImage', 'memory', 'color')
+                        ->where('status', '=', CartItemStatus::init)
+                        ->where('guid', '=', $guid)->get();
                 }
 
 
+                ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
+
+                if ($items->count() == 0) {
+                    $returnArray['status'] = false;
+                    $status_code = 404;
+                    $returnArray['errors'] = ['msg' => 'no item found'];
+                    return response()->json($returnArray, $status_code);
+                }
+
+                $price = 0;
+                $delete_item_array = array();
+                foreach ($items as $item) {
+                    ///     echo $item['price']."x".$item['quantity']."\n";
+                    $price += $item['price'] * $item['quantity'];
+                    $delete_item_array[] = $item['id'];
+                }
+
+                $price = (!empty($request['amount'])) ? $request['amount'] : $price;
 
                 ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
 
-                        if($items->count()==0){
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'no item found'];
-                            return response()->json($returnArray,$status_code);
-                        }
-
-                        $price = 0 ;
-                        $delete_item_array = array();
-                        foreach ($items as $item){
-                            ///     echo $item['price']."x".$item['quantity']."\n";
-                            $price += $item['price']*$item['quantity'];
-                            $delete_item_array[]=$item['id'];
-                        }
-
-                        $price = (!empty($request['amount']))?$request['amount'] : $price ;
-
-                ////////////////////////////////BABA SEPET YOK!!!////////////////////////////
-
-                $cargo_company_id = (!empty($request['cargo_company_id']))?$request['cargo_company_id']:1;
-                 $shipping_price=$this->calculateShipping($delete_item_array,$cargo_company_id);
+                $cargo_company_id = (!empty($request['cargo_company_id'])) ? $request['cargo_company_id'] : 1;
+                $shipping_price = $this->calculateShipping($delete_item_array, $cargo_company_id);
 
 
-
-                $order->name_surname =$name_surname;
+                $order->name_surname = $name_surname;
                 $order->cargo_company_id = $request['cargo_company_id'];
-                $order->customer_id= $customer_id;
-                $order->guid=$guid;
+                $order->customer_id = $customer_id;
+                $order->guid = $guid;
                 $order->customer_address_id = $address_id;
                 $order->invoice_address_id = $invoice_address_id;
-                $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
+                $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method'] : 0;
                 $order->status = CartItemStatus::init;
                 $order->cargo_company_id = $cargo_company_id;
                 $order->amount = $price;
-                $order->banka_id= $bank_id;
-                $order->taksit= $taksit;
+                $order->banka_id = $bank_id;
+                $order->taksit = $taksit;
                 $order->shipping_price = $shipping_price;
-                $order->receipt =$fileName;
+                $order->receipt = $fileName;
                 $order->save();
 
 /////////////addressss
 
-if($guid>0){
-                $city_id =  (!empty($request['delivery_city_id']))? $request['delivery_city_id']:0;
-                $phone=(!empty($request['delivery_phone'])) ? $request['delivery_phone']:'';
-                if(!empty($request['delivery_address'])){
+                if ($guid > 0) {
+                    $city_id = (!empty($request['delivery_city_id'])) ? $request['delivery_city_id'] : 0;
+                    $phone = (!empty($request['delivery_phone'])) ? $request['delivery_phone'] : '';
+                    if (!empty($request['delivery_address'])) {
 
-                    $orderAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',0)->first();
+                        $orderAddress = OrderAddress::where('order_id', '=', $order['id'])->where('invoice', '=', 0)->first();
 
-                    if(empty($orderAddress['id'])){
-                        $orderAddress = new OrderAddress();
-                    }
+                        if (empty($orderAddress['id'])) {
+                            $orderAddress = new OrderAddress();
+                        }
 
-                    $orderAddress->order_id=$order['id'];
-                    $orderAddress->name_surname=(!empty($request['delivery_full_name']))?$request['delivery_full_name']:$name_surname;
-                    $orderAddress->address = $request['delivery_address'];
-                    $orderAddress->city_id =$city_id;
-                    $orderAddress->phone = $phone;
-                    $orderAddress->invoice = 0;
-                    $orderAddress->save();
-                    if(!empty($request['invoice_address'])){
+                        $orderAddress->order_id = $order['id'];
+                        $orderAddress->name_surname = (!empty($request['delivery_full_name'])) ? $request['delivery_full_name'] : $name_surname;
+                        $orderAddress->address = $request['delivery_address'];
+                        $orderAddress->city_id = $city_id;
+                        $orderAddress->phone = $phone;
+                        $orderAddress->invoice = 0;
+                        $orderAddress->save();
+                        if (!empty($request['invoice_address'])) {
 
-                        $invoiceAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
+                            $invoiceAddress = OrderAddress::where('order_id', '=', $order['id'])->where('invoice', '=', 1)->first();
 
-                        if(empty($invoiceAddress['id'])){
-                            $invoiceAddress = new OrderAddress();
+                            if (empty($invoiceAddress['id'])) {
+                                $invoiceAddress = new OrderAddress();
+                            }
+
+
+                            $invoiceAddress->order_id = $order['id'];
+                            $invoiceAddress->name_surname = (!empty($request['invoice_full_name'])) ? $request['invoice_full_name'] : $name_surname;
+                            $invoiceAddress->address = $request['invoice_address'];
+                            $invoiceAddress->city_id = (!empty($request['invoice_city_id'])) ? $request['invoice_city_id'] : $city_id;
+                            $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone'] : $phone;
+                            $invoiceAddress->invoice = 1;
+                            $invoiceAddress->save();
+
+
+                        }
+
+                    } else {///empty address
+                        if (!empty($request['invoice_address'])) {
+                            $invoiceAddress = OrderAddress::where('order_id', '=', $order['id'])->where('invoice', '=', 1)->first();
+
+                            if (empty($orderAddress['id'])) {
+                                $invoiceAddress = new OrderAddress();
+                            }
+                            $invoiceAddress->order_id = $order['id'];
+                            $invoiceAddress->name_surname = (!empty($request['invoice_name_surname'])) ? $request['invoice_name_surname'] : $name_surname;
+                            $invoiceAddress->address = $request['invoice_address'];
+                            $invoiceAddress->city_id = (!empty($request['invoice_city_id'])) ? $request['invoice_city_id'] : $city_id;
+                            $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone'] : $phone;
+                            $invoiceAddress->invoice = 1;
+                            $invoiceAddress->save();
                         }
 
 
-
-
-                        $invoiceAddress->order_id=$order['id'];
-                        $invoiceAddress->name_surname=(!empty($request['invoice_full_name']))?$request['invoice_full_name']:$name_surname;
-                        $invoiceAddress->address = $request['invoice_address'];
-                        $invoiceAddress->city_id = (!empty($request['invoice_city_id']))? $request['invoice_city_id']:$city_id;
-                        $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone']:$phone;
-                        $invoiceAddress->invoice =1;
-                        $invoiceAddress->save();
-
-
                     }
-
-                }else{///empty address
-                    if(!empty($request['invoice_address'])){
-                        $invoiceAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',1)->first();
-
-                        if(empty($orderAddress['id'])){
-                            $invoiceAddress = new OrderAddress();
-                        }
-                        $invoiceAddress->order_id=$order['id'];
-                        $invoiceAddress->name_surname=(!empty($request['invoice_name_surname']))?$request['invoice_name_surname']:$name_surname;
-                        $invoiceAddress->address = $request['invoice_address'];
-                        $invoiceAddress->city_id = (!empty($request['invoice_city_id']))? $request['invoice_city_id']:$city_id;
-                        $invoiceAddress->phone = (!empty($request['invoice_phone'])) ? $request['invoice_phone']:$phone;
-                        $invoiceAddress->invoice =1;
-                        $invoiceAddress->save();
-                    }
-
-
-                }
-}///guid>0
+                }///guid>0
 /////////////addressss
 
                 $result = array();
-                $i=0;
-                foreach ($items as $item){
-                    $result[$i]= $this->cartItemDetail($item);
+                $i = 0;
+                foreach ($items as $item) {
+                    $result[$i] = $this->cartItemDetail($item);
                     $i++;
                 }
 
-                if($customer_id>0){
-                CartItem::whereIn('id',$delete_item_array)->update([ 'order_id'=>$order['id']]);
-                }else{
-                    GuestCartItem::whereIn('id',$delete_item_array)->update([ 'order_id'=>$order['id']]);
-               }
+                if ($customer_id > 0) {
+                    CartItem::whereIn('id', $delete_item_array)->update(['order_id' => $order['id']]);
+                } else {
+                    GuestCartItem::whereIn('id', $delete_item_array)->update(['order_id' => $order['id']]);
+                }
 
-                $returnArray['status']=true;
-                $status_code=200;
-                $returnArray['data'] =['items'=>$result,'amount'=>$price,'shipping_price'=>$shipping_price];
-                $returnArray['order_code']=$order['order_code'];
+                ///////////////////////CURL GÖNDER
+                /// /**
+                /// https://garantili.com.tr/eticaret/api.php?uyeno=2033&storekey=0b763e9cf94fc77819dc408b81c1be93&
+                /// call=siparis-olustur&eticaret_siparis_id=11231&urunler=200-5000-600&
+                /// fiyatlar=1000-2500-500.99&takipno=GRNT1212121212&
+                /// indirim_kodu=GRNKUPON&indirim_kodundan_tutar=300&toplam_tutar=3700.9&
+                /// dekont=www.garantili.com.tr/image/1.jpg&mst_adsoyad=Buse Tokur&
+                /// mst_telefon=5337374948&mst_eposta=buse.tokur@ekspar.com.tr&mst_tc=1111111111111&
+                /// mst_adres=başakşehir/istanbul&mst_il=34&mst_ilce=80&ft_adsoyad=Buse Tokur&ft_telefon=5337374948
+                /// &ft_eposta=buse.tokur@ekspar.com.tr&ft_tc=1111111111111&ft_adres=başakşehir/istanbul&ft_il=34
+                /// &ft_ilce=80&ft_vd=Başakşehir&ft_vno=VERGINO232323
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+
+                ///
+                ///////////////////////CURL GÖNDER
+
+                $returnArray['status'] = true;
+                $status_code = 200;
+                $returnArray['data'] = ['items' => $result, 'amount' => $price, 'shipping_price' => $shipping_price];
+                $returnArray['order_code'] = $order['order_code'];
+
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
@@ -2443,68 +2404,67 @@ if($guid>0){
     {
 
 
-
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
-                if(!empty($request['customer_id']) ){
-                    $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',CustomerStatus::active)->first();
+                if (!empty($request['customer_id'])) {
+                    $ch = Customer::where('customer_id', '=', $request['customer_id'])->where('status', '=', CustomerStatus::active)->first();
 
 
-                    if(!empty($ch['id']) && !empty($request['cargo_company_id'])  ){
+                    if (!empty($ch['id']) && !empty($request['cargo_company_id'])) {
 
-                        $order_status=CartItemStatus::init; //// havale ?
+                        $order_status = CartItemStatus::init; //// havale ?
 
-                        $address_id = $this->addressCheck($ch['id'],(!empty($request['customer_address_id'])?$request['customer_address_id']:0));
+                        $address_id = $this->addressCheck($ch['id'], (!empty($request['customer_address_id']) ? $request['customer_address_id'] : 0));
 
-                        if($address_id == 0){
-                            $returnArray['status']=false;
-                            $status_code=406;
-                            $returnArray['errors'] =['msg'=>'address not found'];
-                            return response()->json($returnArray,$status_code);
-                        }else{
-                            $billing_address_id = $this->addressCheck($ch['id'],(!empty($request['billing_address_id'])?$request['billing_address_id']:0));
-                            $billing_address_id = ($billing_address_id==0)?$address_id:$billing_address_id;
+                        if ($address_id == 0) {
+                            $returnArray['status'] = false;
+                            $status_code = 406;
+                            $returnArray['errors'] = ['msg' => 'address not found'];
+                            return response()->json($returnArray, $status_code);
+                        } else {
+                            $billing_address_id = $this->addressCheck($ch['id'], (!empty($request['billing_address_id']) ? $request['billing_address_id'] : 0));
+                            $billing_address_id = ($billing_address_id == 0) ? $address_id : $billing_address_id;
 
                         }
 
-                        if(!empty($request['item_array'])){
-                            $item_array= explode(',',$request['item_array']);
-                            $items = CartItem::with('product.firstImage','memory','color')
-                                ->where('status','=',0)
-                                ->where('customer_id','=',$ch['id'])->whereIn('item_code',$item_array)->get();
-                        }else{
-                            $items = CartItem::with('product.firstImage','memory','color')
-                                ->where('status','=',0)
-                                ->where('customer_id','=',$ch['id'])->get();
+                        if (!empty($request['item_array'])) {
+                            $item_array = explode(',', $request['item_array']);
+                            $items = CartItem::with('product.firstImage', 'memory', 'color')
+                                ->where('status', '=', 0)
+                                ->where('customer_id', '=', $ch['id'])->whereIn('item_code', $item_array)->get();
+                        } else {
+                            $items = CartItem::with('product.firstImage', 'memory', 'color')
+                                ->where('status', '=', 0)
+                                ->where('customer_id', '=', $ch['id'])->get();
                         }
 
-                        if($items->count()==0){
-                            $returnArray['status']=false;
-                            $status_code=404;
-                            $returnArray['errors'] =['msg'=>'no item found'];
-                            return response()->json($returnArray,$status_code);
+                        if ($items->count() == 0) {
+                            $returnArray['status'] = false;
+                            $status_code = 404;
+                            $returnArray['errors'] = ['msg' => 'no item found'];
+                            return response()->json($returnArray, $status_code);
                         }
-                        $price = 0 ;
+                        $price = 0;
                         $delete_item_array = array();
-                        foreach ($items as $item){
+                        foreach ($items as $item) {
                             ///     echo $item['price']."x".$item['quantity']."\n";
-                            $price += $item['price']*$item['quantity'];
-                            $delete_item_array[]=$item['id'];
+                            $price += $item['price'] * $item['quantity'];
+                            $delete_item_array[] = $item['id'];
                         }
 
 
                         //    return $price ;
 
 
-                        $shipping_price=$this->calculateShipping($delete_item_array,$request['cargo_company_id']);
-                        $order_id=$this->generateOrderCode();
+                        $shipping_price = $this->calculateShipping($delete_item_array, $request['cargo_company_id']);
+                        $order_id = $this->generateOrderCode();
 
-                        $name_surname= (!empty($request['name_surname'])) ? $request['name_surname']:$ch['name']." ".$ch['surname'];
+                        $name_surname = (!empty($request['name_surname'])) ? $request['name_surname'] : $ch['name'] . " " . $ch['surname'];
                         if ($request['payment_method'] == 'cc' || $request['payment_method'] == 0) {/// KK ödemesi
                             if (!empty($request['cc_no']) && !empty($request['expires_at']) && !empty($request['cvc'])) {
 
-                                $purchase = (!empty($request['purchase']))?$request['purchase']:1;
-if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc'], ($price + $shipping_price),$name_surname,$purchase,$order_id)) {
+                                $purchase = (!empty($request['purchase'])) ? $request['purchase'] : 1;
+                                if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc'], ($price + $shipping_price), $name_surname, $purchase, $order_id)) {
 
 
                                     //   return $this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc'], ($price + $shipping_price),$name_surname,$purchase,$order_id);
@@ -2516,7 +2476,6 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
 //                $tmp->title = 'KK PAYMENT'.date('Ymd');
 //                $tmp->data= $request['cc_no'].":".$request['expires_at'].":".$request['cvc'].":".($price + $shipping_price);
 //                $tmp->save();
-
 
 
                                     return response()->json($returnArray, $status_code);
@@ -2532,81 +2491,80 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                         }/////CC PAYMENT
 
 
-
                         $file = $request->file('receipt');
                         if (!empty($file)) {
-                            $fileName = $order_id. "_". date('YmdHis').'.'.$request->file('receipt')->extension();
+                            $fileName = $order_id . "_" . date('YmdHis') . '.' . $request->file('receipt')->extension();
                             $request->file('receipt')->move('receipt', $fileName);
-                        }else{
-                            $fileName="";
+                        } else {
+                            $fileName = "";
                         }
 
-                        $order=new Order();
+                        $order = new Order();
                         $order->order_code = $order_id;
-                        $order->name_surname =$name_surname;
+                        $order->name_surname = $name_surname;
                         $order->cargo_company_id = $request['cargo_company_id'];
-                        $order->customer_id= $ch['id'];
+                        $order->customer_id = $ch['id'];
                         $order->customer_address_id = $address_id;
                         $order->billing_address_id = $billing_address_id;
-                        $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method']:0;
+                        $order->order_method = (!empty($request['payment_method'])) ? $request['payment_method'] : 0;
                         $order->status = $order_status;
                         $order->amount = $price;
                         $order->shipping_price = $shipping_price;
-                        $order->receipt = 'receipt/'.$fileName;
+                        $order->receipt = 'receipt/' . $fileName;
                         $order->save();
 
                         $result = array();
-                        $i=0;
-                        foreach ($items as $item){
-                            $result[$i]['item_code']=$item['item_code'];
-                            $result[$i]['product']=$item->product()->first()->title;
-                            $result[$i]['image']=$item->product()->first()->firstImage()->first()->thumb;
-                            $result[$i]['memory']=$item->memory()->first()->memory_value."GB";
-                            $result[$i]['color']=$item->color()->first()->color_name;
-                            $result[$i]['quantity']=$item['quantity'];
-                            $result[$i]['price']=$item['price'];
+                        $i = 0;
+                        foreach ($items as $item) {
+                            $result[$i]['item_code'] = $item['item_code'];
+                            $result[$i]['product'] = $item->product()->first()->title;
+                            $result[$i]['image'] = $item->product()->first()->firstImage()->first()->thumb;
+                            $result[$i]['memory'] = $item->memory()->first()->memory_value . "GB";
+                            $result[$i]['color'] = $item->color()->first()->color_name;
+                            $result[$i]['quantity'] = $item['quantity'];
+                            $result[$i]['price'] = $item['price'];
                             $i++;
                         }
 
                         //$result['shipping_price']=50;
 
-                        CartItem::whereIn('id',$delete_item_array)->update(['status'=>$order_status,'order_id'=>$order['id']]);//->delete();
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =['items'=>$result,'amount'=>$price,'shipping_price'=>$shipping_price];
-                        $returnArray['order_id']=$order_id;
+                        CartItem::whereIn('id', $delete_item_array)->update(['status' => $order_status, 'order_id' => $order['id']]);//->delete();
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $returnArray['data'] = ['items' => $result, 'amount' => $price, 'shipping_price' => $shipping_price];
+                        $returnArray['order_id'] = $order_id;
                         //$ch->activation_key=0;
 
-                        $ch->ip_address=$request->ip();
+                        $ch->ip_address = $request->ip();
                         $ch->save();
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'missing data'];
                     }
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
 
-    public function paymentConfirm(Request $request,Mailer $mailer)
+    public function paymentConfirm(Request $request, Mailer $mailer)
     {
 
         if ($request->isMethod('post')) {
@@ -2615,7 +2573,7 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
 //
 //            $this->makeTmp($request->ip(), $returnData);
             if ($request->header('x-api-key') == $this->generateKey()) {
-            //    return response()->json(['order_code'=>$request['order_code'],'result'=>$request['result'] ]);
+                //    return response()->json(['order_code'=>$request['order_code'],'result'=>$request['result'] ]);
 
                 $order = Order::with('customer')
                     ->where('status', '=', CartItemStatus::init)
@@ -2626,35 +2584,35 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                     if ($request['result'] == 1) {
                         $this->makeTmp($request->ip(), $request['Order_code'] . ":" . $request['Result'] . ":" . $request['Msg'] . ':' . date('YmdHi'));
 
-                        if($order['id']!=52){
+                        if ($order['id'] != 52) {
 
-                        if ($order['customer_id'] > 0) {
-                            $items = CartItem::where('status', '=', CartItemStatus::init)
-                                ->where('customer_id', '=', $order['customer_id'])
-                                ->where('order_id', '=', $order['id'])->get();
-                         //       ->update(['status' => CartItemStatus::paid]);
-
-
-                            //      $mailer->to($order->customer()->first()->email)->send(new OrderEmail($order['order_code'].' kodlu siparişiniz alınmıştır'));
+                            if ($order['customer_id'] > 0) {
+                                $items = CartItem::where('status', '=', CartItemStatus::init)
+                                    ->where('customer_id', '=', $order['customer_id'])
+                                    ->where('order_id', '=', $order['id'])->get();
+                                //       ->update(['status' => CartItemStatus::paid]);
 
 
-                        } else {
-                          $items =  GuestCartItem:: where('status', '=', CartItemStatus::init)
-                                ->where('guid', '=', $order['guid'])
-                                ->where('order_id', '=', $order['id'])->get();
+                                //      $mailer->to($order->customer()->first()->email)->send(new OrderEmail($order['order_code'].' kodlu siparişiniz alınmıştır'));
+
+
+                            } else {
+                                $items = GuestCartItem:: where('status', '=', CartItemStatus::init)
+                                    ->where('guid', '=', $order['guid'])
+                                    ->where('order_id', '=', $order['id'])->get();
                                 //->update(['status' => CartItemStatus::paid]);
-                        }
+                            }
 
-                        foreach($items as $item){
-                            $item->status = CartItemStatus::paid;
-                            $item->save();
-                            $product  = Product::find($item['product_id']);
-                            $product->status =0 ;
-                            $product->save();
+                            foreach ($items as $item) {
+                                $item->status = CartItemStatus::paid;
+                                $item->save();
+                                $product = Product::find($item['product_id']);
+                                $product->status = 0;
+                                $product->save();
 
-                        }
+                            }
 
-                        Order::where('id', '=', $order['id'])->update(['status' => CartItemStatus::paid]);
+                            Order::where('id', '=', $order['id'])->update(['status' => CartItemStatus::paid]);
                         }
                         $returnArray['status'] = true;
                         $status_code = 200;
@@ -2677,19 +2635,19 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                     $returnArray['errors'] = ['msg' => 'missing data'];
                 }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
-            }
             } else {
                 $returnArray['status'] = false;
-                $status_code = 405;
-                $returnArray['errors'] = ['msg' => 'method_not_allowed'];
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
+        } else {
+            $returnArray['status'] = false;
+            $status_code = 405;
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
+        }
 
 
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
@@ -2698,15 +2656,15 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
 
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
-                if(!empty($request['order_code']) ){
+                if (!empty($request['order_code'])) {
                     //   $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',1)->first();
 
-                    $order =  Order::where('order_code','=',$request['order_code'])->first();
+                    $order = Order::where('order_code', '=', $request['order_code'])->first();
 
 
-                    if(!empty($order['id'])   ) {
-                        $invoice = (!empty($request['invoice']))?1:0;
-                        $not = ($invoice == 1)?0:1;
+                    if (!empty($order['id'])) {
+                        $invoice = (!empty($request['invoice'])) ? 1 : 0;
+                        $not = ($invoice == 1) ? 0 : 1;
                         $orderAddress = OrderAddress::where('order_id', '=', $order['id'])->where('invoice', '=', $invoice)->first();
 
                         if (empty($orderAddress['id'])) {
@@ -2722,34 +2680,34 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
                         $orderAddress->save();
 
 
-                    OrderAddress::where('order_id','=',$order['id'])
-                        ->where('id','<>',$orderAddress['id'])
-                        ->where('invoice','=',$invoice)->update(['invoice'=>$not]);
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =$orderAddress;
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
+                        OrderAddress::where('order_id', '=', $order['id'])
+                            ->where('id', '<>', $orderAddress['id'])
+                            ->where('invoice', '=', $invoice)->update(['invoice' => $not]);
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $returnArray['data'] = $orderAddress;
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'missing data'];
                     }
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
@@ -2757,182 +2715,184 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
     {
 
 
-
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
 
-                    //   $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',CustomerStatus::active)->first();
+                //   $ch =  Customer::where('customer_id','=',$request['customer_id'])->where('status','=',CustomerStatus::active)->first();
 
-                    $order =  Order::where('order_code','=',$request['order_code'])->first();
+                $order = Order::where('order_code', '=', $request['order_code'])->first();
 
-                    if (!empty($order['id'])   ){
+                if (!empty($order['id'])) {
 
-                        if($order['customer_id']>0){
-                            $items = CartItem::where('order_id','=',$order['id'])->get();
-                                //->update(['status'=>CartItemStatus::canceled]);
+                    if ($order['customer_id'] > 0) {
+                        $items = CartItem::where('order_id', '=', $order['id'])->get();
+                        //->update(['status'=>CartItemStatus::canceled]);
 
-                        }else{
-                          $items =   GuestCartItem::where('order_id','=',$order['id'])->get();
-                                //->update(['status'=>CartItemStatus::canceled]);
+                    } else {
+                        $items = GuestCartItem::where('order_id', '=', $order['id'])->get();
+                        //->update(['status'=>CartItemStatus::canceled]);
 
-                        }
-
-                        $problem_id= (!empty($request['problem_id']))?$request['problem_id']:0;
-
-                        if($order['status']==CartItemStatus::sent){////gönderilmiş ise
-                        $return = OrderReturn::where('order_id','=',$order['id'])->first();
-                        if(empty($return['id'])){
-
-                            $return = new OrderReturn();
-                            $return->order_id=$order['id'];
-                            $return->return_code = 'RTN'.date('YmdHis').'-'.rand(100,999);
-                        }/////return ???
-
-
-
-                            $return->name_surname = $order['name_surname'];
-                            $return->service_address_id = (!empty($request['service_address_id']))?$request['service_address_id']:0;
-                            $return->cargo_company_id = (!empty($request['cargo_company_id']))?$request['cargo_company_id']:0;
-                            $return->cargo_code = (!empty($request['cargo_code']))?$request['cargo_code']:'';
-                            $return->status = (!empty($request['cargo_code']))?OrderReturnStatus::on_cargo:OrderReturnStatus::init;
-                            $return->save();
-
-//                        }elseif ($order['status']==CartItemStatus::paid){
-
-                        }else{
-                            $return=null;
-                        }
-
-                        foreach ($items as $item){
-                            $product = Product::find($item['product_id']);
-                            $product->status = 1;
-                            $product->save();
-                            $item->status = CartItemStatus::canceled;
-                            $item->save();
-
-                        }
-
-                        Order::where('id','=',$order['id'])->update(['status'=>CartItemStatus::canceled,'return_problem_id'=>$problem_id]);
-                        $returnArray['status']=true;
-                        $status_code=200;
-                        $returnArray['data'] =['order'=>$order,'return'=>$return];
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
                     }
 
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+                    $problem_id = (!empty($request['problem_id'])) ? $request['problem_id'] : 0;
+                    $return = OrderReturn::where('order_id', '=', $order['id'])->first();
+                    if (empty($return['id'])) {
+
+                        $return = new OrderReturn();
+                        $return->order_id = $order['id'];
+                        $return->return_code = 'RTN' . date('YmdHis') . '-' . rand(100, 999);
+                    }/////return ???
+                    $return->name_surname = (!empty($request['name_surname'])) ? $request['name_surname'] : $order['name_surname'];
+                    if ($order['status'] == CartItemStatus::sent) {////gönderilmiş ise
+
+                        $return->service_address_id = (!empty($request['service_address_id'])) ? $request['service_address_id'] : 0;
+                        $return->cargo_company_id = (!empty($request['cargo_company_id'])) ? $request['cargo_company_id'] : 0;
+                        $return->cargo_code = (!empty($request['cargo_code'])) ? $request['cargo_code'] : '';
+                        $return->requires_cargo = 1;
+                    } elseif ($order['status'] == CartItemStatus::paid) { // sadece ödenmiş
+                        $return->service_address_id = 0;
+                        $return->cargo_company_id = 0;
+                        $return->cargo_code = '';
+
+                        $return->requires_cargo = 0;
+                    }
+
+                    $return->iban = (!empty($request['iban'])) ? $request['iban'] : '';
+                    $return->iban_name = (!empty($request['iban_name'])) ? $request['iban_name'] : '';
+                    $return->bank_name = (!empty($request['bank_name'])) ? $request['bank_name'] : '';
+                    $return->status = (!empty($request['cargo_code'])) ? OrderReturnStatus::on_cargo : OrderReturnStatus::init;
+                    $return->save();
+
+                    foreach ($items as $item) {
+                        $product = Product::find($item['product_id']);
+                        $product->status = 1;
+                        $product->save();
+                        $item->status = CartItemStatus::canceled;
+                        $item->save();
+
+                    }
+
+                    Order::where('id', '=', $order['id'])->update(['status' => CartItemStatus::canceled, 'return_problem_id' => $problem_id]);
+                    $returnArray['status'] = true;
+                    $status_code = 200;
+                    $returnArray['data'] = ['order' => $order, 'return' => $return];
+
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
+                }
+
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
     //private $orderStatus =['Open','Paid','Sent','Completed','Cancelled'];
 
 
-
-    private function orderDetail($order){
-        $result['order_id']=$order['order_code'];
+    private function orderDetail($order)
+    {
+        $result['order_id'] = $order['order_code'];
         $items = array();
-        $i=0;
-        foreach ( $order->cart_items()->get() as $item){
-            $items[$i]['id']=$item->product()->first()->id;
-            $items[$i]['micro_id']=$item->product()->first()->micro_id;
-            $items[$i]['title']=$item->product()->first()->title;
-            $items[$i]['model']=$item->product()->first()->brand()->first()->BrandName." ".$item->product()->first()->model()->first()->Modelname;
-            $items[$i]['url']='/urun-detay/'.$item->product()->first()->id;
-            $items[$i]['imageUrl']=url($item->product()->first()->firstImage()->first()->image);
-        //    $items[$i]['color']=$item->color()->first()->color_name;
-           // $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
+        $i = 0;
+        foreach ($order->cart_items()->get() as $item) {
+            $items[$i]['id'] = $item->product()->first()->id;
+            $items[$i]['micro_id'] = $item->product()->first()->micro_id;
+            $items[$i]['title'] = $item->product()->first()->title;
+            $items[$i]['model'] = $item->product()->first()->brand()->first()->BrandName . " " . $item->product()->first()->model()->first()->Modelname;
+            $items[$i]['url'] = '/urun-detay/' . $item->product()->first()->id;
+            $items[$i]['imageUrl'] = url($item->product()->first()->firstImage()->first()->image);
+            //    $items[$i]['color']=$item->color()->first()->color_name;
+            // $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
             //$items[$i]['quantity']=$item['quantity'];
-            $items[$i]['price']=$item['price'];
-        //    $items[$i]['datetime']=$item['price'];
+            $items[$i]['price'] = $item['price'];
+            //    $items[$i]['datetime']=$item['price'];
             $i++;
         }
-        $result['items']=$items;
-        $result['date_time']=(int)Carbon::parse($order['created_at'])->format('U');
+        $result['items'] = $items;
+        $result['date_time'] = (int)Carbon::parse($order['created_at'])->format('U');
 
-        $result['amount']=$order['amount'];
-        $result['shipping_price']=$order['shipping_price'];
-        $result['cargo_company']=$order->cargo_company()->first()->name;
-        if($order['cargo_company_branch_id']>0){
-            $result['cargo_company_branch']=$order->cargo_company_branch()->first()->title;
+        $result['amount'] = $order['amount'];
+        $result['shipping_price'] = $order['shipping_price'];
+        $result['cargo_company'] = $order->cargo_company()->first()->name;
+        if ($order['cargo_company_branch_id'] > 0) {
+            $result['cargo_company_branch'] = $order->cargo_company_branch()->first()->title;
         }
-        $shipping_address=$order->customer_address()->first()->title.", "
-            .$order->customer_address()->first()->address;
-        $shipping_address.=($order->customer_address()->first()->neighborhood_id>0)?", ".$order->customer_address()->first()->neighborhood()->first()->name:"";
-        $shipping_address.=($order->customer_address()->first()->district_id>0)?", ".$order->customer_address()->first()->district()->first()->name:"";
-        $shipping_address.=($order->customer_address()->first()->town_id>0)?", ".$order->customer_address()->first()->town()->first()->name:"";
-        $shipping_address.=($order->customer_address()->first()->city_id>0)?", ".$order->customer_address()->first()->city()->first()->name:"";
+        $shipping_address = $order->customer_address()->first()->title . ", "
+            . $order->customer_address()->first()->address;
+        $shipping_address .= ($order->customer_address()->first()->neighborhood_id > 0) ? ", " . $order->customer_address()->first()->neighborhood()->first()->name : "";
+        $shipping_address .= ($order->customer_address()->first()->district_id > 0) ? ", " . $order->customer_address()->first()->district()->first()->name : "";
+        $shipping_address .= ($order->customer_address()->first()->town_id > 0) ? ", " . $order->customer_address()->first()->town()->first()->name : "";
+        $shipping_address .= ($order->customer_address()->first()->city_id > 0) ? ", " . $order->customer_address()->first()->city()->first()->name : "";
 
-        $result['shipping_address']['name_surname']=$order->customer_address()->first()->name_surname;
-        $result['shipping_address']['address']=$shipping_address;
-        $result['shipping_address']['phone']=$order->customer_address()->first()->phone_number;
-        $result['shipping_address']['phone'].=(!empty($order->customer_address()->first()->phone_number_2))?" (".$order->customer_address()->first()->phone_number_2.")":"";
-        $result['invoice_address']=$result['shipping_address'];
+        $result['shipping_address']['name_surname'] = $order->customer_address()->first()->name_surname;
+        $result['shipping_address']['address'] = $shipping_address;
+        $result['shipping_address']['phone'] = $order->customer_address()->first()->phone_number;
+        $result['shipping_address']['phone'] .= (!empty($order->customer_address()->first()->phone_number_2)) ? " (" . $order->customer_address()->first()->phone_number_2 . ")" : "";
+        $result['invoice_address'] = $result['shipping_address'];
 
-        $result['shipping_price']=$order['shipping_price'];
-        if($order['order_method']==0){
-            $result['order_method']='Credit Card';
-        }else{
-            $result['order_method']=$order->order_method()->first()->bank_name." - ".$order->order_method()->first()->iban;
+        $result['shipping_price'] = $order['shipping_price'];
+        if ($order['order_method'] == 0) {
+            $result['order_method'] = 'Credit Card';
+        } else {
+            $result['order_method'] = $order->order_method()->first()->bank_name . " - " . $order->order_method()->first()->iban;
         }
 
 
-
-        $result['status']= $order['status'];
+        $result['status'] = $order['status'];
 
         return $result;
     }
-    private function guestOrderDetail($order){
-        $result['order_id']=$order['order_code'];
+
+    private function guestOrderDetail($order)
+    {
+        $result['order_id'] = $order['order_code'];
         $items = array();
-        $i=0;
-        foreach ( $order->guest_cart_items()->get() as $item){
-            $items[$i]['id']=$item->product()->first()->id;
-            $items[$i]['micro_id']=$item->product()->first()->micro_id;
-            $items[$i]['title']=$item->product()->first()->title;
-            $items[$i]['model']=$item->product()->first()->brand()->first()->BrandName." ".$item->product()->first()->model()->first()->Modelname;
-            $items[$i]['url']='/urun-detay/'.$item->product()->first()->id;
-            $items[$i]['imageUrl']=url($item->product()->first()->firstImage()->first()->image);
-        //    $items[$i]['color']=$item->color()->first()->color_name;
-           // $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
+        $i = 0;
+        foreach ($order->guest_cart_items()->get() as $item) {
+            $items[$i]['id'] = $item->product()->first()->id;
+            $items[$i]['micro_id'] = $item->product()->first()->micro_id;
+            $items[$i]['title'] = $item->product()->first()->title;
+            $items[$i]['model'] = $item->product()->first()->brand()->first()->BrandName . " " . $item->product()->first()->model()->first()->Modelname;
+            $items[$i]['url'] = '/urun-detay/' . $item->product()->first()->id;
+            $items[$i]['imageUrl'] = url($item->product()->first()->firstImage()->first()->image);
+            //    $items[$i]['color']=$item->color()->first()->color_name;
+            // $items[$i]['memory']=$item->memory()->first()->memory_value."GB";
             //$items[$i]['quantity']=$item['quantity'];
-            $items[$i]['price']=$item['price'];
-       //     $items[$i]['datetime']=$item['price'];
+            $items[$i]['price'] = $item['price'];
+            //     $items[$i]['datetime']=$item['price'];
             $i++;
         }
-        $result['items']=$items;
-        $result['date_time']=(int)Carbon::parse($order['created_at'])->format('U');
+        $result['items'] = $items;
+        $result['date_time'] = (int)Carbon::parse($order['created_at'])->format('U');
 
-        $orderAddress = OrderAddress::where('order_id','=',$order['id'])->where('invoice','=',0)->first();
-        $result['address'] = $orderAddress['name_surname']." ,".$orderAddress['address'].",".$orderAddress->city()->first()->name." ".$orderAddress['phone'];
+        $orderAddress = OrderAddress::where('order_id', '=', $order['id'])->where('invoice', '=', 0)->first();
+        $result['address'] = $orderAddress['name_surname'] . " ," . $orderAddress['address'] . "," . $orderAddress->city()->first()->name . " " . $orderAddress['phone'];
 
-        $result['amount']=$order['amount'];
-        $result['shipping_price']=$order['shipping_price'];
-        $result['cargo_company']=$order->cargo_company()->first()->name;
-        if($order['cargo_company_branch_id']>0){
-            $result['cargo_company_branch']=$order->cargo_company_branch()->first()->title;
+        $result['amount'] = $order['amount'];
+        $result['shipping_price'] = $order['shipping_price'];
+        $result['cargo_company'] = $order->cargo_company()->first()->name;
+        if ($order['cargo_company_branch_id'] > 0) {
+            $result['cargo_company_branch'] = $order->cargo_company_branch()->first()->title;
         }
 
-        $result['shipping_price']=$order['shipping_price'];
-        if($order['order_method']==0){
-            $result['order_method']='Credit Card';
-        }else{
-            $result['order_method']=$order->order_method()->first()->bank_name." - ".$order->order_method()->first()->iban;
+        $result['shipping_price'] = $order['shipping_price'];
+        if ($order['order_method'] == 0) {
+            $result['order_method'] = 'Credit Card';
+        } else {
+            $result['order_method'] = $order->order_method()->first()->bank_name . " - " . $order->order_method()->first()->iban;
         }
-
 
 
         //$result['status']=$this->orderStatus[$order['status']];
@@ -2940,252 +2900,251 @@ if (!$this->ccPayment($request['cc_no'], $request['expires_at'], $request['cvc']
         return $result;
     }
 
-    private function paymentInfo($order){
-        $id= rand(100,200);
-
+    private function paymentInfo($order)
+    {
+        $id = rand(100, 200);
 
 
         $items = array();
-        $items[]=['id'=>$id, 'name'=>'Ara Toplam','value'=>($this->makeFloat($order['amount']*0.82)) ];
-        $items[]=['id'=>$id+1, 'name'=>'KDV/Vergi','value'=>($this->makeFloat($order['amount']*0.18))];
-        $items[]=['id'=>$id+2, 'name'=>'Kargo','value'=>$this->makeFloat($order['shipping_price'])];
-        return ['details'=>$items,'total'=>$this->makeFloat($order['amount']+$order['shipping_price'])];
+        $items[] = ['id' => $id, 'name' => 'Ara Toplam', 'value' => ($this->makeFloat($order['amount'] * 0.82))];
+        $items[] = ['id' => $id + 1, 'name' => 'KDV/Vergi', 'value' => ($this->makeFloat($order['amount'] * 0.18))];
+        $items[] = ['id' => $id + 2, 'name' => 'Kargo', 'value' => $this->makeFloat($order['shipping_price'])];
+        return ['details' => $items, 'total' => $this->makeFloat($order['amount'] + $order['shipping_price'])];
 
     }
 
 
-    public function orderSummary(Request $request){
+    public function orderSummary(Request $request)
+    {
 
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
-                if(!empty($request['customer_id']) ){
+                if (!empty($request['customer_id'])) {
 
 
+                    $customer = Customer::where('customer_id', '=', ((!empty($request['customer_id'])) ? $request['customer_id'] : 0))->where('status', '=', 1)->first();
 
-                    $customer =  Customer::where('customer_id','=',((!empty($request['customer_id']))?$request['customer_id']:0))->where('status','=',1)->first();
+                    $order = Order::with('cart_items.product')->where('customer_id', '=', $customer['id'])
+                        ->where('order_code', '=', ((!empty($request['order_id'])) ? $request['order_id'] : 0))->first();
 
-                    $order= Order::with('cart_items.product')->where('customer_id','=',$customer['id'])
-                        ->where('order_code','=',((!empty($request['order_id']))?$request['order_id']:0))->first();
+                    if (!empty($customer['id']) && !empty($order['id']) && $order->cart_items()->count() > 0) {
 
-                    if(!empty($customer['id']) && !empty($order['id'])&&  $order->cart_items()->count()>0){
+                        $returnArray['status'] = true;
+                        $status_code = 200;
+                        $returnArray['data'] = array_merge(['order' => $this->orderDetail($order)], ['payment_informations' => $this->paymentInfo($order)]);
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-                       $returnArray['data'] = array_merge(['order'=>$this->orderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'missing data'];
                     }
-                }else{///guest
+                } else {///guest
 
 
-                    $guest =  Guest::where('guid','=',((!empty($request['guid']))?$request['guid']:0))->first();
+                    $guest = Guest::where('guid', '=', ((!empty($request['guid'])) ? $request['guid'] : 0))->first();
 
 
-                    $order= Order::with('guest_cart_items.product')->where('guid','=',$guest['id'])
-                        ->where('order_code','=',((!empty($request['order_id']))?$request['order_id']:0))->first();
+                    $order = Order::with('guest_cart_items.product')->where('guid', '=', $guest['id'])
+                        ->where('order_code', '=', ((!empty($request['order_id'])) ? $request['order_id'] : 0))->first();
 
 
-                    if(!empty($guest['id']) && !empty($order['id'])&&  $order->guest_cart_items()->count()>0){
+                    if (!empty($guest['id']) && !empty($order['id']) && $order->guest_cart_items()->count() > 0) {
 
-                        $returnArray['status']=true;
-                        $status_code=200;
-
-
-
-                        $returnArray['data'] = array_merge(['order'=>$this->guestOrderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
+                        $returnArray['status'] = true;
+                        $status_code = 200;
 
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
+                        $returnArray['data'] = array_merge(['order' => $this->guestOrderDetail($order)], ['payment_informations' => $this->paymentInfo($order)]);
+
+
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'missing data'];
                     }
 
                 }
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
-    public function orderDetay(Request $request){
+    public function orderDetay(Request $request)
+    {
 
         if ($request->isMethod('post')) {
             //if ($request->header('x-api-key') == $this->generateKey()) {
             $data = array();
 
-            $order= Order::with('cart_items.product','guest_cart_items.product','customer','guest','customer_address','invoice_address','cargo_company','order_method')
-                ->where('order_code','=',((!empty($request['order_code']))?$request['order_code']:0))->first();
+            $order = Order::with('cart_items.product', 'guest_cart_items.product', 'customer', 'guest', 'customer_address', 'invoice_address', 'cargo_company', 'order_method')
+                ->where('order_code', '=', ((!empty($request['order_code'])) ? $request['order_code'] : 0))->first();
 
-            if(empty($order['id'])){
-                $returnArray['status']=false;
-                $status_code=406;
-                $returnArray['errors'] =['msg'=>'not-found'];
-                return response()->json($returnArray,$status_code);
+            if (empty($order['id'])) {
+                $returnArray['status'] = false;
+                $status_code = 406;
+                $returnArray['errors'] = ['msg' => 'not-found'];
+                return response()->json($returnArray, $status_code);
             }
 
 
-
-                if(!empty($order['customer_id']) ){
-
-
-                    $customer =  Customer::where('id','=',((!empty($order['customer_id']))?$order['customer_id']:0))->where('status','=',1)->first();
-                    $data['customer']=$customer;
+            if (!empty($order['customer_id'])) {
 
 
-                    if(!empty($customer['id']) && !empty($order['id'])&&  $order->cart_items()->count()>0){
-
-                        $returnArray['status']=true;
-                        $status_code=200;
-                  //     $returnArray['data'] = $data;//array_merge(['order'=>$this->orderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
-                        $data['order']=$this->orderDetail($order);
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missssing data'];
-                        return response()->json($returnArray,$status_code);
-                    }
-                }else{///guest
+                $customer = Customer::where('id', '=', ((!empty($order['customer_id'])) ? $order['customer_id'] : 0))->where('status', '=', 1)->first();
+                $data['customer'] = $customer;
 
 
-                    $guest =  Guest::where('id','=',((!empty($order['guid']))?$order['guid']:0))->first();
+                if (!empty($customer['id']) && !empty($order['id']) && $order->cart_items()->count() > 0) {
 
+                    $returnArray['status'] = true;
+                    $status_code = 200;
+                    //     $returnArray['data'] = $data;//array_merge(['order'=>$this->orderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
+                    $data['order'] = $this->orderDetail($order);
 
-                    $data['guest']=$guest;
-
-                    if(!empty($guest['id']) && !empty($order['id'])&&  $order->guest_cart_items()->count()>0){
-
-                        $returnArray['status']=true;
-                        $status_code=200;
-
-
-
-                     //   $returnArray['data'] = array_merge(['order'=>$this->guestOrderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
-                        $data['order']=$this->guestOrderDetail($order);
-
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
-                    }
-
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missssing data'];
+                    return response()->json($returnArray, $status_code);
                 }
-            $data['payment_informations']=$this->paymentInfo($order);
+            } else {///guest
 
 
-        }else{
+                $guest = Guest::where('id', '=', ((!empty($order['guid'])) ? $order['guid'] : 0))->first();
+
+
+                $data['guest'] = $guest;
+
+                if (!empty($guest['id']) && !empty($order['id']) && $order->guest_cart_items()->count() > 0) {
+
+                    $returnArray['status'] = true;
+                    $status_code = 200;
+
+
+                    //   $returnArray['data'] = array_merge(['order'=>$this->guestOrderDetail($order) ],['payment_informations'=>$this->paymentInfo($order)]);
+                    $data['order'] = $this->guestOrderDetail($order);
+
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
+                }
+
+            }
+            $data['payment_informations'] = $this->paymentInfo($order);
+
+
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($data,$status_code);
+        return response()->json($data, $status_code);
 
     }
 
-    public function orderHistory(Request $request){
+    public function orderHistory(Request $request)
+    {
 
         if ($request->isMethod('post')) {
             if ($request->header('x-api-key') == $this->generateKey()) {
-                if(!empty($request['customer_id']) ){
-                    $customer =  Customer::where('customer_id','=',$request['customer_id'])
-                        ->where('status','=',CustomerStatus::active)->first();
+                if (!empty($request['customer_id'])) {
+                    $customer = Customer::where('customer_id', '=', $request['customer_id'])
+                        ->where('status', '=', CustomerStatus::active)->first();
 
-                    $page = (!empty($request['page']))?($request['page']-1):0;
-                    $page = ($page<0)?0:$page;
-                    $page_count = (!empty($request['page_count']))?$request['page_count']:20;
+                    $page = (!empty($request['page'])) ? ($request['page'] - 1) : 0;
+                    $page = ($page < 0) ? 0 : $page;
+                    $page_count = (!empty($request['page_count'])) ? $request['page_count'] : 20;
 
 
-                    $orders= Order::with('cart_items.product')
-                        ->where('customer_id','=',$customer['id'])
-                        ->skip($page*$page_count)
+                    $orders = Order::with('cart_items.product')
+                        ->where('customer_id', '=', $customer['id'])
+                        ->skip($page * $page_count)
                         ->limit($page_count)
-                        ->orderBy('created_at','DESC')->get();
-                    $order_count=Order::select('id') ->where('customer_id','=',$customer['id'])->count();
+                        ->orderBy('created_at', 'DESC')->get();
+                    $order_count = Order::select('id')->where('customer_id', '=', $customer['id'])->count();
 
-                    if(!empty($customer['id'])   ){
+                    if (!empty($customer['id'])) {
 
-                        if(  $orders->count()>0){
-                            $result=array();
-                            $i=0;
-                            foreach ($orders as $order){
-                                $result[$i]=$this->orderDetail($order);
+                        if ($orders->count() > 0) {
+                            $result = array();
+                            $i = 0;
+                            foreach ($orders as $order) {
+                                $result[$i] = $this->orderDetail($order);
                                 $i++;
                             }
-                            $returnArray['status']=true;
-                            $status_code=200;
-                            $returnArray['data'] =['orders'=>$result,'item_count'=>$order_count ];
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $returnArray['data'] = ['orders' => $result, 'item_count' => $order_count];
                             //$ch->activation_key=0;
-                        }else{
-                            $returnArray['status']=true;
-                            $status_code=200;
-                            $returnArray['data'] =['orders'=>[],'item_count'=>$order_count ];
+                        } else {
+                            $returnArray['status'] = true;
+                            $status_code = 200;
+                            $returnArray['data'] = ['orders' => [], 'item_count' => $order_count];
                         }
-                        $customer->ip_address=$request->ip();
+                        $customer->ip_address = $request->ip();
                         $customer->save();
 
-                    }else{
-                        $returnArray['status']=false;
-                        $status_code=406;
-                        $returnArray['errors'] =['msg'=>'missing data'];
+                    } else {
+                        $returnArray['status'] = false;
+                        $status_code = 406;
+                        $returnArray['errors'] = ['msg' => 'missing data'];
                     }
-                }else{
-                    $returnArray['status']=false;
-                    $status_code=406;
-                    $returnArray['errors'] =['msg'=>'missing data'];
+                } else {
+                    $returnArray['status'] = false;
+                    $status_code = 406;
+                    $returnArray['errors'] = ['msg' => 'missing data'];
                 }
-            }else{
-                $returnArray['status']=false;
-                $status_code=498;
-                $returnArray['errors'] =['msg'=>'invalid key'];
+            } else {
+                $returnArray['status'] = false;
+                $status_code = 498;
+                $returnArray['errors'] = ['msg' => 'invalid key'];
             }
 
-        }else{
+        } else {
             $returnArray['status'] = false;
             $status_code = 405;
-            $returnArray['errors'] =['msg'=>'method_not_allowed'];
+            $returnArray['errors'] = ['msg' => 'method_not_allowed'];
         }
-        return response()->json($returnArray,$status_code);
+        return response()->json($returnArray, $status_code);
 
     }
 
-    private function ccPayment($ccno,$expires_at,$cvc,$amount,$name_surname = null,$purchase=1,$order_id){
+    private function ccPayment($ccno, $expires_at, $cvc, $amount, $name_surname = null, $purchase = 1, $order_id)
+    {
         $date = (int)$expires_at;
 
-        if( $date> (int)date('ym')  && strlen($ccno)==16 && strlen($cvc)==3 && $amount>0){
+        if ($date > (int)date('ym') && strlen($ccno) == 16 && strlen($cvc) == 3 && $amount > 0) {
 
 
-
-            $params=['name_surname'=>$name_surname, 'cc_no'=>$ccno,
-                'expiryYY'=>substr($date,0,2),'expiryMM'=>substr($date,2,2),
-                'amount'=>$amount,'purchase'=>$purchase,'cvc'=>$cvc,'order_id'=>$order_id
+            $params = ['name_surname' => $name_surname, 'cc_no' => $ccno,
+                'expiryYY' => substr($date, 0, 2), 'expiryMM' => substr($date, 2, 2),
+                'amount' => $amount, 'purchase' => $purchase, 'cvc' => $cvc, 'order_id' => $order_id
             ];
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL,"https://garantili.com.tr/eticaretodeme/odeme");
+            curl_setopt($ch, CURLOPT_URL, "https://garantili.com.tr/eticaretodeme/odeme");
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS,$params);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
             $server_output = curl_exec($ch);
-            curl_close ($ch);
+            curl_close($ch);
 
             return response()->json('ok');
             //   return  ($server_output == "ok")? true:false;
 
-        }else{
-            return  false;
+        } else {
+            return false;
         }
     }
 

@@ -14,7 +14,8 @@ class OrderReturn extends Model
     protected $table = 'order_returns';
 
     protected $fillable = [
-      'return_code',  'order_id','name_surname','cargo_company_id','cargo_company_branch_id','cargo_code','customer_address_id','service_address_id','status'
+      'return_code',  'order_id','name_surname','cargo_company_id','cargo_company_branch_id','cargo_code','customer_address_id','service_address_id',
+        'iban','iban_name','bank_name','status'
     ];
 
     protected $hidden = [

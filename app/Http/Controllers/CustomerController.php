@@ -230,16 +230,24 @@ class CustomerController extends Controller
         }
     }
 
-    public function orders(){
+    public function orders($type='x'){
+
+        if($type!='x'){
+            $type_array =[$type];
+        }else{
+            $type_array= [0,1,2,3,4,5];
+        }
+
+
 
             $orders = Order::with('cart_items','guest_cart_items','cart_items.product.firstImage','cart_items.color','cart_items.memory','customer','guest','order_method'
                 ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
-             //   ->where('id','=',1)
+                ->whereIn('status',$type_array)
                 ->orderBy('id','DESC')
                 ->get();
 
 
-       return view('admin.customer.orders',['orders'=>$orders,'order_status'=>$this->order_status_array]);
+       return view('admin.customer.orders',['orders'=>$orders,'order_status'=>$this->order_status_array,'type'=>$type]);
     }
 
     public function guests(){
@@ -342,9 +350,19 @@ class CustomerController extends Controller
             $this->validate($request, $rules, $messages);
             $resultArray = DB::transaction(function () use ($request) {
                     $return = OrderReturn::find($request['return_id']);
-                    $return->cargo_company_id = $request['cargo_company_id'];
-                    $return->cargo_code = $request['cargo_code_return'];
-                    $return->service_address_id = $request['service_address_id_return'];
+
+                    if($return['requires_cargo']){
+                        $return->cargo_company_id = $request['cargo_company_id'];
+                        $return->cargo_code = $request['cargo_code_return'];
+                        $return->service_address_id = $request['service_address_id_return'];
+                    }else{
+
+                        $return->cargo_company_id = 0;
+                        $return->cargo_code = '';
+                        $return->service_address_id = 0;
+                    }
+
+
                     $return->status = $request['status_return'];
                     $return->save();
 

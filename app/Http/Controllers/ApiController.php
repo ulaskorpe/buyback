@@ -42,13 +42,13 @@ class ApiController extends Controller
         foreach ($paragraphs as $paragraph) {
             if($i%2==0){
                 $data.=($i==0)?'<div class="row first-row">':'<div class="row">';
-                $cl='pr-6';
+                $cl='pr-12';
                 $end='</div>';
             }else{
-                $cl='pl-6';
+                $cl='pl-12';
                 $end='';
             }
-            $data.='<div class="col-sm-6 '.$cl.'"><div class="text-block"><h3 class="highlight">'.$paragraph['title'].'</h3><p>'.$paragraph['p'].'</p></div></div>';
+            $data.='<div class="col-sm-12 '.$cl.'"><div class="text-block"><h3 class="highlight">'.$paragraph['title'].'</h3><p>'.$paragraph['p'].'</p></div></div>';
             $data.=$end;
             $i++;
         }

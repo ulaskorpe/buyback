@@ -70,7 +70,7 @@
                                     <li style="display: none"><a href="{{route('customer.customer-update',[$customer_id,$selected])}}"></a></li>
                                 @endif
                                 @endif
-                                <li><a href="{{route('customer.orders')}}">Siparişler</a></li>
+                                <li><a href="{{route('customer.orders',[$type])}}">Siparişler</a></li>
                                 <li><a href="{{route('customer.guests')}}">Ziyaretçiler</a></li>
                                 <li><a href="{{route('customer.newsletter')}}">Bülten Üyeleri</a></li>
                                 <li><a href="{{route('customer.contacts')}}">İletişim</a></li>

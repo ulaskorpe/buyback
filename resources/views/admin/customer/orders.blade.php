@@ -15,7 +15,23 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center">
+                            <div class="row">
+                                <div class="col-10"></div>
+                                <div class="col-2">
+                                    <select name="type" id="type" class="form-control" onchange="window.open('{{url('/admin/customers/orders')}}/'+this.value,'_self')">
+                                        <option value="x">Tüm Siparişler</option>
+                                        <option value="{{\App\Enums\CartItemStatus::init}}" @if($type==\App\Enums\CartItemStatus::init) selected @endif>Sepetteki Siparişler</option>
+                                        <option value="{{\App\Enums\CartItemStatus::paid}}" @if($type==\App\Enums\CartItemStatus::paid) selected @endif>Ödenmiş Siparişler</option>
+                                        <option value="{{\App\Enums\CartItemStatus::sent}}" @if($type==\App\Enums\CartItemStatus::sent) selected @endif>Gönderilmiş Siparişler</option>
+                                        <option value="{{\App\Enums\CartItemStatus::canceled}}" @if($type==\App\Enums\CartItemStatus::canceled) selected @endif>İptal Edilmiş Siparişler</option>
+                                        <option value="{{\App\Enums\CartItemStatus::completed}}" @if($type==\App\Enums\CartItemStatus::completed) selected @endif>Tamamlanmış Siparişler</option>
+                                        <option value="{{\App\Enums\CartItemStatus::returned}}" @if($type==\App\Enums\CartItemStatus::returned) selected @endif>Yeniden Gönderilmiş Siparişler</option>
 
+                                    </select>
+
+
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
