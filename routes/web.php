@@ -19,6 +19,7 @@ Route::get('/', function () {
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
 Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('react');
+Route::get('/create-coupons/{count?}',[\App\Http\Controllers\HomeController::class,'createCoupons'])->name('create-coupons');
 Route::get('/post-form',[\App\Http\Controllers\HomeController::class,'postForm'])->name('post-form');
 Route::get('/post-confirm',[\App\Http\Controllers\HomeController::class,'postConfirm'])->name('post-confirm');
 Route::get('/kk-form',[\App\Http\Controllers\HomeController::class,'kkForm'])->name('kk-form');
@@ -282,6 +283,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
 
 
     Route::group(['middleware'=>\App\Http\Middleware\systemAuth::class],function (){
+
+        Route::get('/system-data-update',[\App\Http\Controllers\DataController::class,'systemDataUpdate'])->name('system-data-update');
 
     Route::group(['prefix'=>'brand','as'=>'brand.'],function (){
         Route::get('/list',[\App\Http\Controllers\DataController::class,'brandlist'])->name('brandlist');

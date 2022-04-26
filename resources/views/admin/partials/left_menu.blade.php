@@ -70,7 +70,13 @@
                                     <li style="display: none"><a href="{{route('customer.customer-update',[$customer_id,$selected])}}"></a></li>
                                 @endif
                                 @endif
+
+                                @if(!empty($type))
                                 <li><a href="{{route('customer.orders',[$type])}}">Siparişler</a></li>
+                                @else
+                                    <li><a href="{{route('customer.orders' )}}">Siparişler</a></li>
+                                @endif
+
                                 <li><a href="{{route('customer.guests')}}">Ziyaretçiler</a></li>
                                 <li><a href="{{route('customer.newsletter')}}">Bülten Üyeleri</a></li>
                                 <li><a href="{{route('customer.contacts')}}">İletişim</a></li>
@@ -124,6 +130,7 @@
                     @if(!empty(Session::get('sudo') || !empty(Session::get('auth_array')['system'])))
                     <li><a><i class="fa fa-edit"></i> Sistem Verileri <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
+                            <li><a href="{{route('system-data-update')}}">Sistem Veri Güncelle</a></li>
                             <li><a href="{{route('brand.brandlist')}}">Markalar</a></li>
                             <li style="display: none"><a href="{{route('brand.brandadd')}}"></a></li>
                             @if(!empty($brand_id))

@@ -47,6 +47,9 @@ class DataController extends Controller
     }
 
 
+    public function systemDataUpdate(){
+
+    }
 
 
     public function ccTest(Request $request){
@@ -1449,7 +1452,9 @@ if($responseCode==1){
         if ($request->header('x-api-key') == $this->generateKey()) {
             $status_code = 200;
             $resultArray['status'] = true;
-            $resultArray['data']= ['bankalar'=>Bank::select('bank_name','bank_id')->orderBy('bank_id')->get()];
+            $resultArray['data']= ['bankalar'=>Bank::select('bank_name','bank_id')
+                ->where('is_active','=',1)
+                ->orderBy('bank_id')->get()];
 
 
         } else {

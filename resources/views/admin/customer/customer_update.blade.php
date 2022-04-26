@@ -161,6 +161,26 @@
                                             <span class="form-text text-muted" id="email_error"></span>
                                         </div>
                                     </div>
+
+
+                                    <div class="form-group row">
+                                        <label class="col-lg-2 col-form-label font-weight-semibold">TCKN</label>
+                                        <div class="col-lg-8">
+                                            <input type="text" name="tckn" id="tckn" class="form-control h-auto" value="{{$customer['tckn']}}">
+
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group row">
+                                        <label class="col-lg-2 col-form-label font-weight-semibold">Vergi Numarası</label>
+                                        <div class="col-lg-8">
+                                            <input type="text" name="vergi_no" id="vergi_no" class="form-control h-auto" value="{{$customer['vergi_no']}}">
+
+                                        </div>
+                                    </div>
+
+
                                     <div class="form-group row">
                                         <label class="col-lg-2 col-form-label font-weight-semibold">Durum</label>
                                         <div class="col-lg-3">

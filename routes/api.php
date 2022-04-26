@@ -119,6 +119,7 @@ Route::group(['prefix' => 'customers'], function () {
 Route::group(['prefix' => 'cart'], function () {
     Route::post('/show', [ \App\Http\Controllers\ApiCustomerController::class, 'showCart'])->name('show-cart-api');
     Route::post('/add', [ \App\Http\Controllers\ApiCustomerController::class, 'addToCart'])->name('add-to-cart-api');
+    Route::post('/apply-coupon', [ \App\Http\Controllers\ApiCustomerController::class, 'applyCoupon'])->name('apply-coupon');
     Route::post('/remove', [ \App\Http\Controllers\ApiCustomerController::class, 'removeFromCart'])->name('remove-cart-api');
     Route::post('/update', [ \App\Http\Controllers\ApiCustomerController::class, 'UpdateCart'])->name('update-cart-api');
     Route::post('/place-order', [ \App\Http\Controllers\ApiCustomerController::class, 'placeOrder'])->name('place-order-api');

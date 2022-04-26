@@ -15,6 +15,7 @@ use App\Models\City;
 use App\Models\Color;
 use App\Models\ColorModel;
 use App\Models\Country;
+use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Log;
@@ -29,6 +30,7 @@ use App\Models\Tmp;
 use App\Models\Town;
 use App\Models\User;
 use App\Models\UserGroup;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +95,32 @@ class HomeController extends Controller
 
 
          return view('react');
+
+    }
+
+
+    public function createCoupons($count=10){
+
+
+        for($i=0;$i<$count;$i++){
+            $code  = 'GRNTL-'.rand(1000,9999).'-'.rand(1000,9999).'-'.rand(1000,9999);
+            $c = Coupon::where('code','=',$code)->first();
+            if(empty($c['id'])){
+                $c=new Coupon();
+                $c->code = $code;
+                $c->amount = 0;
+                $c->percentage=10;
+                $c->is_active=1;
+                $c->usage = 1000000;
+                $c->expires_at=Carbon::now()->addYear(1);
+           //     $c->save();
+            }
+
+
+
+        }
+
+        return $count;
 
     }
 
@@ -626,11 +654,15 @@ if($item['hafiza']!='Tanımsız'){
 
         $arr_1 = $this->connectApi( 'eticaret-bankalar') ;
 
+
+     //   return $arr_1;
+
         Bank::query()->truncate();
         foreach ($arr_1 as $item){
             $b= new Bank();
                 $b->bank_name=$item['banka'];
                 $b->bank_id=$item['id'];
+                $b->is_active = 0;
                 $b->save();
 
 
@@ -644,17 +676,29 @@ if($item['hafiza']!='Tanımsız'){
     public function bankPurchases(){
 
         $arr_1 =$this->connectApi('eticaret-taksitlendirme');
-
+      //return $arr_1;
+        Bank::where('id','>',0)->update(['is_active'=>0]);
         BankPurchase::query()->truncate();
         foreach ($arr_1 as $item){
+
+            $bank=Bank::where('bank_id','=',$item['banka'])->where('is_active','=',0)->first();
+            if(!empty($bank['id'])){
+                $bank->is_active=1;
+                $bank->save();
+            }
+
+            $b = BankPurchase::where('bank_id','=',$item['banka'])->where('purchase','=',$item['taksit'])->first();
+            if(empty($b['id'])){
+
             $b= new BankPurchase();
+            }
             $b->bank_id=$item['banka'];
             $b->purchase_id = $item['id'];
             $b->purchase = $item['taksit'];
             $b->commission = $item['komisyon'];
             $b->payment_plan_id = $item['odeme_plani'];
             $b->description_id = $item['taksit_yazi'];
-                // $b->save();
+                 $b->save();
 
 
             echo $item['banka']."<br>";

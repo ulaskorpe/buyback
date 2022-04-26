@@ -13,7 +13,7 @@ class Customer extends Model
     protected $table = 'customers';
 
     protected $fillable = [
-      'name','surname','email','password','status','ip_address','avatar','key'
+      'customer_id','name','surname','email','avatar','gender','password','status','ip_address','activation_key','tckn','vergi_no'
 
     ];
 

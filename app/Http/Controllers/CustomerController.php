@@ -125,7 +125,8 @@ class CustomerController extends Controller
                     $c->avatar = "images/customers/" . $th;
                 }
 
-
+                $c->tckn = (!empty($request['tckn']))?$request['tckn']:$c->tckn;
+                $c->vergi_no = (!empty($request['vergi_no']))?$request['vergi_no']:$c->vergi_no;
                 $c->save();
                 return ['Müşteri Güncellendi', 'success', route('customer.customer-update',$c['id']), '', ''];
             });

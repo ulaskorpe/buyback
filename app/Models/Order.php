@@ -16,7 +16,7 @@ class Order extends Model
     protected $fillable = [
         'order_code','name_surname','cargo_company_id','cargo_company_branch_id',
         'order_method','cargo_code','customer_id','guid','customer_address_id','invoice_address_id','service_address_id','status',
-        'amount','banka_id','taksit','message','return_problem_id'
+        'amount','banka_id','taksit','message','return_problem_id','tckn','vergi_no'
 
     ];
 
@@ -65,6 +65,12 @@ class Order extends Model
        //return $this->hasManyThrough(CartItem::class,CartOrderPivot::class,'order_id','id');
         return $this->hasMany(CartItem::class,'order_id','id');
     }
+
+    public function order_addresses(){
+        //return $this->hasManyThrough(CartItem::class,CartOrderPivot::class,'order_id','id');
+        return $this->hasMany(OrderAddress::class,'order_id','id');
+    }
+
     public function guest_cart_items(){
         //return $this->hasManyThrough(CartItem::class,CartOrderPivot::class,'order_id','id');
         return $this->hasMany(GuestCartItem::class,'order_id','id');
@@ -72,7 +78,9 @@ class Order extends Model
     public function order_method(){
         return $this->hasOne(BankAccount::class,'id','order_method');
     }
-
+    public function coupon(){
+        return $this->hasOne(Coupon::class,'id','coupon_id');
+    }
 
 
 }

@@ -14,7 +14,7 @@ class OrderAddress extends Model
     protected $table = 'order_addresses';
 
     protected $fillable = [
-       'order_id','name_surname','address','city_id','phone','invoice'
+       'order_id','name_surname','address','city_id','phone','invoice','tckn','vergi_no'
 
     ];
 
