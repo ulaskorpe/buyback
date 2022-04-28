@@ -98,6 +98,47 @@ class HomeController extends Controller
 
     }
 
+    public function modelResim(){
+        $models = ProductModel::all();
+        foreach ($models as $model){
+
+            if(empty($model['Imagelarge'])){
+                echo $model['Modelname']." resim atandı<br>";
+                $rand = rand(1,10);
+                $model->Imagelarge='images/products/L'.$rand.'.jpg';
+                $model->Imagethumb='images/products/THL'.$rand.'.jpg';
+                $model->save();
+            }
+        }
+
+
+
+    }
+
+    public function productImage(){
+        $products = Product::where('fake','=',0)->get();
+        foreach ($products as $product){
+            $model = ProductModel::find($product['model_id']);
+
+            $img = ProductImage::where('product_id','=',$product['id'])->first();
+            if(empty($img['id'])){
+
+
+                    $product_img = new ProductImage();
+                    $product_img->product_id=$product['id'];
+                    $product_img->thumb = $model['Imagethumb'];
+                    $product_img->image = $model['Imagelarge'];
+                    $product_img->order = 1;
+                    $product_img->status = 1;
+                    $product_img->first= 1;
+                    $product_img->save();
+                    echo $model['Modelname']."-". $product['title']." resim atandı<br>";
+
+
+
+            }
+        }
+    }
 
     public function createCoupons($count=10){
 
@@ -688,10 +729,10 @@ if($item['hafiza']!='Tanımsız'){
             }
 
             $b = BankPurchase::where('bank_id','=',$item['banka'])->where('purchase','=',$item['taksit'])->first();
-            if(empty($b['id'])){
+         //   if(empty($b['id'])){
 
             $b= new BankPurchase();
-            }
+            //}
             $b->bank_id=$item['banka'];
             $b->purchase_id = $item['id'];
             $b->purchase = $item['taksit'];

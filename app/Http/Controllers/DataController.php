@@ -1478,12 +1478,24 @@ if($responseCode==1){
             $bank = Bank::where('bank_id','=',$bank_id)->first();
             if(!empty($bank['id'])){
 
-                $purchases = BankPurchase::where('bank_id','=',$bank_id)->orderBy('purchase')->pluck('purchase')->toArray();
-                $purchases = array_merge([1], $purchases);
+//                $purchases = BankPurchase::where('bank_id','=',$bank_id)->orderBy('purchase')->pluck('purchase')->toArray();
+//                $purchases = array_merge([1], $purchases);
+                $purchases = BankPurchase::where('bank_id','=',$bank_id)->orderBy('purchase')->get();
+                $purchase_array=array();
+                $purchase_array[0]=['purchase_id'=>0,'data'=>'Tek Çekim','commission'=>0];
+                $i=1;
+                foreach ($purchases as $purchase){
+                    $purchase_array[$i]=['purchase_id'=>$purchase['purchase_id'],'data'=>$purchase['description_id']." Taksit",'commission'=>$purchase['commission']];
+                    $i++;
+                }
+
+              //  $purchase_array = array_merge(['purchase_id'=>0,'data'=>'Tek Çekim','commission'=>0], $purchase_array);
+
+
             $status_code = 200;
             $resultArray['status'] = true;
 
-            $resultArray['data']= ['banka'=>$bank,'purchases'=>$purchases];
+            $resultArray['data']= ['banka'=>$bank,'purchases'=>$purchase_array];
 
             }else{
                 $resultArray['status'] = false;

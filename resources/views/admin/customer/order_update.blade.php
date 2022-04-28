@@ -86,6 +86,11 @@
                                 @if(!empty($order['receipt']))
                                     <a href="{{url($order['receipt'])}}" target="_blank"><b>DEKONT</b></a>
                                     @endif
+                                @if(!empty($order['coupon_id']))
+                                    <a href="{{route('customer.coupon-update',$order['coupon_id'])}}"><b>  {{$order->coupon()->first()->code}}</b></a>
+                                    ( @if($order->coupon()->first()->amount > 0)  {{$order->coupon()->first()->amount}}TL
+                                          @else %{{$order->coupon()->first()->percentage}} @endif indirim )
+                                    @endif
                             </div>
 
                             <div class="col-4 my-5 mx-3">
@@ -194,13 +199,15 @@
 
 
                             <div class="col-4">
-                                @if($order['amount']==$amount)
-                                <h3>{{$amount}} TL</h3>
-                                @else
-                                    <h4>Toplam : {{$amount}} TL</h4>
-                                    <h4>Ödenen :{{number_format($order['amount'],2)}} TL</h4>
 
-                                @endif
+                                    <h4>Sepet Tutarı : {{number_format($amount,2)}} TL</h4>
+
+                                    <h4>Sipariş Tutarı :{{number_format($order['amount'],2)}} TL</h4>
+                                    <h4>İndirim Tutarı :{{number_format($order['discount'],2)}} TL</h4>
+                                    <h4>Tahsil Edilen:{{number_format($order['amount']-$order['discount'],2)}} TL</h4>
+
+
+
 
 
 

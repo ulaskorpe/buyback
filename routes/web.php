@@ -19,6 +19,8 @@ Route::get('/', function () {
 
 Route::get('/',[\App\Http\Controllers\HomeController::class,'home'])->name('home');
 Route::get('/react',[\App\Http\Controllers\HomeController::class,'react'])->name('react');
+Route::get('/model-resim',[\App\Http\Controllers\HomeController::class,'modelResim'])->name('model-resim');
+Route::get('/product-image',[\App\Http\Controllers\HomeController::class,'productImage'])->name('product-image');
 Route::get('/create-coupons/{count?}',[\App\Http\Controllers\HomeController::class,'createCoupons'])->name('create-coupons');
 Route::get('/post-form',[\App\Http\Controllers\HomeController::class,'postForm'])->name('post-form');
 Route::get('/post-confirm',[\App\Http\Controllers\HomeController::class,'postConfirm'])->name('post-confirm');
@@ -382,6 +384,11 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/newsletter',[\App\Http\Controllers\CustomerController::class,'newsletter'])->name('newsletter');
         Route::get('/contacts',[\App\Http\Controllers\CustomerController::class,'contacts'])->name('contacts');
         Route::get('/contact-detail/{id}',[\App\Http\Controllers\CustomerController::class,'contactDetail'])->name('contact-detail');
+        Route::get('/coupons',[\App\Http\Controllers\CustomerController::class,'coupons'])->name('coupon-list');
+        Route::get('/coupon-add',[\App\Http\Controllers\CustomerController::class,'couponAdd'])->name('coupon-add');
+        Route::post('/coupon-add-post',[\App\Http\Controllers\CustomerController::class,'couponAddPost'])->name('couponAdd-post');
+        Route::post('/coupon-update-post',[\App\Http\Controllers\CustomerController::class,'couponUpdatePost'])->name('couponUpdate-post');
+        Route::get('/coupon-update/{id}',[\App\Http\Controllers\CustomerController::class,'couponUpdate'])->name('coupon-update');
         Route::get('/delete-guest/{guid}',[\App\Http\Controllers\CustomerController::class,'deleteGuest'])->name('delete-guest');
         Route::get('/delete-newsletter/{id}',[\App\Http\Controllers\CustomerController::class,'deleteNewsletter'])->name('delete-newsletter');
         Route::get('/delete-contact/{id}',[\App\Http\Controllers\CustomerController::class,'deleteContact'])->name('delete-contact');
@@ -394,5 +401,8 @@ Route::group(['middleware'=>checkUser::class,'prefix'=>'admin'],function () {
         Route::get('/cargo-code-check/{cargo_code}/{order_id}',[\App\Http\Controllers\CustomerController::class,'cargoCodeCheck'])->name('cargo-code-check');
         Route::post('/order-update-post',[\App\Http\Controllers\CustomerController::class,'orderUpdatePost'])->name('order-update-post');
         Route::post('/order-cancel-update-post',[\App\Http\Controllers\CustomerController::class,'orderCancelUpdatePost'])->name('order-cancel-update-post');
+
+
+
     });
 });

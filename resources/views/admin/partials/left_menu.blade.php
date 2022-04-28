@@ -77,6 +77,12 @@
                                     <li><a href="{{route('customer.orders' )}}">Siparişler</a></li>
                                 @endif
 
+                                <li><a href="{{route('customer.coupon-list')}}">Kuponlar</a></li>
+                                <li style="display: none"><a href="{{route('customer.coupon-add')}}">Kuponlar</a></li>
+                                @if(!empty($coupon_id))
+                                <li style="display: none"><a href="{{route('customer.coupon-update',[$coupon_id])}}">Kuponlar</a></li>
+                                @endif
+
                                 <li><a href="{{route('customer.guests')}}">Ziyaretçiler</a></li>
                                 <li><a href="{{route('customer.newsletter')}}">Bülten Üyeleri</a></li>
                                 <li><a href="{{route('customer.contacts')}}">İletişim</a></li>

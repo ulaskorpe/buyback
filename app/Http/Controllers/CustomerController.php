@@ -11,6 +11,7 @@ use App\Models\CargoCompanyBranch;
 use App\Models\CartItem;
 use App\Models\City;
 use App\Models\Contact;
+use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Guest;
@@ -21,6 +22,7 @@ use App\Models\OrderAddress;
 use App\Models\OrderReturn;
 use App\Models\ServiceAddress;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -291,7 +293,7 @@ class CustomerController extends Controller
 
     public function orderUpdate($order_id,$selected=0){
         $order = Order::with('cart_items','guest_cart_items','guest','cart_items.product.firstImage','customer','order_method'
-            ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood')
+            ,'cargo_company','customer_address.city','customer_address.town','customer_address.district','customer_address.neighborhood','coupon')
                ->where('id','=',$order_id)
             ->orderBy('id','DESC')
             ->first();
@@ -492,5 +494,80 @@ if($address_id>0){
          $ch = Order::select('id')->where('cargo_code','=',$cargo_code)->where('id','<>',$order_id)->first();
          return (empty($ch['id']))?"ok":"no";
 
+    }
+
+    public function coupons(){
+
+        return view('admin.coupon.list',['coupons'=>Coupon::orderBy('created_at','DESC')->get()]);
+    }
+
+    public function couponAdd(){
+        return view('admin.coupon.create');
+    }
+    public function couponUpdate($id){
+        $coupon=Coupon::with('orders')->where('id','=',$id)->first();
+
+        return view('admin.coupon.update',['coupon'=>$coupon,'coupon_id'=>$id]);
+    }
+
+
+    public function couponAddPost(Request $request){
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+
+                $count = intval($request['last']);
+                for($i=0;$i<$count;$i++) {
+                    $code = 'GRNTL-' . rand(1000, 9999) . '-' . rand(1000, 9999) . '-' . rand(1000, 9999);
+                    $c = Coupon::where('code', '=', $code)->first();
+                    if (empty($c['id'])) {
+                        $c = new Coupon();
+                        $c->code = $code;
+                        $c->amount =(empty($request['percentage'])) ? $request['amount']:0;
+                        $c->percentage = $request['percentage'];
+                        $c->is_active =(!empty($request['status']))?1:0;
+                        $c->usage = $request['usage'];
+                        $c->expires_at =Carbon::parse($request['expires_at'])->format('Y-m-d');
+                            $c->save();
+                    }
+                }
+                    return ['Kupon(lar) eklendi', 'success', route('customer.coupon-list'), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
+    }
+
+    public function couponUpdatePost(Request $request){
+        if ($request->isMethod('post')) {
+            $messages = [];
+            $rules = [
+
+            ];
+            $this->validate($request, $rules, $messages);
+            $resultArray = DB::transaction(function () use ($request) {
+
+
+
+
+                    $c = Coupon::find($request['id']);
+                        $c->amount =(empty($request['percentage'])) ? $request['amount']:0;
+                        $c->percentage = $request['percentage'];
+                        $c->is_active =(!empty($request['status']))?1:0;
+                        $c->usage = $request['usage'];
+                        $c->expires_at =Carbon::parse($request['expires_at'])->format('Y-m-d');
+                        $c->save();
+
+
+                    return ['Kupon güncellendi', 'success', route('customer.coupon-update',[$request['id']]), '', ''];
+            });
+            return json_encode($resultArray);
+
+        }
     }
 }
